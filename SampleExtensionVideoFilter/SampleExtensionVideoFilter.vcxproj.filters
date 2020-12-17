@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Agora">
+      <UniqueIdentifier>{b89e2182-62ff-4d1e-9b60-6d6cadbf000e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Extension">
+      <UniqueIdentifier>{40fc6018-66ff-454a-bc6a-a0f63bb077f3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Agora\AgoraBase.h">
+      <Filter>Agora</Filter>
+    </ClInclude>
+    <ClInclude Include="Agora\AgoraRefPtr.h">
+      <Filter>Agora</Filter>
+    </ClInclude>
+    <ClInclude Include="Agora\IAgoraLog.h">
+      <Filter>Agora</Filter>
+    </ClInclude>
+    <ClInclude Include="Agora\NGIAgoraExtensionControl.h">
+      <Filter>Agora</Filter>
+    </ClInclude>
+    <ClInclude Include="Agora\NGIAgoraExtensionProvider.h">
+      <Filter>Agora</Filter>
+    </ClInclude>
+    <ClInclude Include="Agora\NGIAgoraMediaNode.h">
+      <Filter>Agora</Filter>
+    </ClInclude>
+    <ClInclude Include="Agora\NGIAgoraVideoFrame.h">
+      <Filter>Agora</Filter>
+    </ClInclude>
+    <ClInclude Include="Extension\sample_video_filter_extension.h">
+      <Filter>Extension</Filter>
+    </ClInclude>
+    <ClInclude Include="Agora\AgoraMediaBase.h">
+      <Filter>Agora</Filter>
+    </ClInclude>
+    <ClInclude Include="Agora\IAgoraParameter.h">
+      <Filter>Agora</Filter>
+    </ClInclude>
+    <ClInclude Include="Extension\sample_video_filter_provider.h">
+      <Filter>Extension</Filter>
+    </ClInclude>
+    <ClInclude Include="exported_functions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Extension\sample_video_filter_extension.cpp">
+      <Filter>Extension</Filter>
+    </ClCompile>
+    <ClCompile Include="Extension\sample_video_filter_provider.cpp">
+      <Filter>Extension</Filter>
+    </ClCompile>
+    <ClCompile Include="exported_functions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="extension.def">
+      <Filter>Header Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>
