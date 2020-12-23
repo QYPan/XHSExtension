@@ -33,24 +33,51 @@
     <ClInclude Include="Agora\AgoraBase.h">
       <Filter>Agora</Filter>
     </ClInclude>
-    <ClInclude Include="Agora\AgoraRefPtr.h">
-      <Filter>Agora</Filter>
-    </ClInclude>
-    <ClInclude Include="Agora\NGIAgoraExtensionProvider.h">
-      <Filter>Agora</Filter>
-    </ClInclude>
-    <ClInclude Include="Agora\NGIAgoraMediaNode.h">
-      <Filter>Agora</Filter>
-    </ClInclude>
     <ClInclude Include="Agora\IAgoraParameter.h">
       <Filter>Agora</Filter>
     </ClInclude>
     <ClInclude Include="Agora\AgoraMediaBase.h">
       <Filter>Agora</Filter>
     </ClInclude>
+    <ClInclude Include="Agora\include\AgoraMediaPlayerTypes.h">
+      <Filter>Agora</Filter>
+    </ClInclude>
+    <ClInclude Include="Agora\include\AgoraOptional.h">
+      <Filter>Agora</Filter>
+    </ClInclude>
+    <ClInclude Include="Agora\include\AgoraRefPtr.h">
+      <Filter>Agora</Filter>
+    </ClInclude>
+    <ClInclude Include="Agora\include\IAgoraLog.h">
+      <Filter>Agora</Filter>
+    </ClInclude>
+    <ClInclude Include="Agora\include\IAgoraMediaEngine.h">
+      <Filter>Agora</Filter>
+    </ClInclude>
+    <ClInclude Include="Agora\include\IAgoraMediaPlayerSource.h">
+      <Filter>Agora</Filter>
+    </ClInclude>
+    <ClInclude Include="Agora\include\IAgoraRtcEngine.h">
+      <Filter>Agora</Filter>
+    </ClInclude>
+    <ClInclude Include="Agora\include\IAgoraRtcEngineEx.h">
+      <Filter>Agora</Filter>
+    </ClInclude>
+    <ClInclude Include="Agora\include\NGIAgoraExtensionProvider.h">
+      <Filter>Agora</Filter>
+    </ClInclude>
+    <ClInclude Include="Agora\include\NGIAgoraMediaNode.h">
+      <Filter>Agora</Filter>
+    </ClInclude>
+    <ClInclude Include="EventHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionVideoFilterTestDriver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EventHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,0 +1,69 @@
+[1222/192953.810:WARNING:core_audio_util_win.cc(1102)] Replacing existing audio parameter with predefined version
+[1222/193014.887:INFO:core_audio_util_win.cc(891)] SetClientProperties
+[1222/193014.887:INFO:core_audio_util_win.cc(902)] SetClientProperties: AudioCategory_Communications
+[1222/193014.887:INFO:core_audio_util_win.cc(914)] SetClientProperties: supports_offload: 0
+[1222/193014.887:INFO:core_audio_util_win.cc(935)] props.Options: 1
+[1222/193014.887:WARNING:core_audio_util_win.cc(941)] IAudioClient2::SetClientProperties succeed: 0
+[1222/193014.887:INFO:audio_low_latency_input_win.cc(179)] SetClientProperties result : 0
+[1222/193014.926:INFO:audio_device_core_win.cc(148)] >> Output file: D:\Source\ExtensionVideoFilterTestDriver\ExtensionVideoFilterTestDriver\x64\Debug\strange_name_to_find_easier.pcm has been created.
+[1222/193019.451:WARNING:nv_encode_accelerator.cpp(32)] nvEncodeAPI module is not found
+[1223/085910.783:WARNING:core_audio_util_win.cc(1102)] Replacing existing audio parameter with predefined version
+[1223/085910.904:INFO:core_audio_util_win.cc(891)] SetClientProperties
+[1223/085910.905:INFO:core_audio_util_win.cc(902)] SetClientProperties: AudioCategory_Communications
+[1223/085910.905:INFO:core_audio_util_win.cc(914)] SetClientProperties: supports_offload: 0
+[1223/085910.905:INFO:core_audio_util_win.cc(935)] props.Options: 1
+[1223/085910.905:WARNING:core_audio_util_win.cc(941)] IAudioClient2::SetClientProperties succeed: 0
+[1223/085910.905:INFO:audio_low_latency_input_win.cc(179)] SetClientProperties result : 0
+[1223/085910.940:INFO:audio_device_core_win.cc(148)] >> Output file: D:\Source\ExtensionVideoFilterTestDriver\ExtensionVideoFilterTestDriver\x64\Debug\strange_name_to_find_easier.pcm has been created.
+[1223/085911.777:WARNING:nv_encode_accelerator.cpp(32)] nvEncodeAPI module is not found
+[1223/090026.948:WARNING:core_audio_util_win.cc(1102)] Replacing existing audio parameter with predefined version
+[1223/090027.031:INFO:core_audio_util_win.cc(891)] SetClientProperties
+[1223/090027.031:INFO:core_audio_util_win.cc(902)] SetClientProperties: AudioCategory_Communications
+[1223/090027.031:INFO:core_audio_util_win.cc(914)] SetClientProperties: supports_offload: 0
+[1223/090027.031:INFO:core_audio_util_win.cc(935)] props.Options: 1
+[1223/090027.031:WARNING:core_audio_util_win.cc(941)] IAudioClient2::SetClientProperties succeed: 0
+[1223/090027.032:INFO:audio_low_latency_input_win.cc(179)] SetClientProperties result : 0
+[1223/090027.066:INFO:audio_device_core_win.cc(148)] >> Output file: D:\Source\ExtensionVideoFilterTestDriver\ExtensionVideoFilterTestDriver\x64\Debug\strange_name_to_find_easier.pcm has been created.
+[1223/090034.047:WARNING:nv_encode_accelerator.cpp(32)] nvEncodeAPI module is not found
+[1223/090318.432:WARNING:core_audio_util_win.cc(1102)] Replacing existing audio parameter with predefined version
+[1223/090318.507:INFO:core_audio_util_win.cc(891)] SetClientProperties
+[1223/090318.507:INFO:core_audio_util_win.cc(902)] SetClientProperties: AudioCategory_Communications
+[1223/090318.507:INFO:core_audio_util_win.cc(914)] SetClientProperties: supports_offload: 0
+[1223/090318.507:INFO:core_audio_util_win.cc(935)] props.Options: 1
+[1223/090318.507:WARNING:core_audio_util_win.cc(941)] IAudioClient2::SetClientProperties succeed: 0
+[1223/090318.507:INFO:audio_low_latency_input_win.cc(179)] SetClientProperties result : 0
+[1223/090318.549:INFO:audio_device_core_win.cc(148)] >> Output file: D:\Source\ExtensionVideoFilterTestDriver\ExtensionVideoFilterTestDriver\x64\Debug\strange_name_to_find_easier.pcm has been created.
+[1223/090319.323:WARNING:nv_encode_accelerator.cpp(32)] nvEncodeAPI module is not found
+[1223/090507.352:WARNING:core_audio_util_win.cc(1102)] Replacing existing audio parameter with predefined version
+[1223/090507.432:INFO:core_audio_util_win.cc(891)] SetClientProperties
+[1223/090507.432:INFO:core_audio_util_win.cc(902)] SetClientProperties: AudioCategory_Communications
+[1223/090507.432:INFO:core_audio_util_win.cc(914)] SetClientProperties: supports_offload: 0
+[1223/090507.432:INFO:core_audio_util_win.cc(935)] props.Options: 1
+[1223/090507.432:WARNING:core_audio_util_win.cc(941)] IAudioClient2::SetClientProperties succeed: 0
+[1223/090507.432:INFO:audio_low_latency_input_win.cc(179)] SetClientProperties result : 0
+[1223/090507.470:INFO:audio_device_core_win.cc(148)] >> Output file: D:\Source\ExtensionVideoFilterTestDriver\ExtensionVideoFilterTestDriver\x64\Debug\strange_name_to_find_easier.pcm has been created.
+[1223/090508.185:WARNING:nv_encode_accelerator.cpp(32)] nvEncodeAPI module is not found
+[1223/094010.428:WARNING:core_audio_util_win.cc(1102)] Replacing existing audio parameter with predefined version
+[1223/094157.364:WARNING:nv_encode_accelerator.cpp(32)] nvEncodeAPI module is not found
+[1223/100059.633:WARNING:core_audio_util_win.cc(1102)] Replacing existing audio parameter with predefined version
+[1223/100120.645:WARNING:core_audio_util_win.cc(1102)] Replacing existing audio parameter with predefined version
+[1223/105839.100:WARNING:core_audio_util_win.cc(1102)] Replacing existing audio parameter with predefined version
+[1223/105846.479:WARNING:nv_encode_accelerator.cpp(32)] nvEncodeAPI module is not found
+[1223/111948.526:WARNING:core_audio_util_win.cc(1102)] Replacing existing audio parameter with predefined version
+[1223/112118.822:WARNING:core_audio_util_win.cc(1102)] Replacing existing audio parameter with predefined version
+[1223/112119.601:WARNING:nv_encode_accelerator.cpp(32)] nvEncodeAPI module is not found
+[1223/112348.219:WARNING:core_audio_util_win.cc(1102)] Replacing existing audio parameter with predefined version
+[1223/112354.633:WARNING:nv_encode_accelerator.cpp(32)] nvEncodeAPI module is not found
+[1223/112430.209:WARNING:core_audio_util_win.cc(1102)] Replacing existing audio parameter with predefined version
+[1223/112430.949:WARNING:nv_encode_accelerator.cpp(32)] nvEncodeAPI module is not found
+[1223/112531.837:WARNING:core_audio_util_win.cc(1102)] Replacing existing audio parameter with predefined version
+[1223/112532.614:WARNING:nv_encode_accelerator.cpp(32)] nvEncodeAPI module is not found
+[1223/112603.718:WARNING:core_audio_util_win.cc(1102)] Replacing existing audio parameter with predefined version
+[1223/112604.456:WARNING:nv_encode_accelerator.cpp(32)] nvEncodeAPI module is not found
+[1223/112718.731:WARNING:core_audio_util_win.cc(1102)] Replacing existing audio parameter with predefined version
+[1223/112723.917:WARNING:nv_encode_accelerator.cpp(32)] nvEncodeAPI module is not found
+[1223/120410.003:WARNING:core_audio_util_win.cc(1102)] Replacing existing audio parameter with predefined version
+[1223/120410.785:WARNING:nv_encode_accelerator.cpp(32)] nvEncodeAPI module is not found
+[1223/120551.927:WARNING:core_audio_util_win.cc(1102)] Replacing existing audio parameter with predefined version
+[1223/120919.143:WARNING:core_audio_util_win.cc(1102)] Replacing existing audio parameter with predefined version
+[1223/120922.722:WARNING:nv_encode_accelerator.cpp(32)] nvEncodeAPI module is not found

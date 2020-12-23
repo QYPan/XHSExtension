@@ -1,9 +1,14 @@
 // ExtensionVideoFilterTestDriver.cpp : Defines the entry point for the application.
 //
-
+#include <thread>
+#include <chrono>
 #include "framework.h"
 #include "ExtensionVideoFilterTestDriver.h"
 #include "../SampleExtensionVideoFilter/exported_functions.h"
+#include "AgoraBase.h"
+#include "IAgoraRtcEngine.h"
+#include "IAgoraRtcEngineEx.h"
+#include "EventHandler.h"
 
 #define MAX_LOADSTRING 100
 
@@ -41,17 +46,78 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EXTENSIONVIDEOFILTERTESTDRIVER));
 
-    HINSTANCE handle = LoadLibraryA("SampleExtensionVideoFilter");
-    if (handle != NULL) {
-       sample_vendor::get_provider_func getProvider = (sample_vendor::get_provider_func)GetProcAddress(handle, "GetExtensionProvider");
-       if (getProvider != NULL) {
-           auto provider = getProvider();
-           if (provider) {
-               provider->createVideoFilter("hello");
-           }
-       }
-       FreeLibrary(handle);
+    HMODULE handle = LoadLibraryA("SampleExtensionVideoFilter.dll");
+    if (handle == NULL) {
+        return -1;
     }
+    sample_vendor::get_provider_func getProvider = (sample_vendor::get_provider_func)GetProcAddress(handle, "GetExtensionProvider");
+    if (getProvider == NULL) {
+        DWORD err_code = GetLastError();
+        TCHAR* buffer = NULL;
+        ::FormatMessage(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+            NULL,
+            err_code,
+            0,
+            (LPTSTR)&buffer,
+            0,
+            NULL);
+        LocalFree(buffer);
+        return -1;
+    }
+    auto provider = getProvider();
+    if (!provider) {
+        return -1;
+    }
+
+    // initialize rtc engine
+    auto engine = static_cast<agora::rtc::IRtcEngineEx*>(createAgoraRtcEngine());
+    if (!engine) {
+        return -1;
+    }
+
+    agora::rtc::RtcEngineContextEx ctx;
+    ctx.appId = "";
+    ctx.enableAudio = true;
+    ctx.enableVideo = false;
+    ctx.extensions = new agora::rtc::Extension[1];
+    ctx.extensions[0].id = "sample_video_filter_provider";
+    ctx.extensions[0].provider = provider;
+    ctx.numExtension = 1;
+    ctx.extensionObserver = nullptr;
+    ctx.eventHandlerEx = new RtcEngineEventHandlerEx();
+
+    // initialize
+    int error = engine->initialize(ctx);
+
+    error = engine->setChannelProfile(agora::CHANNEL_PROFILE_LIVE_BROADCASTING);
+
+    // set canvas
+    agora::rtc::uid_t uid = 0;
+    /*agora::rtc::VideoCanvas vc;
+    vc.uid = uid;
+    //vc.view = m_videoViews[k].wndCamera.GetSafeHwnd();
+    vc.renderMode = agora::media::base::RENDER_MODE_TYPE::RENDER_MODE_FIT;
+    vc.mirrorMode = agora::rtc::VIDEO_MIRROR_MODE_TYPE::VIDEO_MIRROR_MODE_DISABLED;
+
+    engine->setupLocalVideo(vc);*/
+
+    // join channel
+    agora::rtc::ChannelMediaOptions op;
+    op.publishAudioTrack = false;
+    op.publishCameraTrack = true;
+    op.publishCustomVideoTrack = false;
+    op.publishScreenTrack = false;
+    op.autoSubscribeAudio = false;
+    op.autoSubscribeVideo = false;
+    op.clientRoleType = agora::rtc::CLIENT_ROLE_TYPE::CLIENT_ROLE_BROADCASTER;
+    error = engine->joinChannel(0, "testX", uid, op);
+
+    if (error) {
+        return error;
+    }
+
+    // std::this_thread::sleep_for(std::chrono::seconds(180));
 
     MSG msg;
 
@@ -65,10 +131,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
     }
 
+    engine->release();
+    delete[] ctx.extensions;
+    provider.reset();
+    FreeLibrary(handle);
     return (int) msg.wParam;
 }
-
-
 
 //
 //  FUNCTION: MyRegisterClass()
