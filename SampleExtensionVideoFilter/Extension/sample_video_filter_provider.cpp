@@ -9,6 +9,6 @@ CSampleVideoFilterProvider::CSampleVideoFilterProvider() {
 CSampleVideoFilterProvider::~CSampleVideoFilterProvider() {
 }
 
-agora::agora_refptr<agora::rtc::IVideoFilter> CSampleVideoFilterProvider::createVideoFilter(const char* id) {
-  return new agora::RefCountedObject<CSampleVideoFilter>(id, control_);
+agora::agora_refptr<agora::rtc::IVideoFilter> CSampleVideoFilterProvider::createVideoFilter() {
+  return new agora::RefCountedObject<CSampleVideoFilter>("test", control_);
 }

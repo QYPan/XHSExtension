@@ -155,8 +155,6 @@
     <ClInclude Include="Agora\include\IAgoraMediaPlayerSource.h" />
     <ClInclude Include="Agora\include\IAgoraRtcEngine.h" />
     <ClInclude Include="Agora\include\IAgoraRtcEngineEx.h" />
-    <ClInclude Include="Agora\include\NGIAgoraExtensionProvider.h" />
-    <ClInclude Include="Agora\include\NGIAgoraMediaNode.h" />
     <ClInclude Include="EventHandler.h" />
     <ClInclude Include="ExtensionVideoFilterTestDriver.h" />
     <ClInclude Include="framework.h" />

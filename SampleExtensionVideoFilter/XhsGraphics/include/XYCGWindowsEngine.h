@@ -15,7 +15,6 @@
 #endif
 
 #include "xhs_mobile_common.h"
-#include<XYBaseFilter.h>
 
 //using zs_ai::AiSystem;
 namespace CG{

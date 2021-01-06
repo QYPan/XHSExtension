@@ -63,12 +63,6 @@
     <ClInclude Include="Agora\include\IAgoraRtcEngineEx.h">
       <Filter>Agora</Filter>
     </ClInclude>
-    <ClInclude Include="Agora\include\NGIAgoraExtensionProvider.h">
-      <Filter>Agora</Filter>
-    </ClInclude>
-    <ClInclude Include="Agora\include\NGIAgoraMediaNode.h">
-      <Filter>Agora</Filter>
-    </ClInclude>
     <ClInclude Include="EventHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -4,7 +4,6 @@
 #include <chrono>
 #include "framework.h"
 #include "ExtensionVideoFilterTestDriver.h"
-#include "../SampleExtensionVideoFilter/exported_functions.h"
 #include "AgoraBase.h"
 #include "IAgoraRtcEngine.h"
 #include "IAgoraRtcEngineEx.h"
@@ -46,30 +45,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EXTENSIONVIDEOFILTERTESTDRIVER));
 
-    HMODULE handle = LoadLibraryA("SampleExtensionVideoFilter.dll");
-    if (handle == NULL) {
-        return -1;
-    }
-    sample_vendor::get_provider_func getProvider = (sample_vendor::get_provider_func)GetProcAddress(handle, "GetExtensionProvider");
-    if (getProvider == NULL) {
-        DWORD err_code = GetLastError();
-        TCHAR* buffer = NULL;
-        ::FormatMessage(
-            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-            NULL,
-            err_code,
-            0,
-            (LPTSTR)&buffer,
-            0,
-            NULL);
-        LocalFree(buffer);
-        return -1;
-    }
-    auto provider = getProvider();
-    if (!provider) {
-        return -1;
-    }
-
     // initialize rtc engine
     auto engine = static_cast<agora::rtc::IRtcEngineEx*>(createAgoraRtcEngine());
     if (!engine) {
@@ -77,14 +52,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     agora::rtc::RtcEngineContextEx ctx;
-    ctx.appId = "";
+    ctx.appId = "aab8b8f5a8cd4469a63042fcfafe7063";
     ctx.enableAudio = true;
     ctx.enableVideo = false;
     ctx.extensions = new agora::rtc::Extension[1];
     ctx.extensions[0].id = "sample_video_filter_provider";
-    ctx.extensions[0].provider = provider;
+    ctx.extensions[0].path = "SampleExtensionVideoFilter.dll";
     ctx.numExtension = 1;
-    ctx.extensionObserver = nullptr;
     ctx.eventHandlerEx = new RtcEngineEventHandlerEx();
 
     // initialize
@@ -117,7 +91,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return error;
     }
 
-    // std::this_thread::sleep_for(std::chrono::seconds(180));
+    std::this_thread::sleep_for(std::chrono::seconds(180));
 
     MSG msg;
 
@@ -133,8 +107,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     engine->release();
     delete[] ctx.extensions;
-    provider.reset();
-    FreeLibrary(handle);
     return (int) msg.wParam;
 }
 

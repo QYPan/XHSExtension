@@ -101,7 +101,7 @@ size_t CSampleVideoFilter::setProperty(const char* key, const void* buf, size_t 
             m_pBeautyEngine->setBeautyTypeIntensity(type, value);
         }
     }
-        break;
+    break;
 
     case XHS_PLUGIN_COLOR_FILTER_SWITCH:
     {

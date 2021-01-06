@@ -21,8 +21,6 @@ AGORA_API const char* AGORA_CALL getAgoraSdkVersion(int* build);
 namespace agora {
 namespace rtc {
 
-class IVideoFilter;
-
 /**
  * The maximum device ID length.
  */
@@ -319,6 +317,15 @@ struct LocalVideoStats {
 	/** The value of the sent frames, represented by an aggregate value.
 	 */
 	int encodedFrameCount;
+    /** 
+     * The packet loss rate (%) from the local client to Agora's edge server,
+     * before network countermeasures.
+     */
+    int txPacketLossRate;
+    /** 
+    * The capture Frame Rate (%) of the local camera
+    */
+    int captureFrameRate;
 	/** The codec type of the local video:
 	 * - VIDEO_CODEC_VP8 = 1: VP8.
 	 * - VIDEO_CODEC_H264 = 2: (Default) H.264.
@@ -615,6 +622,11 @@ struct ScreenCaptureConfiguration {
   ScreenCaptureConfiguration() : isCaptureWindow(false) {}
 };
 
+struct AudioTrackConfig {
+  bool enableLocalPlayback;
+  AudioTrackConfig() : enableLocalPlayback(true) {}
+};
+
 /**
  * The channel media options.
  */
@@ -728,8 +740,8 @@ struct ChannelMediaOptions {
  */
   Optional<int> audioDelayMs;
 
-  ChannelMediaOptions() = default;
-  ~ChannelMediaOptions() = default;
+  ChannelMediaOptions() {}
+  ~ChannelMediaOptions() {}
 
   void SetAll(const ChannelMediaOptions& change) {
 #define SET_FROM(X) SetFrom(&X, change.X)
@@ -1073,7 +1085,7 @@ class IRtcEngineEventHandler {
 
    This callback notifies the application that the system's video device state
    is changed.
-   
+
    @param deviceType Device type: #MEDIA_DEVICE_TYPE.
    */
   virtual void onMediaDeviceChanged(int deviceType) {
@@ -1874,7 +1886,7 @@ class IRtcEngineEventHandler {
  */
 class IVideoDeviceCollection {
  public:
-  virtual ~IVideoDeviceCollection() = default;
+  virtual ~IVideoDeviceCollection() {}
 
   /**
    * Gets the total number of the indexed video capture devices in the system.
@@ -1918,7 +1930,8 @@ class IVideoDeviceCollection {
  */
 class IVideoDeviceManager {
  public:
-  virtual ~IVideoDeviceManager() = default;
+  virtual ~IVideoDeviceManager() {}
+
   /**
    * Enumerates the video capture devices.
    *
@@ -1991,7 +2004,7 @@ class IVideoDeviceManager {
  */
 class IAudioDeviceCollection {
  public:
-  virtual ~IAudioDeviceCollection() = default;
+  virtual ~IAudioDeviceCollection() {}
 
   /**
    * Gets the total number of the playback or recording devices.
@@ -3587,7 +3600,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    */
   virtual int getAudioMixingCurrentPosition() = 0;
 
-  /** Sets the playback position of the music file to a different starting 
+  /** Sets the playback position of the music file to a different starting
    position (the default plays from the beginning).
 
    @param pos The playback starting position (ms) of the audio mixing file.
@@ -4110,7 +4123,41 @@ class IRtcEngine : public agora::base::IEngineBase {
   virtual int setExternalAudioSource(bool enabled, int sampleRate, int channels,
                                      int sourceNumber = 1, bool localPlayback = false, bool publish = true) = 0;
 
-  virtual int enableExternalAudioSourceLocalPlayback(bool enabled) = 0;
+  /**
+   * Start primary custom audio track local playback.
+   *
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int startPrimaryCustomAudioTrack(const AudioTrackConfig& config) = 0;
+
+  /**
+   * Stop primary custom audio track local playback.
+   *
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int stopPrimaryCustomAudioTrack() = 0;
+
+  /**
+   * Start secondary custom audio track local playback.
+   *
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int startSecondaryCustomAudioTrack(const AudioTrackConfig& config) = 0;
+
+  /**
+   * Stop secondary custom audio track local playback.
+   *
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int stopSecondaryCustomAudioTrack() = 0;
 
   /**
    * Sets the audio recording format for the
@@ -4233,6 +4280,26 @@ class IRtcEngine : public agora::base::IEngineBase {
   - < 0: Failure.
   */
   virtual int adjustPlaybackSignalVolume(int volume) = 0;
+
+  /*
+   * Adjust the playback volume of the user specified by uid.
+   *
+   * You can call this method to adjust the playback volume of the user specified by uid
+   * in call. If you want to adjust playback volume of the multi user, you can call this
+   * this method multi times.
+   *
+   * @note
+   * Please call this method after join channel.
+   * This method adjust the playback volume of specified user.
+   *
+   * @param uid Remote user ID。
+   * @param volume The playback volume, range is [0,100]:
+   * 0: mute, 100: The original volume
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int adjustUserPlaybackSignalVolume(unsigned int uid, int volume) = 0;
 
   /** Enables loopback recording.
 
@@ -4823,7 +4890,6 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - true: Enable the built-in encryption.
    * - false: Disable the built-in encryption.
    * @param config Configurations of built-in encryption schemas. See EncryptionConfig.
-   * @param connectionId The connection ID.
    *
    * @return
    * - 0: Success.
@@ -4832,7 +4898,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    *  - -4(ERR_NOT_SUPPORTED): The encryption mode is incorrect or the SDK fails to load the external encryption library. Check the enumeration or reload the external encryption library.
    *  - -7(ERR_NOT_INITIALIZED): The SDK is not initialized. Initialize the `IRtcEngine` instance before calling this method.
    */
-  virtual int enableEncryption(bool enabled, const EncryptionConfig& config, conn_id_t connectionId = agora::rtc::DEFAULT_CONNECTION_ID) = 0;
+  virtual int enableEncryption(bool enabled, const EncryptionConfig& config) = 0;
 
   /** Creates a data stream.
 

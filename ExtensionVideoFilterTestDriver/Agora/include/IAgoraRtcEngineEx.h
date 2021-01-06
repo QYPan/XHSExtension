@@ -8,7 +8,6 @@
 #pragma once
 
 #include <string>
-
 #include "IAgoraRtcEngine.h"
 
 namespace agora {
@@ -1061,31 +1060,6 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
 #endif  // 0
 
   // specific to this header
-  virtual void onPublishingRequestAnswered(conn_id_t connId, uid_t uid, int response, int error) {
-    (void)connId;
-    (void)uid;
-    (void)response;
-    (void)error;
-  }
-
-  virtual void onPublishingRequestReceived(conn_id_t connId, uid_t uid) {
-    (void)connId;
-    (void)uid;
-  }
-
-  virtual void onUnpublishingRequestReceived(conn_id_t connId, uid_t uid) {
-    (void)connId;
-    (void)uid;
-  }
-
-  virtual bool onEvent(RTC_EVENT evt, std::string* payload) {
-    (void)evt;
-    (void)payload;
-
-    /* return false to indicate this event is not handled */
-    return false;
-  }
-
   virtual void onAudioTransportQuality(uid_t uid, unsigned int bitrate, unsigned short delay,
                                        unsigned short lost) {
     (void)uid;
@@ -1107,14 +1081,10 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
     (void)length;
   }
 
-  virtual void onMediaEngineEvent(int evt) { (void)evt; }
-
-  virtual bool onCustomizedSei(const void** content, int* length) {
-    (void)content;
-    (void)length;
-
-    /* return false to indicate the SEI content is left to SDK to generate */
-    return false;
+  virtual void onExtensionEvent(const char* id, const char* key, const char* json_value) {
+    (void)id;
+    (void)key;
+    (void)json_value;
   }
 
 #ifdef INTERNAL_ENGINE_STATUS
@@ -1122,14 +1092,13 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
 #endif  // INTERNAL_ENGINE_STATUS
 };
 
-class IExtensionProvider;
-class IMediaExtensionObserver;
-
 struct Extension {
+  // id of extension
   const char* id;
-  agora_refptr<IExtensionProvider> provider;
+  // .so/.dll path
+  const char* path;
 
-  Extension() : id(nullptr), provider(nullptr) {}
+  Extension() : id(nullptr), path(nullptr) {}
 };
 
 struct RtcEngineContextEx {
@@ -1145,11 +1114,9 @@ struct RtcEngineContextEx {
   bool enableVideo;
   unsigned int areaCode;
 
-   // extensions, this portion of memory can only be freed after RtcEngine is released.
+  // extensions array.
   Extension* extensions;
   int numExtension;
-  // extension event observer
-  agora_refptr<IMediaExtensionObserver> extensionObserver;
 
   RtcEngineContextEx()
       : eventHandlerEx(NULL)
@@ -1159,8 +1126,7 @@ struct RtcEngineContextEx {
       , enableVideo(false)
       , areaCode(AREA_CODE_GLOBAL)
       , extensions(nullptr)
-      , numExtension(0)
-      , extensionObserver(nullptr) {}
+      , numExtension(0) {}
 };
 
 class IRtcEngineEx : public IRtcEngine {

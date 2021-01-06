@@ -40,17 +40,21 @@ class IExtensionProvider : public RefCountInterface {
     return UNKNOWN;
   }
 
+  virtual size_t getProviderId(char* id, size_t size) {
+    return 0;
+  }
+
   virtual void setExtensionControl(IExtensionControl* control) {}
 
-  virtual agora_refptr<IAudioFilter> createAudioFilter(const char* id) {
+  virtual agora_refptr<IAudioFilter> createAudioFilter() {
     return NULL;
   }
 
-  virtual agora_refptr<IVideoFilter> createVideoFilter(const char* id) {
+  virtual agora_refptr<IVideoFilter> createVideoFilter() {
     return NULL;
   }
 
-  virtual agora_refptr<IVideoSinkBase> createVideoSink(const char* id) {
+  virtual agora_refptr<IVideoSinkBase> createVideoSink() {
     return NULL;
   }
 

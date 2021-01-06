@@ -14,9 +14,9 @@ class CSampleVideoFilterProvider : public agora::rtc::IExtensionProvider {
   agora::rtc::IExtensionProvider::PROVIDER_TYPE getProviderType() override {
       return agora::rtc::IExtensionProvider::LOCAL_VIDEO_FILTER;
   }
-  agora::agora_refptr<agora::rtc::IAudioFilter> createAudioFilter(const char* id) override {return nullptr;};
-  agora::agora_refptr<agora::rtc::IVideoFilter> createVideoFilter(const char* id) override;
-  agora::agora_refptr<agora::rtc::IVideoSinkBase> createVideoSink(const char* id) override {return nullptr;};
+  agora::agora_refptr<agora::rtc::IAudioFilter> createAudioFilter() override {return nullptr;};
+  agora::agora_refptr<agora::rtc::IVideoFilter> createVideoFilter() override;
+  agora::agora_refptr<agora::rtc::IVideoSinkBase> createVideoSink() override {return nullptr;};
  
  private:
   agora::rtc::IExtensionControl* control_;

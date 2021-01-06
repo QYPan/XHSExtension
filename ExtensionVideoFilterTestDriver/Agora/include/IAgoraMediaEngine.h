@@ -93,6 +93,32 @@ class IMediaEngine {
                              int connectionId = agora::rtc::DEFAULT_CONNECTION_ID) {
     return -1;
   }
+
+  /**
+   * Push the external audio data to the primary audio source.
+   *
+   * @param frame The audio buffer data.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int pushPrimaryAudioFrame(IAudioFrameObserver::AudioFrame* frame) {
+    return -1;
+  }
+
+  /**
+   * Push the external audio data to the secondary audio source.
+   *
+   * @param frame The audio buffer data.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int pushSecondaryAudioFrame(IAudioFrameObserver::AudioFrame* frame) {
+    return -1;
+  }
+
+
   /**
    * Pulls the remote audio data.
    *
