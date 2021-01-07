@@ -42,6 +42,10 @@ class CSampleVideoFilter : public agora::rtc::IVideoFilter {
   CSampleVideoFilter(const char* id, agora::rtc::IExtensionControl* core);
   ~CSampleVideoFilter();
 
+  bool onDataStreamWillStart() override;
+
+  void onDataStreamWillStop() override;
+
   void setEnabled(bool enable) override {
     enabled_ = enable;
   }

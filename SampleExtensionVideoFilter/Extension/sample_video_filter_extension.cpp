@@ -21,6 +21,14 @@ CSampleVideoFilter::~CSampleVideoFilter() {
     }
 }
 
+bool CSampleVideoFilter::onDataStreamWillStart() {
+    return true;
+}
+
+void CSampleVideoFilter::onDataStreamWillStop() {
+    return;
+}
+
 void initCommandDict() {
     std::pair<std::string, xhs_Command_type> pairs[XHS_PLUGIN_COMMAND_COUNT] = {
         std::pair<std::string, xhs_Command_type>(ENUM_TO_STR(XHS_PLUGIN_COMMAND_INVALID),      XHS_PLUGIN_COMMAND_INVALID),
@@ -58,8 +66,8 @@ bool CSampleVideoFilter::adaptVideoFrame(const agora::media::base::VideoFrame& c
         // temp load ai here
         result = m_pBeautyEngine->loadAIModel("slim-320.face_kpt_v2.mouth.eyebrow.bin");
         // temp load image here
-        m_pBeautyEngine->setBeautyResourcePath("Beauty_Res");
-        m_pBeautyEngine->setFilterResourcePath("vsco6");
+        result = m_pBeautyEngine->setBeautyResourcePath("Beauty_Res");
+        result = m_pBeautyEngine->setFilterResourcePath("vsco6");
         init_ = true;
     }
     m_pBeautyEngine->processYUV(capturedFrame.yBuffer, capturedFrame.uBuffer, capturedFrame.vBuffer,capturedFrame.width, capturedFrame.height);
@@ -71,7 +79,6 @@ bool CSampleVideoFilter::adaptVideoFrame(const agora::media::base::VideoFrame& c
     }
     return true;
 }
-
 
 size_t CSampleVideoFilter::setProperty(const char* key, const void* buf, size_t buf_size) {
     auto type = m_xhs_command_dict[key];

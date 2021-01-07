@@ -57,6 +57,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     ctx.enableVideo = false;
     ctx.extensions = new agora::rtc::Extension[1];
     ctx.extensions[0].id = "sample_video_filter_provider";
+    // ctx.extensions[0].path = ".\\extensions\\xhs\\SampleExtensionVideoFilter.dll";
     ctx.extensions[0].path = "SampleExtensionVideoFilter.dll";
     ctx.numExtension = 1;
     ctx.eventHandlerEx = new RtcEngineEventHandlerEx();
