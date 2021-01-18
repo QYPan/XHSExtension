@@ -16,6 +16,9 @@
     <Filter Include="Agora">
       <UniqueIdentifier>{b3df4f16-3b72-4ee3-ac6a-a49cc4f2d1b4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="third_party">
+      <UniqueIdentifier>{7a612cb8-943b-4199-9023-014bcb45f8b2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -65,6 +68,9 @@
     </ClInclude>
     <ClInclude Include="EventHandler.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\json.hpp">
+      <Filter>third_party</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

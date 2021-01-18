@@ -19,6 +19,9 @@
     <Filter Include="Extension">
       <UniqueIdentifier>{40fc6018-66ff-454a-bc6a-a0f63bb077f3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="third_party">
+      <UniqueIdentifier>{ba988e48-ebe8-4627-82e4-d9119171a3ca}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -65,6 +68,9 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\json.hpp">
+      <Filter>third_party</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -90,7 +90,9 @@ size_t CSampleVideoFilter::setProperty(const char* key, const void* buf, size_t 
     {
     case XHS_PLUGIN_BEAUTY_FILTER_SWITCH:
     {
-        bool value = *(bool*)buf;
+        bool value = false;
+        nlohmann::json j = nlohmann::json::parse((char*)buf);
+        j.get_to(value);
         m_pBeautyEngine->enableBeauty(value);
     }
         break;
@@ -98,56 +100,54 @@ size_t CSampleVideoFilter::setProperty(const char* key, const void* buf, size_t 
     case XHS_PLUGIN_BEAUTY_TYPE: 
     {
         assert(buf_size == sizeof(BeautyFilterAid));
-        BeautyFilterAid* aid = (BeautyFilterAid*)buf;
-        auto type = aid->_type;
-        auto turn = aid->_switch;
-        auto value = aid->_beauty_type_intensity;
-        m_pBeautyEngine->enableBeautyType(type, turn);
-        if (turn)
+        BeautyFilterAid aid;
+        aid.from_json(std::string{(char*)buf});
+        m_pBeautyEngine->enableBeautyType(aid._type, aid._switch);
+        if (aid._switch)
         {
-            m_pBeautyEngine->setBeautyTypeIntensity(type, value);
+            m_pBeautyEngine->setBeautyTypeIntensity(aid._type, aid._beauty_type_intensity);
         }
     }
     break;
 
     case XHS_PLUGIN_COLOR_FILTER_SWITCH:
     {
-        bool value = *(bool*)buf;
+        bool value = false;
+        nlohmann::json j = nlohmann::json::parse((char*)buf);
+        j.get_to(value);
         m_pBeautyEngine->enableColorfulAdjustment(value);
     }
-        break;
+    break;
 
     case XHS_PLUGIN_COLOR_TYPE:
     {
-        assert(buf_size == sizeof(ColorFilterAid));
-        ColorFilterAid* aid     = (ColorFilterAid*)buf;
-        xhs_colorful_type type  = aid->_type;
-        float value             = aid->_color_intensity;
-        m_pBeautyEngine->setColorfulTypeIntensity(type, value);
+        ColorFilterAid aid;
+        aid.from_json(std::string{ (char*)buf });
+        m_pBeautyEngine->setColorfulTypeIntensity(aid._type, aid._color_intensity);
     }
         break;
 
     case XHS_PLUGIN_LUT_FILTER_SWITCH:
     {
-        bool value = *(bool*)buf;
+        bool value = false;
+        nlohmann::json j = nlohmann::json::parse((char*)buf);
+        j.get_to(value);
         m_pBeautyEngine->enableFilter(value);
     }
         break;
 
     case XHS_PLUGIN_LUT_FILTER_TYPE:
     {
-        assert(buf_size == sizeof(LutFilterAid));
-        LutFilterAid* aid = (LutFilterAid*)buf;
+        LutFilterAid aid;
+        aid.from_json(std::string{ (char*)buf });
 
-        if (aid->_subPath == nullptr) {
-            printf("invalid path for lut: %s\n", aid->_subPath);
+        if (aid._subPath.empty()) {
+            printf("invalid path for lut: %s\n", aid._subPath);
             return -1;
         }
 
-        std::string subPath = aid->_subPath;
-        float value         = aid->_lut_intensity;
-        m_pBeautyEngine->setFilterResourcePath(subPath.c_str());
-        m_pBeautyEngine->setFilterIntensity(value);
+        m_pBeautyEngine->setFilterResourcePath(aid._subPath.c_str());
+        m_pBeautyEngine->setFilterIntensity(aid._lut_intensity);
     }
 
     case XHS_PLUGIN_COMMAND_INVALID:
