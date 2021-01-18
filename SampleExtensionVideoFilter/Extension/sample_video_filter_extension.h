@@ -139,9 +139,12 @@ class CSampleVideoFilter : public agora::rtc::IVideoFilter {
   bool enabled_;
   std::string id_;
   agora::rtc::IExtensionControl* core_;
-  CG::XYCGWindowsEngine* m_pBeautyEngine;
   bool init_;
   int frameCount_ = 0;
 
-  
+  CG::XYCGWindowsEngine* m_pBeautyEngine = nullptr;
+  std::string m_licensePath = "";
+  std::string m_aiModelPath = "slim-320.face_kpt_v2.mouth.eyebrow.bin";
+  std::string m_beautyResPath = "Beauty_Res";
+
 };

@@ -22,10 +22,40 @@ CSampleVideoFilter::~CSampleVideoFilter() {
 }
 
 bool CSampleVideoFilter::onDataStreamWillStart() {
+    if (!init_)
+    {
+        initCommandDict();
+
+        m_pBeautyEngine = new CG::XYCGWindowsEngine();
+        int result = m_pBeautyEngine->initWindowsEngine();
+        if (result != 0)
+        {
+            printf("Beauty engine init failed. Error code:%d\n", result);
+            m_pBeautyEngine->destroyWindowsEngine();
+            delete m_pBeautyEngine;
+            m_pBeautyEngine = nullptr;
+        }
+
+        // temp load ai here
+        result = m_pBeautyEngine->loadAIModel(m_aiModelPath.c_str());
+        // temp load beauty image here
+        result = m_pBeautyEngine->setBeautyResourcePath(m_beautyResPath.c_str());
+        //result = m_pBeautyEngine->setFilterResourcePath(m_lutResPath.c_str());
+        init_ = true;
+    }
     return true;
 }
 
 void CSampleVideoFilter::onDataStreamWillStop() {
+    if (init_)
+    {
+        if (m_pBeautyEngine != nullptr) {
+            int result = m_pBeautyEngine->destroyWindowsEngine();
+            delete m_pBeautyEngine;
+            m_pBeautyEngine = nullptr;
+            init_ = false;
+        }
+    }
     return;
 }
 
@@ -46,30 +76,7 @@ void initCommandDict() {
 bool CSampleVideoFilter::adaptVideoFrame(const agora::media::base::VideoFrame& capturedFrame,
     agora::media::base::VideoFrame& adaptedFrame) {
     
-    if (!init_)
-    {
-        initCommandDict();
-
-        const char* key = "XHS_PLUGIN_BEAUTY_FILTER_SWITCH";
-        xhs_Command_type type_ = getKeyCommandType(key);
-
-        m_pBeautyEngine = new CG::XYCGWindowsEngine();
-        int result = m_pBeautyEngine->initWindowsEngine();
-        if (result != 0)
-        {
-            printf("Beauty engine init failed. Error code:%d\n", result);
-            m_pBeautyEngine->destroyWindowsEngine();
-            delete m_pBeautyEngine;
-            m_pBeautyEngine = nullptr;
-        }
-
-        // temp load ai here
-        result = m_pBeautyEngine->loadAIModel("slim-320.face_kpt_v2.mouth.eyebrow.bin");
-        // temp load image here
-        result = m_pBeautyEngine->setBeautyResourcePath("Beauty_Res");
-        result = m_pBeautyEngine->setFilterResourcePath("vsco6");
-        init_ = true;
-    }
+    
     m_pBeautyEngine->processYUV(capturedFrame.yBuffer, capturedFrame.uBuffer, capturedFrame.vBuffer,capturedFrame.width, capturedFrame.height);
     adaptedFrame = capturedFrame;
     m_pBeautyEngine->getOutputYUVData(adaptedFrame.yBuffer, adaptedFrame.uBuffer, adaptedFrame.vBuffer);
@@ -81,7 +88,14 @@ bool CSampleVideoFilter::adaptVideoFrame(const agora::media::base::VideoFrame& c
 }
 
 size_t CSampleVideoFilter::setProperty(const char* key, const void* buf, size_t buf_size) {
-    auto type = m_xhs_command_dict[key];
+    //auto type = m_xhs_command_dict[key];
+    auto it = m_xhs_command_dict.find(key);
+    if (it == m_xhs_command_dict.end())
+    {
+        printf("invalid command key: %s\n", key);
+        return -1;
+    }
+    auto type = it->second;
     if (m_pBeautyEngine == nullptr || buf == nullptr)
     {
         return -1;
