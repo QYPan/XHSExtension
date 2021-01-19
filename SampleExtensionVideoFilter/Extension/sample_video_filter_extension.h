@@ -56,15 +56,15 @@ struct BeautyFilterAid {
     float           _beauty_type_intensity = 0.0f;
 
     std::string to_json() {
-        nlohmann::json j = nlohmann::json{ {"type", _type}, {"switch", _switch}, {"beauty_type_intensity", _beauty_type_intensity} };
+        nlohmann::json j = nlohmann::json{ {"_type", _type}, {"_switch", _switch}, {"_beauty_type_intensity", _beauty_type_intensity} };
         return j.dump();
     }
 
     void from_json(std::string s) {
         auto j = nlohmann::json::parse(s);
-        j.at("type").get_to(_type);
-        j.at("switch").get_to(_switch);
-        j.at("beauty_type_intensity").get_to(_beauty_type_intensity);
+        j.at("_type").get_to(_type);
+        j.at("_switch").get_to(_switch);
+        j.at("_beauty_type_intensity").get_to(_beauty_type_intensity);
     }
 };
 
@@ -82,15 +82,15 @@ struct ColorFilterAid {
     float               _color_intensity = 0.0f;
 
     std::string to_json() {
-        nlohmann::json j = nlohmann::json{ {"type", _type}, {"switch", _switch}, {"color_intensity", _color_intensity} };
+        nlohmann::json j = nlohmann::json{ {"_type", _type}, {"_switch", _switch}, {"_color_intensity", _color_intensity} };
         return j.dump();
     }
 
     void from_json(std::string s) {
         auto j = nlohmann::json::parse(s);
-        j.at("type").get_to(_type);
-        j.at("switch").get_to(_switch);
-        j.at("color_intensity").get_to(_color_intensity);
+        j.at("_type").get_to(_type);
+        j.at("_switch").get_to(_switch);
+        j.at("_color_intensity").get_to(_color_intensity);
     }
 };
 
@@ -99,14 +99,14 @@ struct LutFilterAid {
     float       _lut_intensity = 0.0f;
 
     std::string to_json() {
-        nlohmann::json j = nlohmann::json{ {"sub_path", _subPath}, {"lut_intensity", _lut_intensity} };
+        nlohmann::json j = nlohmann::json{ {"_subPath", _subPath}, {"_lut_intensity", _lut_intensity} };
         return j.dump();
     }
 
     void from_json(std::string s) {
         auto j = nlohmann::json::parse(s);
-        j.at("sub_path").get_to(_subPath);
-        j.at("lut_intensity").get_to(_lut_intensity);
+        j.at("_subPath").get_to(_subPath);
+        j.at("_lut_intensity").get_to(_lut_intensity);
     }
 };
 
@@ -151,7 +151,7 @@ class CSampleVideoFilter : public agora::rtc::IVideoFilter {
   bool adaptVideoFrame(const agora::media::base::VideoFrame& capturedFrame,
                                agora::media::base::VideoFrame& adaptedFrame) override;
 
-  void setPath(const ResPathAid& aid);
+  void setResPath(const ResPathAid& aid);
 
  private:
   bool enabled_;
