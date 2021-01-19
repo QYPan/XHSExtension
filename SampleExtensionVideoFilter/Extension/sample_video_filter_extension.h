@@ -111,6 +111,24 @@ struct LutFilterAid {
 };
 
 
+struct ResPathAid {
+    std::string _licensePath = "";
+    std::string _aiModelPath = "";
+    std::string _beautyResPath = "";
+
+    std::string to_json() {
+        nlohmann::json j = nlohmann::json{ {"_licensePath", _licensePath}, {"_aiModelPath", _aiModelPath}, {"_beautyResPath", _beautyResPath} };
+        return j.dump();
+    }
+
+    void from_json(std::string s) {
+        auto j = nlohmann::json::parse(s);
+        j.at("_licensePath").get_to(_licensePath);
+        j.at("_aiModelPath").get_to(_aiModelPath);
+        j.at("_beautyResPath").get_to(_beautyResPath);
+    }
+};
+
 class CSampleVideoFilter : public agora::rtc::IVideoFilter {
  public:
   CSampleVideoFilter(const char* id, agora::rtc::IExtensionControl* core);
@@ -133,7 +151,7 @@ class CSampleVideoFilter : public agora::rtc::IVideoFilter {
   bool adaptVideoFrame(const agora::media::base::VideoFrame& capturedFrame,
                                agora::media::base::VideoFrame& adaptedFrame) override;
 
-
+  void setPath(const ResPathAid& aid);
 
  private:
   bool enabled_;

@@ -92,7 +92,7 @@ size_t CSampleVideoFilter::setProperty(const char* key, const void* buf, size_t 
     auto it = m_xhs_command_dict.find(key);
     if (it == m_xhs_command_dict.end())
     {
-        printf("invalid command key: %s\n", key);
+        printf("invalid xhs command key: %s\n", key);
         return -1;
     }
     auto type = it->second;
@@ -171,6 +171,28 @@ size_t CSampleVideoFilter::setProperty(const char* key, const void* buf, size_t 
         break;
     }
   return -1;
+}
+
+void CSampleVideoFilter::setResPath(const ResPathAid& aid)
+{
+    if (aid._licensePath == "") {
+        printf("warning: xhs beauty_filter_engine license path is empty.\n");
+    } else {
+        m_licensePath = aid._licensePath;
+    }
+
+    if (aid._aiModelPath == ""){
+        printf("warning: xhs beauty_filter_engine Ai_Model path is empty.\n");
+    } else {
+        m_aiModelPath = aid._aiModelPath;
+    }
+
+    if (aid._beautyResPath == "") {
+        printf("warning: xhs beauty_filter_engine beauty_Res path is empty.\n");
+    } else {
+        m_beautyResPath = aid._beautyResPath;
+    }
+
 }
 
 xhs_Command_type getKeyCommandType(const char* key) {
