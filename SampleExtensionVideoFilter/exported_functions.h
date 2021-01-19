@@ -10,5 +10,5 @@
 
 namespace sample_vendor {
   typedef agora::agora_refptr<agora::rtc::IExtensionProvider>(__stdcall* get_provider_func)();
-  agora::agora_refptr<agora::rtc::IExtensionProvider> __stdcall GetExtensionProvider();
+  agora::agora_refptr<agora::rtc::IExtensionProvider> __stdcall GetExtensionProvider(const void* filterResAidJson);
 }

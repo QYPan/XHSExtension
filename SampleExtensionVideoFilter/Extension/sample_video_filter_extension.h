@@ -111,19 +111,21 @@ struct LutFilterAid {
 };
 
 
-struct ResPathAid {
-    std::string _licensePath = "";
+struct EngineInitParamsAid {
+    std::string _license = "";
+    std::string _userId = "";
     std::string _aiModelPath = "";
     std::string _beautyResPath = "";
 
     std::string to_json() {
-        nlohmann::json j = nlohmann::json{ {"_licensePath", _licensePath}, {"_aiModelPath", _aiModelPath}, {"_beautyResPath", _beautyResPath} };
+        nlohmann::json j = nlohmann::json{ {"_license", _license}, {"_userId", _userId}, {"_aiModelPath", _aiModelPath}, {"_beautyResPath", _beautyResPath} };
         return j.dump();
     }
 
     void from_json(std::string s) {
         auto j = nlohmann::json::parse(s);
-        j.at("_licensePath").get_to(_licensePath);
+        j.at("_license").get_to(_license);
+        j.at("_userId").get_to(_userId);
         j.at("_aiModelPath").get_to(_aiModelPath);
         j.at("_beautyResPath").get_to(_beautyResPath);
     }
@@ -151,7 +153,7 @@ class CSampleVideoFilter : public agora::rtc::IVideoFilter {
   bool adaptVideoFrame(const agora::media::base::VideoFrame& capturedFrame,
                                agora::media::base::VideoFrame& adaptedFrame) override;
 
-  void setResPath(const ResPathAid& aid);
+  void setEngineInitParams(const EngineInitParamsAid& aid);
 
  private:
   bool enabled_;
@@ -161,7 +163,8 @@ class CSampleVideoFilter : public agora::rtc::IVideoFilter {
   int frameCount_ = 0;
 
   CG::XYCGWindowsEngine* m_pBeautyEngine = nullptr;
-  std::string m_licensePath = "";
+  std::string m_license = "";
+  std::string m_userId = "";
   std::string m_aiModelPath = "slim-320.face_kpt_v2.mouth.eyebrow.bin";
   std::string m_beautyResPath = "Beauty_Res";
 

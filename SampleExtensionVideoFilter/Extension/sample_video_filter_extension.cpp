@@ -173,12 +173,19 @@ size_t CSampleVideoFilter::setProperty(const char* key, const void* buf, size_t 
   return -1;
 }
 
-void CSampleVideoFilter::setResPath(const ResPathAid& aid)
+void CSampleVideoFilter::setEngineInitParams(const EngineInitParamsAid& aid)
 {
-    if (aid._licensePath == "") {
+    if (aid._license == "") {
         printf("warning: xhs beauty_filter_engine license path is empty.\n");
     } else {
-        m_licensePath = aid._licensePath;
+        m_license = aid._license;
+    }
+
+    if (aid._userId == "") {
+        printf("warning: xhs beauty_filter_engine userId is empty.\n");
+    }
+    else {
+        m_userId = aid._userId;
     }
 
     if (aid._aiModelPath == ""){
