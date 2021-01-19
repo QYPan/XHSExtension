@@ -28,6 +28,13 @@ bool CSampleVideoFilter::onDataStreamWillStart() {
 
         m_pBeautyEngine = new CG::XYCGWindowsEngine();
         int result = m_pBeautyEngine->initWindowsEngine();
+        char resultStr[10];
+        sprintf_s(resultStr, "%d", result);
+        if (core_) {
+            core_->log(agora::commons::LOG_LEVEL::LOG_LEVEL_INFO, "init xhs_filter_engine");
+            core_->fireEvent(id_.c_str(), "INIT_XHS_FILTER_ENGINE", resultStr);
+        }
+
         if (result != 0)
         {
             printf("Beauty engine init failed. Error code:%d\n", result);
