@@ -163,15 +163,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Agora\AgoraBase.h" />
-    <ClInclude Include="Agora\AgoraMediaBase.h" />
-    <ClInclude Include="Agora\AgoraRefPtr.h" />
-    <ClInclude Include="Agora\IAgoraLog.h" />
-    <ClInclude Include="Agora\IAgoraParameter.h" />
-    <ClInclude Include="Agora\NGIAgoraExtensionControl.h" />
-    <ClInclude Include="Agora\NGIAgoraExtensionProvider.h" />
-    <ClInclude Include="Agora\NGIAgoraMediaNode.h" />
-    <ClInclude Include="Agora\NGIAgoraVideoFrame.h" />
     <ClInclude Include="exported_functions.h" />
     <ClInclude Include="Extension\data_types.h" />
     <ClInclude Include="Extension\face_beauty_extension_provider.h" />
