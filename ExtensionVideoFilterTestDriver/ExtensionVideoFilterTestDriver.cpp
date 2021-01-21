@@ -65,8 +65,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     std::string path{ szFullPath };
     auto pos = path.find_last_of('\\');
     path = path.replace(pos, path.length() - pos, "");
-    path += "/extensions/xhs/XHSFaceBeautyExtension.dll";
-    ctx.extensions[0].path = path.c_str();
+    std::string dll_path = path + "/extensions/xhs/XHSFaceBeautyExtension.dll";
+    ctx.extensions[0].path = dll_path.c_str();
+    EngineInitParamsAid config;
+    config._license = path + "/extensions/xhs";
+    config._userId = "test-driver";
+    config._aiModelPath = path + "/extensions/xhs/slim-320.face_kpt_v2.mouth.eyebrow.bin";
+    config._beautyResPath = path + "/extensions/xhs/Beauty_Res";
+    std::string config_json = config.to_json();
+    ctx.extensions[0].config =  config_json.c_str();
     ctx.numExtension = 1;
     ctx.eventHandlerEx = new RtcEngineEventHandlerEx();
 

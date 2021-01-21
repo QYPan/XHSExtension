@@ -7,10 +7,8 @@
 static std::map<std::string, xhs_Command_type> m_xhs_command_dict;
 static void initCommandDict();
 
-CFaceBeautyVideoFilter::CFaceBeautyVideoFilter(const char* id, agora::rtc::IExtensionControl* core)
-  : enabled_(true), id_(id), core_(core), init_(false) {
-  
-
+CFaceBeautyVideoFilter::CFaceBeautyVideoFilter(const char* id, const EngineInitParamsAid& config, agora::rtc::IExtensionControl* core)
+  : enabled_(true), id_(id), config_(config), core_(core), init_(false) {
 }
 
 CFaceBeautyVideoFilter::~CFaceBeautyVideoFilter() {
@@ -45,9 +43,9 @@ bool CFaceBeautyVideoFilter::onDataStreamWillStart() {
         }
 
         // temp load ai here
-        result = m_pBeautyEngine->loadAIModel(m_aiModelPath.c_str());
+        result = m_pBeautyEngine->loadAIModel(config_._aiModelPath.c_str());
         // temp load beauty image here
-        result = m_pBeautyEngine->setBeautyResourcePath(m_beautyResPath.c_str());
+        result = m_pBeautyEngine->setBeautyResourcePath(config_._beautyResPath.c_str());
         //result = m_pBeautyEngine->setFilterResourcePath(m_lutResPath.c_str());
         init_ = true;
     }
@@ -174,35 +172,6 @@ size_t CFaceBeautyVideoFilter::setProperty(const char* key, const void* buf, siz
         break;
     }
   return -1;
-}
-
-void CFaceBeautyVideoFilter::setEngineInitParams(const EngineInitParamsAid& aid)
-{
-    if (aid._license == "") {
-        printf("warning: xhs beauty_filter_engine license path is empty.\n");
-    } else {
-        m_license = aid._license;
-    }
-
-    if (aid._userId == "") {
-        printf("warning: xhs beauty_filter_engine userId is empty.\n");
-    }
-    else {
-        m_userId = aid._userId;
-    }
-
-    if (aid._aiModelPath == ""){
-        printf("warning: xhs beauty_filter_engine Ai_Model path is empty.\n");
-    } else {
-        m_aiModelPath = aid._aiModelPath;
-    }
-
-    if (aid._beautyResPath == "") {
-        printf("warning: xhs beauty_filter_engine beauty_Res path is empty.\n");
-    } else {
-        m_beautyResPath = aid._beautyResPath;
-    }
-
 }
 
 xhs_Command_type getKeyCommandType(const char* key) {

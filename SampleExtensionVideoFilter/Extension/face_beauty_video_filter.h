@@ -7,7 +7,7 @@
 
 class CFaceBeautyVideoFilter : public agora::rtc::IVideoFilter {
  public:
-  CFaceBeautyVideoFilter(const char* id, agora::rtc::IExtensionControl* core);
+  CFaceBeautyVideoFilter(const char* id, const EngineInitParamsAid& config, agora::rtc::IExtensionControl* core);
   ~CFaceBeautyVideoFilter();
 
   bool onDataStreamWillStart() override;
@@ -27,8 +27,6 @@ class CFaceBeautyVideoFilter : public agora::rtc::IVideoFilter {
   bool adaptVideoFrame(const agora::media::base::VideoFrame& capturedFrame,
                                agora::media::base::VideoFrame& adaptedFrame) override;
 
-  void setEngineInitParams(const EngineInitParamsAid& aid);
-
  private:
   bool enabled_;
   std::string id_;
@@ -37,9 +35,5 @@ class CFaceBeautyVideoFilter : public agora::rtc::IVideoFilter {
   int frameCount_ = 0;
 
   CG::XYCGWindowsEngine* m_pBeautyEngine = nullptr;
-  std::string m_license = "";
-  std::string m_userId = "";
-  std::string m_aiModelPath = "slim-320.face_kpt_v2.mouth.eyebrow.bin";
-  std::string m_beautyResPath = "Beauty_Res";
-
+  const EngineInitParamsAid config_;
 };

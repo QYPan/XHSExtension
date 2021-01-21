@@ -21,4 +21,5 @@ class CFaceBeautyVideoFilterProvider : public agora::rtc::IExtensionProvider {
  
  private:
   agora::rtc::IExtensionControl* control_;
+  EngineInitParamsAid config_;
 };

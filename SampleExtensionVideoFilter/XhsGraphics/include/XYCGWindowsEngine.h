@@ -5,7 +5,7 @@
 #include<Windows.h>
 #include<glad.h>
 
-//#define USE_CV_DEBUG
+#define USE_CV_DEBUG
 //#define USE_TIME_DEBUG
 
 #ifdef APIEXPORT
@@ -175,5 +175,6 @@ private:
 	void* m_outputData = nullptr;
 	xhs_handle_t m_filterEngineHandle = nullptr;
 	XYFilterRoiParam m_roi = {0};
+	bool m_licenseValid = true;
 };
 };
