@@ -2,14 +2,17 @@
 #define EXPORT_DLL 1
 #include "AgoraRefCountedObject.h"
 #include "exported_functions.h"
-#include "../Extension/sample_video_filter_provider.h"
+#include "Extension/face_beauty_extension_provider.h"
+#include "Extension/data_types.h"
 
-namespace sample_vendor {
-agora::agora_refptr<agora::rtc::IExtensionProvider> __stdcall GetExtensionProvider(const void* engineInitParamsJson) {
-    //setEngineInitParams aid;
-    //aid.fromJson(engineInitParamsJson);
-    //void CSampleVideoFilter::setResPath(aid) // call this fun here or global variable?
-    return new agora::RefCountedObject<CSampleVideoFilterProvider>();
+namespace vendor_xhs {
+agora::agora_refptr<agora::rtc::IExtensionProvider> __stdcall GetExtensionProvider(const char* engineInitParamsJson) {
+    EngineInitParamsAid aid;
+    if (engineInitParamsJson && *engineInitParamsJson) {
+        aid.from_json(engineInitParamsJson);
+    }
+
+    return new agora::RefCountedObject<CFaceBeautyVideoFilterProvider>(aid);
 }
 }
 

@@ -90,9 +90,7 @@ class IMediaEngine {
    */
   virtual int pushAudioFrame(MEDIA_SOURCE_TYPE type, IAudioFrameObserver::AudioFrame* frame,
                              bool wrap = false, int sourceId = 0,
-                             int connectionId = agora::rtc::DEFAULT_CONNECTION_ID) {
-    return -1;
-  }
+                             int connectionId = agora::rtc::DEFAULT_CONNECTION_ID) = 0;
 
   /**
    * Push the external audio data to the primary audio source.
@@ -102,9 +100,7 @@ class IMediaEngine {
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int pushPrimaryAudioFrame(IAudioFrameObserver::AudioFrame* frame) {
-    return -1;
-  }
+  virtual int pushPrimaryAudioFrame(IAudioFrameObserver::AudioFrame* frame) = 0;
 
   /**
    * Push the external audio data to the secondary audio source.
@@ -114,10 +110,7 @@ class IMediaEngine {
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int pushSecondaryAudioFrame(IAudioFrameObserver::AudioFrame* frame) {
-    return -1;
-  }
-
+  virtual int pushSecondaryAudioFrame(IAudioFrameObserver::AudioFrame* frame) = 0;
 
   /**
    * Pulls the remote audio data.

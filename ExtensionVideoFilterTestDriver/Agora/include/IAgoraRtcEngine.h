@@ -62,24 +62,6 @@ enum MEDIA_DEVICE_TYPE {
 };
 
 /**
- * The audio recording quality type.
- */
-enum AUDIO_RECORDING_QUALITY_TYPE {
-  /**
-   * 0: Low audio recording quality.
-   */
-  AUDIO_RECORDING_QUALITY_LOW = 0,
-  /**
-   * 1: Medium audio recording quality.
-   */
-  AUDIO_RECORDING_QUALITY_MEDIUM = 1,
-  /**
-   * 2: High audio recording quality.
-   */
-  AUDIO_RECORDING_QUALITY_HIGH = 2,
-};
-
-/**
  The states of the local user's audio mixing file.
  */
 enum AUDIO_MIXING_STATE_TYPE {
@@ -1879,6 +1861,14 @@ class IRtcEngineEventHandler {
   virtual void onEncryptionError(ENCRYPTION_ERROR_TYPE errorType) {
     (void)errorType;
   }
+
+  /** Reports the permission error type related device.
+
+  @param type See #PERMISSION_TYPE.
+   */
+  virtual void onPermissionError(PERMISSION_TYPE permissionType) {
+    (void)permissionType;
+  }
 };
 
 /**
@@ -2434,18 +2424,18 @@ struct RtcEngineContext {
    */
   unsigned int areaCode;
 
-  /*
-   * The log dir.
+  /**
+   * The config for custumer set log path, log size and log level
    */
-  const char* logDir;
+  commons::LogConfig logConfig;
 
   RtcEngineContext()
       : eventHandler(NULL), eventHandlerEx(NULL), appId(NULL), context(NULL),
         enableAudio(true), enableVideo(false),
         channelProfile(CHANNEL_PROFILE_LIVE_BROADCASTING),
-        audioScenario(AUDIO_SCENARIO_DEFAULT),
+        audioScenario(AUDIO_SCENARIO_HIGH_DEFINITION),
         areaCode(AREA_CODE_GLOBAL),
-        logDir(NULL) {}
+        logConfig() {}
 };
 
 /** Definition of IMetadataObserver
@@ -3041,26 +3031,6 @@ class IRtcEngine : public agora::base::IEngineBase {
   virtual int disableAudio() = 0;
 
   /**
-   * Sets the audio parameters and application scenarios.
-   * @deprecated From v2.7.1_fury. Scenario is set in initialize(const RtcEngineContext& context),
-   * Setting audio profile using setAudioProfile(int profile).
-   *
-   * @note
-   * - Call this method before calling the \ref joinChannel "joinChannel" method.
-   * - In scenarios requiring high-quality audio, we recommend setting `profile` as `MUSIC_HIGH_QUALITY`(4)
-   * and `scenario` as `AUDIO_SCENARIO_GAME_STREAMING`(3).
-   *
-   * @param profile Sets the sample rate, bitrate, encoding mode, and the number of channels:
-   * #AUDIO_PROFILE_TYPE.
-   * @param scenario Sets the audio application scenarios: #AUDIO_SCENARIO_TYPE.
-   *
-   * @return
-   * - 0: Success.
-   * - < 0: Failure.
-   */
-  virtual int setAudioProfile(AUDIO_PROFILE_TYPE profile, AUDIO_SCENARIO_TYPE scenario) = 0;
-
-  /**
    * Sets the audio parameters.
    *
    * @note
@@ -3410,7 +3380,52 @@ class IRtcEngine : public agora::base::IEngineBase {
   - 0: Success.
   - < 0: Failure.
   */
-  virtual int startAudioRecording(const char* filePath, AUDIO_RECORDING_QUALITY_TYPE quality) = 0;
+  virtual int startAudioRecording(const char* filePath,
+                                  AUDIO_RECORDING_QUALITY_TYPE quality) = 0;
+  /** Starts an audio recording.
+
+  The SDK allows recording during a call, which supports either one of the
+  following two formats:
+
+  - .wav: Large file size with high sound fidelity
+  - .aac: Small file size with low sound fidelity
+
+  Ensure that the directory to save the recording file exists and is writable.
+  This method is usually called after the joinChannel() method.
+  The recording automatically stops when the leaveChannel() method is
+  called.
+
+  @param filePath Full file path of the recording file. The string of the file
+  name is in UTF-8 code.
+  @param sampleRate Sample rate, value should be 16000, 32000, 44100, or 48000.
+  @param quality Sets the audio recording quality: #AUDIO_RECORDING_QUALITY_TYPE.
+  @return
+  - 0: Success.
+  - < 0: Failure.
+  */
+  virtual int startAudioRecording(const char* filePath, 
+                                  int sampleRate,
+                                  AUDIO_RECORDING_QUALITY_TYPE quality) = 0;
+
+  /** Starts an audio recording.
+
+  The SDK allows recording during a call, which supports either one of the
+  following two formats:
+
+  - .wav: Large file size with high sound fidelity
+  - .aac: Small file size with low sound fidelity
+
+  Ensure that the directory to save the recording file exists and is writable.
+  This method is usually called after the joinChannel() method.
+  The recording automatically stops when the leaveChannel() method is
+  called.
+
+  @param config Audio recording config.
+  @return
+  - 0: Success.
+  - < 0: Failure.
+  */
+  virtual int startAudioRecording(const AudioFileRecordingConfig& config) = 0;
 
   /** Stops the audio recording on the client.
 
@@ -3957,14 +3972,13 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - During a call, you can call this method as many times as necessary to update the local video view.
    *
    * @param renderMode Sets the local display mode. See #RENDER_MODE_TYPE.
-   * @param mirrorType Sets the local mirror mode. See #VIDEO_MIRROR_MODE_TYPE.
+   * @param mirrorMode Sets the local mirror mode. See #VIDEO_MIRROR_MODE_TYPE.
    *
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
   virtual int setLocalRenderMode(media::base::RENDER_MODE_TYPE renderMode, VIDEO_MIRROR_MODE_TYPE mirrorMode) = 0;
-
   /**
    * Updates the display mode of the video view of a remote user.
    *
@@ -3979,7 +3993,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    *
    * @param uid ID of the remote user.
    * @param renderMode Sets the remote display mode. See #RENDER_MODE_TYPE.
-   * @param mirrorType Sets the mirror type. See #VIDEO_MIRROR_MODE_TYPE.
+   * @param mirrorMode Sets the mirror type. See #VIDEO_MIRROR_MODE_TYPE.
    * @param connectionId ID of the connection.
    *
    * @return
@@ -3987,7 +4001,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - < 0: Failure.
    */
   virtual int setRemoteRenderMode(uid_t uid, media::base::RENDER_MODE_TYPE renderMode,
-                                  VIDEO_MIRROR_MODE_TYPE mirrorType,
+                                  VIDEO_MIRROR_MODE_TYPE mirrorMode,
                                   conn_id_t connectionId = DEFAULT_CONNECTION_ID) = 0;
 
   // The following APIs are either deprecated and going to deleted.
@@ -4803,6 +4817,8 @@ class IRtcEngine : public agora::base::IEngineBase {
   virtual int startSecondaryCameraCapture(const CameraCapturerConfiguration& config) = 0;
   virtual int stopPrimaryCameraCapture() = 0;
   virtual int stopSecondaryCameraCapture() = 0;
+
+  virtual int setCameraDeviceOrientation(VIDEO_SOURCE_TYPE type, VIDEO_ORIENTATION orientation) = 0;
 
   virtual int startPrimaryScreenCapture(const ScreenCaptureConfiguration& config) = 0;
   virtual int startSecondaryScreenCapture(const ScreenCaptureConfiguration& config) = 0;

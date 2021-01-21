@@ -24,6 +24,7 @@
     <ProjectGuid>{8a7c1992-f45f-4a91-acff-b2e53a7c3ee7}</ProjectGuid>
     <RootNamespace>SampleExtensionVideoFilter</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>XHSFaceBeautyExtension</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -127,7 +128,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>./Agora;XhsGraphics/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Agora/include;XhsGraphics/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -148,6 +149,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>Agora/include;XhsGraphics/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -155,6 +157,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>extension.def</ModuleDefinitionFile>
+      <AdditionalDependencies>xhsGraphicsWin.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>XhsGraphics/lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -168,8 +173,9 @@
     <ClInclude Include="Agora\NGIAgoraMediaNode.h" />
     <ClInclude Include="Agora\NGIAgoraVideoFrame.h" />
     <ClInclude Include="exported_functions.h" />
-    <ClInclude Include="Extension\sample_video_filter_extension.h" />
-    <ClInclude Include="Extension\sample_video_filter_provider.h" />
+    <ClInclude Include="Extension\data_types.h" />
+    <ClInclude Include="Extension\face_beauty_extension_provider.h" />
+    <ClInclude Include="Extension\face_beauty_video_filter.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
@@ -178,8 +184,8 @@
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="exported_functions.cpp" />
-    <ClCompile Include="Extension\sample_video_filter_extension.cpp" />
-    <ClCompile Include="Extension\sample_video_filter_provider.cpp" />
+    <ClCompile Include="Extension\face_beauty_extension_provider.cpp" />
+    <ClCompile Include="Extension\face_beauty_video_filter.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

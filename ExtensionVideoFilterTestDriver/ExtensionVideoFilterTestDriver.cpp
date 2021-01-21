@@ -56,9 +56,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     ctx.enableAudio = true;
     ctx.enableVideo = false;
     ctx.extensions = new agora::rtc::Extension[1];
-    ctx.extensions[0].id = "sample_video_filter_provider";
-    // ctx.extensions[0].path = ".\\extensions\\xhs\\SampleExtensionVideoFilter.dll";
-    ctx.extensions[0].path = "SampleExtensionVideoFilter.dll";
+    ctx.extensions[0].id = "face_beauty.xhs";
+    // get current exe path
+    char szFullPath[MAX_PATH];
+    ::GetModuleFileNameA(NULL, szFullPath, MAX_PATH);
+    std::string path{ szFullPath };
+    auto pos = path.find_last_of('\\');
+    path = path.replace(pos, path.length() - pos, "");
+    path += "/extensions/xhs/XHSFaceBeautyExtension.dll";
+    ctx.extensions[0].path = path.c_str();
     ctx.numExtension = 1;
     ctx.eventHandlerEx = new RtcEngineEventHandlerEx();
 

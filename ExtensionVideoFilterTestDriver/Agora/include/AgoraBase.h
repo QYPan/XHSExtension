@@ -50,7 +50,7 @@ class JsonWrapper;
 }  // namespace cjson
 }  // namespace commons
 
-using any_document_t = commons::cjson::JsonWrapper;
+typedef commons::cjson::JsonWrapper any_document_t;
 
 namespace base {
 class IEngineBase;
@@ -126,7 +126,7 @@ class CopyableAutoPtr : public AutoPtr<T> {
     return *this;
   }
   pointer_type clone() const {
-    if (!this->get()) return nullptr;
+    if (!this->get()) return NULL;
     return this->get()->clone();
   }
 };
@@ -1070,23 +1070,18 @@ class AgoraError {
   // Constructors.
 
   // Creates a "no error" error.
-  AgoraError() {}
+  AgoraError() : type_(ERROR_CODE_TYPE::ERR_OK),
+                 static_message_("") {}
   explicit AgoraError(ERROR_CODE_TYPE type) : type_(type) {}
   // For performance, prefer using the constructor that takes a const char* if
   // the message is a static string.
   AgoraError(ERROR_CODE_TYPE type, const char* message) : type_(type), static_message_(message) {}
 
-  // Delete the copy constructor and assignment operator; there aren't any use
-  // cases where you should need to copy an AgoraError, as opposed to moving it.
-  // Can revisit this decision if use cases arise in the future.
-  AgoraError(const AgoraError& other) = delete;
-  AgoraError& operator=(const AgoraError& other) = delete;
-
   // Move constructor and move-assignment operator.
   AgoraError(AgoraError&& other);
   AgoraError& operator=(AgoraError&& other);
 
-  ~AgoraError();
+  ~AgoraError() {}
 
   // Identical to default constructed error.
   //
@@ -1100,19 +1095,25 @@ class AgoraError {
   // Human-readable message describing the error. Shouldn't be used for
   // anything but logging/diagnostics, since messages are not guaranteed to be
   // stable.
-  const char* message() const;
+  const char* message() const { return static_message_; }
   // For performance, prefer using the method that takes a const char* if the
   // message is a static string.
-  void setMessage(const char* message);
+  void setMessage(const char* message) { static_message_ = message; }
 
   // Convenience method for situations where you only care whether or not an
   // error occurred.
   bool ok() const { return type_ == ERROR_CODE_TYPE::ERR_OK; }
 
+  // Delete the copy constructor and assignment operator; there aren't any use
+  // cases where you should need to copy an AgoraError, as opposed to moving it.
+  // Can revisit this decision if use cases arise in the future.
  private:
-  ERROR_CODE_TYPE type_ = ERROR_CODE_TYPE::ERR_OK;
+  AgoraError(const AgoraError&);
+  AgoraError& operator=(const AgoraError&);
 
-  const char* static_message_ = "";
+ private:
+  ERROR_CODE_TYPE type_;
+  const char* static_message_;
 };
 
 typedef const char* user_id_t;
@@ -1138,6 +1139,8 @@ struct UserInfo {
    * - false: The user has disabled video.
    */
   bool hasVideo;
+
+  UserInfo() : userId(NULL), hasAudio(false), hasVideo(false) {}
 };
 
 typedef util::AList<UserInfo> UserList;
@@ -1380,6 +1383,7 @@ struct VideoDimensions {
    * The height of the video in number of pixels.
    */
   int height;
+
   VideoDimensions() : width(640), height(480) {}
   VideoDimensions(int w, int h) : width(w), height(h) {}
 };
@@ -1503,21 +1507,6 @@ enum WATERMARK_FIT_MODE {
  * The definition of the EncodedAudioFrameInfo struct.
  */
 struct EncodedAudioFrameInfo {
-  EncodedAudioFrameInfo()
-      : speech(true),
-        codec(AUDIO_CODEC_AACLC),
-        sampleRateHz(0),
-        samplesPerChannel(0),
-        sendEvenIfEmpty(true),
-        numberOfChannels(0) {}
-
-  EncodedAudioFrameInfo(const EncodedAudioFrameInfo& rhs)
-      : speech(rhs.speech),
-        codec(rhs.codec),
-        sampleRateHz(rhs.sampleRateHz),
-        samplesPerChannel(rhs.samplesPerChannel),
-        sendEvenIfEmpty(rhs.sendEvenIfEmpty),
-        numberOfChannels(rhs.numberOfChannels) {}
   /**
    * Determines whether the audio source is speech.
    * - true: (Default) The audio source is speech.
@@ -1548,19 +1537,27 @@ struct EncodedAudioFrameInfo {
    * The number of audio channels of the audio frame.
    */
   int numberOfChannels;
+
+  EncodedAudioFrameInfo()
+      : speech(true),
+        codec(AUDIO_CODEC_AACLC),
+        sampleRateHz(0),
+        samplesPerChannel(0),
+        sendEvenIfEmpty(true),
+        numberOfChannels(0) {}
+
+  EncodedAudioFrameInfo(const EncodedAudioFrameInfo& rhs)
+      : speech(rhs.speech),
+        codec(rhs.codec),
+        sampleRateHz(rhs.sampleRateHz),
+        samplesPerChannel(rhs.samplesPerChannel),
+        sendEvenIfEmpty(rhs.sendEvenIfEmpty),
+        numberOfChannels(rhs.numberOfChannels) {}
 };
 /**
  * The definition of the AudioPcmDataInfo struct.
  */
 struct AudioPcmDataInfo {
-  AudioPcmDataInfo() : sampleCount(0), samplesOut(0), elapsedTimeMs(0), ntpTimeMs(0) {}
-
-  AudioPcmDataInfo(const AudioPcmDataInfo& rhs)
-      : sampleCount(rhs.sampleCount),
-        samplesOut(rhs.samplesOut),
-        elapsedTimeMs(rhs.elapsedTimeMs),
-        ntpTimeMs(rhs.ntpTimeMs) {}
-
   /**
    * The sample count of the PCM data that you expect.
    */
@@ -1573,6 +1570,14 @@ struct AudioPcmDataInfo {
   size_t samplesOut;
   int64_t elapsedTimeMs;
   int64_t ntpTimeMs;
+
+  AudioPcmDataInfo() : sampleCount(0), samplesOut(0), elapsedTimeMs(0), ntpTimeMs(0) {}
+
+  AudioPcmDataInfo(const AudioPcmDataInfo& rhs)
+      : sampleCount(rhs.sampleCount),
+        samplesOut(rhs.samplesOut),
+        elapsedTimeMs(rhs.elapsedTimeMs),
+        ntpTimeMs(rhs.ntpTimeMs) {}
 };
 /**
  * Packetization modes. Applies to H.264 only.
@@ -1600,31 +1605,6 @@ enum VIDEO_STREAM_TYPE {
  * The definition of the EncodedVideoFrameInfo struct.
  */
 struct EncodedVideoFrameInfo {
-  EncodedVideoFrameInfo()
-      : codecType(VIDEO_CODEC_H264),
-        width(0),
-        height(0),
-        framesPerSecond(0),
-        frameType(VIDEO_FRAME_TYPE_BLANK_FRAME),
-        rotation(VIDEO_ORIENTATION_0),
-        trackId(0),
-        renderTimeMs(0),
-        internalSendTs(0),
-        uid(0),
-        streamType(VIDEO_STREAM_HIGH) {}
-
-  EncodedVideoFrameInfo(const EncodedVideoFrameInfo& rhs)
-      : codecType(rhs.codecType),
-        width(rhs.width),
-        height(rhs.height),
-        framesPerSecond(rhs.framesPerSecond),
-        frameType(rhs.frameType),
-        rotation(rhs.rotation),
-        trackId(rhs.trackId),
-        renderTimeMs(rhs.renderTimeMs),
-        internalSendTs(rhs.internalSendTs),
-        uid(rhs.uid),
-        streamType(rhs.streamType) {}
   /**
    * The video codec: #VIDEO_CODEC_TYPE.
    */
@@ -1670,6 +1650,32 @@ struct EncodedVideoFrameInfo {
    * The stream type of video frame.
    */
   VIDEO_STREAM_TYPE streamType;
+
+  EncodedVideoFrameInfo()
+      : codecType(VIDEO_CODEC_H264),
+        width(0),
+        height(0),
+        framesPerSecond(0),
+        frameType(VIDEO_FRAME_TYPE_BLANK_FRAME),
+        rotation(VIDEO_ORIENTATION_0),
+        trackId(0),
+        renderTimeMs(0),
+        internalSendTs(0),
+        uid(0),
+        streamType(VIDEO_STREAM_HIGH) {}
+
+  EncodedVideoFrameInfo(const EncodedVideoFrameInfo& rhs)
+      : codecType(rhs.codecType),
+        width(rhs.width),
+        height(rhs.height),
+        framesPerSecond(rhs.framesPerSecond),
+        frameType(rhs.frameType),
+        rotation(rhs.rotation),
+        trackId(rhs.trackId),
+        renderTimeMs(rhs.renderTimeMs),
+        internalSendTs(rhs.internalSendTs),
+        uid(rhs.uid),
+        streamType(rhs.streamType) {}
 };
 
 /**
@@ -1847,6 +1853,7 @@ struct SimulcastStreamConfig {
    * The video framerate.
    */
   int framerate;
+
   SimulcastStreamConfig() : dimensions(160, 120), bitrate(65), framerate(5) {}
 };
 
@@ -2074,6 +2081,7 @@ struct RtcStats {
    * The packet loss rate of receiver(audience).
    */
   int rxPacketLossRate;
+
   RtcStats() :
       connectionId(0),
       duration(0),
@@ -2213,6 +2221,7 @@ struct RemoteAudioStats
    * audio is available.
    */
   int frozenRate;
+
   RemoteAudioStats() :
     uid(0),
     quality(0),
@@ -2330,6 +2339,7 @@ struct VideoFormat {
    * The video frame rate (fps).
    */
   int fps;
+
   VideoFormat() : width(FRAME_WIDTH_640), height(FRAME_HEIGHT_360), fps(FRAME_RATE_FPS_15) {}
   VideoFormat(int w, int h, int f) : width(w), height(h), fps(f) {}
 };
@@ -2633,16 +2643,13 @@ enum REMOTE_VIDEO_STATE_REASON {
  * the video track.
  */
 struct VideoTrackInfo {
-  VideoTrackInfo()
-  : isLocal(false), ownerUid(0), trackId(0), connectionId(0)
-  , streamType(VIDEO_STREAM_HIGH), codecType(VIDEO_CODEC_H264)
-  , encodedFrameOnly(false), sourceType(VIDEO_SOURCE_CAMERA_PRIMARY) {}
   /**
    * Whether the video track is local or remote.
    * - true: The video track is local.
    * - false: The video track is remote.
    */
   bool isLocal;
+
   /**
    * ID of the user who publishes the video track.
    */
@@ -2674,6 +2681,11 @@ struct VideoTrackInfo {
    * The video source type: #VIDEO_SOURCE_TYPE
    */
   VIDEO_SOURCE_TYPE sourceType;
+
+  VideoTrackInfo()
+  : isLocal(false), ownerUid(0), trackId(0), connectionId(0)
+  , streamType(VIDEO_STREAM_HIGH), codecType(VIDEO_CODEC_H264)
+  , encodedFrameOnly(false), sourceType(VIDEO_SOURCE_CAMERA_PRIMARY) {}
 };
 
 /**
@@ -2689,6 +2701,8 @@ struct AudioVolumeInfo {
    * The volume of the speaker that ranges from 0 to 255.
    */
   unsigned int volume;  // [0,255]
+
+  AudioVolumeInfo() : uid(0), userId(0), volume(0) {}
 };
 
 /**
@@ -2697,6 +2711,7 @@ struct AudioVolumeInfo {
 class IPacketObserver {
  public:
   virtual ~IPacketObserver() {}
+
   /**
    * The definition of the Packet struct.
    */
@@ -2709,7 +2724,10 @@ class IPacketObserver {
      * The size of the audio packet.
      */
     unsigned int size;
+
+    Packet() : buffer(NULL), size(0) {}
   };
+
   /**
    * Occurs when the SDK is ready to send the audio packet.
    * @param packet The audio packet to be sent: Packet.
@@ -2834,8 +2852,12 @@ struct LocalAudioStats
    * The internal payload type
    */
   int internalCodec;
-};
 
+  LocalAudioStats() : numChannels(0),
+                      sentSampleRate(0),
+                      sentBitrate(0),
+                      internalCodec(0) {}
+};
 
 /**
  * States of the RTMP streaming.
@@ -2946,7 +2968,6 @@ enum RTMP_STREAM_PUBLISH_ERROR {
 /** The definition of the RtcImage struct.
  */
 typedef struct RtcImage {
-  RtcImage() : url(NULL), x(0), y(0), width(0), height(0) {}
   /**
    * The URL address of the watermark on the video.
    */
@@ -2973,6 +2994,8 @@ typedef struct RtcImage {
    * Order attribute for an ordering of overlapping two-dimensional objects.
    */
   int zOrder;
+
+  RtcImage() : url(NULL), x(0), y(0), width(0), height(0), zOrder(0) {}
 } RtcImage;
 
 /**
@@ -3055,6 +3078,7 @@ struct TranscodingUser {
    * broadcaster uses dual sound channel, only the left sound channel is used for streaming.
   */
   int audioChannel;
+
   TranscodingUser()
       : uid(0),
         userId(NULL),
@@ -3361,6 +3385,10 @@ struct LastmileProbeOneWayResult {
    * The estimated available bandwidth (bps).
    */
   unsigned int availableBandwidth;
+
+  LastmileProbeOneWayResult() : packetLossRate(0),
+                                jitter(0),
+                                availableBandwidth(0) {}
 };
 
 /**
@@ -3384,6 +3412,8 @@ struct LastmileProbeResult {
    * The round-trip delay time (ms).
    */
   unsigned int rtt;
+
+  LastmileProbeResult() : state(LASTMILE_PROBE_RESULT_UNAVAILABLE), rtt(0) {}
 };
 
 /**
@@ -3633,6 +3663,100 @@ struct ScreenCaptureParameters {
       : dimensions(d), frameRate(f), bitrate(b) {}
   ScreenCaptureParameters(int width, int height, int f, int b)
       : dimensions(width, height), frameRate(f), bitrate(b) {}
+};
+
+/**
+ * The audio recording quality type.
+ */
+enum AUDIO_RECORDING_QUALITY_TYPE {
+  /**
+   * 0: Low audio recording quality.
+   */
+  AUDIO_RECORDING_QUALITY_LOW = 0,
+  /**
+   * 1: Medium audio recording quality.
+   */
+  AUDIO_RECORDING_QUALITY_MEDIUM = 1,
+  /**
+   * 2: High audio recording quality.
+   */
+  AUDIO_RECORDING_QUALITY_HIGH = 2,
+};
+
+/** 
+ * The audio file record type.
+ */
+enum AUDIO_FILE_RECORDING_TYPE {
+  /**
+   * 1: mic audio file recording.
+   */
+  AUDIO_FILE_RECORDING_MIC = 1,
+  /**
+   * 2: playback audio file recording.
+   */
+  AUDIO_FILE_RECORDING_PLAYBACK = 2,
+  /**
+   * 3: mixed audio file recording, include mic and playback.
+   */
+  AUDIO_FILE_RECORDING_MIXED = 3,
+};
+
+/**
+ * The Audio file recording options.
+ */
+struct AudioFileRecordingConfig {
+  /**
+   * The path of recording file.
+   * The string of the file path is in UTF-8 code.
+   */
+  const char* filePath;
+  /**
+   * Determines whether to encode audio data.
+   * - true: Encode the audio data with AAC Encoder.
+   * - false: (Default) Do not encode the audio data. Save audio data as a wav file.
+   */
+  bool encode;
+  /**
+   * The sample rate of audio data. Default is 32000.
+   * The optional value is 16000, 32000, 44100, or 48000.
+   */
+  int sampleRate;
+  /**
+   * The recording type of audio data.
+   */
+  AUDIO_FILE_RECORDING_TYPE fileRecordingType;
+  /**
+   * The recording quality of audio data.
+   */
+  AUDIO_RECORDING_QUALITY_TYPE quality;
+
+  AudioFileRecordingConfig()
+    : filePath(NULL),
+      encode(false),
+      sampleRate(32000),
+      fileRecordingType(AUDIO_FILE_RECORDING_MIXED),
+      quality(AUDIO_RECORDING_QUALITY_LOW) {}
+
+  AudioFileRecordingConfig(const char* file_path, int sample_rate, AUDIO_RECORDING_QUALITY_TYPE quality_type)
+    : filePath(file_path),
+      encode(false),
+      sampleRate(sample_rate),
+      fileRecordingType(AUDIO_FILE_RECORDING_MIXED),
+      quality(quality_type) {}
+
+  AudioFileRecordingConfig(const char* file_path, bool enc, int sample_rate, AUDIO_FILE_RECORDING_TYPE type, AUDIO_RECORDING_QUALITY_TYPE quality_type)
+    : filePath(file_path),
+      encode(enc),
+      sampleRate(sample_rate),
+      fileRecordingType(type),
+      quality(quality_type) {}
+
+  AudioFileRecordingConfig(const AudioFileRecordingConfig &rhs)
+    : filePath(rhs.filePath),
+      encode(rhs.encode),
+      sampleRate(rhs.sampleRate),
+      fileRecordingType(rhs.fileRecordingType),
+      quality(rhs.quality) {}
 };
 
 /**
@@ -3915,8 +4039,8 @@ struct NetworkInfo {
 
   NetworkInfo() : video_encoder_target_bitrate_bps(0) {}
 
-  bool operator==(const NetworkInfo& rhs) {
-    return (video_encoder_target_bitrate_bps == rhs.video_encoder_target_bitrate_bps);
+  bool operator==(const NetworkInfo& rhs) const {
+    return (rhs.video_encoder_target_bitrate_bps == video_encoder_target_bitrate_bps);
   }
 };
 
@@ -3953,10 +4077,8 @@ struct EncryptionConfig {
    */
   const char* encryptionKey;
 
-  EncryptionConfig() {
-    encryptionMode = AES_128_XTS;
-    encryptionKey = nullptr;
-  }
+  EncryptionConfig() : encryptionMode(AES_128_XTS),
+                       encryptionKey(NULL) {}
 
   /// @cond
   const char* getEncryptionString() const {
@@ -3972,7 +4094,6 @@ struct EncryptionConfig {
       default:
         return "aes-128-xts";
     }
-    return "aes-128-xts";
   }
   /// @endcond
 };
@@ -3983,6 +4104,13 @@ enum ENCRYPTION_ERROR_TYPE {
     ENCRYPTION_ERROR_INTERNAL_FAILURE = 0,
     ENCRYPTION_ERROR_DECRYPTION_FAILURE = 1,
     ENCRYPTION_ERROR_ENCRYPTION_FAILURE = 2,
+};
+
+/** Type of permission.
+ */
+enum PERMISSION_TYPE {
+    RECORD_AUDIO = 0,
+    CAMERA = 1,
 };
 
 }  // namespace rtc

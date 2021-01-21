@@ -1097,8 +1097,11 @@ struct Extension {
   const char* id;
   // .so/.dll path
   const char* path;
+  // extension configuration, e.g. resource path.
+  // config should be a json string.
+  const char* config;
 
-  Extension() : id(nullptr), path(nullptr) {}
+  Extension() : id(nullptr), path(nullptr), config(nullptr) {}
 };
 
 struct RtcEngineContextEx {

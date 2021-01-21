@@ -51,17 +51,11 @@
     <ClInclude Include="Agora\NGIAgoraVideoFrame.h">
       <Filter>Agora</Filter>
     </ClInclude>
-    <ClInclude Include="Extension\sample_video_filter_extension.h">
-      <Filter>Extension</Filter>
-    </ClInclude>
     <ClInclude Include="Agora\AgoraMediaBase.h">
       <Filter>Agora</Filter>
     </ClInclude>
     <ClInclude Include="Agora\IAgoraParameter.h">
       <Filter>Agora</Filter>
-    </ClInclude>
-    <ClInclude Include="Extension\sample_video_filter_provider.h">
-      <Filter>Extension</Filter>
     </ClInclude>
     <ClInclude Include="exported_functions.h">
       <Filter>Header Files</Filter>
@@ -72,6 +66,15 @@
     <ClInclude Include="third_party\json.hpp">
       <Filter>third_party</Filter>
     </ClInclude>
+    <ClInclude Include="Extension\data_types.h">
+      <Filter>Extension</Filter>
+    </ClInclude>
+    <ClInclude Include="Extension\face_beauty_extension_provider.h">
+      <Filter>Extension</Filter>
+    </ClInclude>
+    <ClInclude Include="Extension\face_beauty_video_filter.h">
+      <Filter>Extension</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -80,14 +83,14 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Extension\sample_video_filter_extension.cpp">
-      <Filter>Extension</Filter>
-    </ClCompile>
-    <ClCompile Include="Extension\sample_video_filter_provider.cpp">
-      <Filter>Extension</Filter>
-    </ClCompile>
     <ClCompile Include="exported_functions.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Extension\face_beauty_extension_provider.cpp">
+      <Filter>Extension</Filter>
+    </ClCompile>
+    <ClCompile Include="Extension\face_beauty_video_filter.cpp">
+      <Filter>Extension</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

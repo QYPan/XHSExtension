@@ -1,2 +1,0 @@
-D:\Source\ExtensionVideoFilterTestDriver\ExtensionVideoFilterTestDriver\Debug\ExtensionVideoFilterTestDriver.exe
-D:\Source\ExtensionVideoFilterTestDriver\ExtensionVideoFilterTestDriver\Debug\ExtensionVideoFilterTestDriver.pdb

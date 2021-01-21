@@ -5,7 +5,7 @@
 #include<Windows.h>
 #include<glad.h>
 
-#define USE_CV_DEBUG
+//#define USE_CV_DEBUG
 //#define USE_TIME_DEBUG
 
 #ifdef APIEXPORT
@@ -15,6 +15,7 @@
 #endif
 
 #include "xhs_mobile_common.h"
+#include<XYBaseFilter.h>
 
 //using zs_ai::AiSystem;
 namespace CG{

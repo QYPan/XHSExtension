@@ -5,6 +5,8 @@
 //  Copyright (c) 2017 Agora.io. All rights reserved.
 
 #pragma once  // NOLINT(build/header_guard)
+
+#include <cstring>
 #include <stdint.h>
 #include <limits>
 #include <stddef.h>
@@ -54,6 +56,16 @@ enum AudioRoute
   ROUTE_HEADSETBLUETOOTH
 };
 
+/**
+ * Bytes per sample
+ */
+enum BYTES_PER_SAMPLE {
+  /**
+   * two bytes per sample
+   */
+  TWO_BYTES_PER_SAMPLE = 2,
+};
+
 struct AudioParameters {
   int sample_rate;
   size_t channels;
@@ -87,6 +99,7 @@ struct PacketOptions {
   uint32_t timestamp;
   // Audio level indication.
   uint8_t audioLevelIndication;
+
   PacketOptions()
       : timestamp(0),
         audioLevelIndication(127) {}
@@ -105,19 +118,21 @@ struct AudioPcmFrame {
     kMaxDataSizeBytes = kMaxDataSizeSamples * sizeof(int16_t),
   };
 
-  uint32_t capture_timestamp = 0;
-  size_t samples_per_channel_ = 0;
-  int sample_rate_hz_ = 0;
-  size_t num_channels_ = 0;
-  size_t bytes_per_sample = 0;
-  int16_t data_[kMaxDataSizeSamples] = {0};
+  uint32_t capture_timestamp;
+  size_t samples_per_channel_;
+  int sample_rate_hz_;
+  size_t num_channels_;
+  rtc::BYTES_PER_SAMPLE bytes_per_sample;
+  int16_t data_[kMaxDataSizeSamples];
 
   AudioPcmFrame() :
     capture_timestamp(0),
     samples_per_channel_(0),
     sample_rate_hz_(0),
     num_channels_(0),
-    bytes_per_sample(0) {}
+    bytes_per_sample(rtc::TWO_BYTES_PER_SAMPLE) {
+    memset(data_, 0, sizeof(data_));
+  }
 };
 
 class IAudioFrameObserver {
@@ -291,6 +306,13 @@ struct ExternalVideoFrame {
    * [Texture related parameter] Incoming 4 &times; 4 transformational matrix. The typical value is a unit matrix.
    */
   int textureId;
+
+  ExternalVideoFrame() : type(VIDEO_BUFFER_RAW_DATA),
+                         format(VIDEO_PIXEL_I420),
+                         buffer(NULL), stride(0), height(0),
+                         cropLeft(0), cropTop(0), cropRight(0), cropBottom(0),
+                         rotation(0), timestamp(0), eglContext(NULL), eglType(EGL_CONTEXT10),
+                         textureId(0) {}
 };
 
 /**
@@ -348,12 +370,19 @@ struct VideoFrame {
    * The type of audio-video synchronization.
    */
   int avsync_type;
+
+  VideoFrame() : type(VIDEO_PIXEL_UNKNOWN),
+                 width(0), height(0),
+                 yStride(0), uStride(0), vStride(0),
+                 yBuffer(NULL), uBuffer(NULL), vBuffer(NULL),
+                 rotation(0), renderTimeMs(0), avsync_type(0) {}
 };
 
 class IVideoFrameObserver {
  public:
   virtual void onFrame(const VideoFrame* frame) = 0;
   virtual ~IVideoFrameObserver() {}
+  virtual bool isExternal() { return true; }
 };
 
 enum MEDIA_PLAYER_SOURCE_TYPE {
@@ -404,9 +433,9 @@ class IAudioFrameObserver {
      */
     int samplesPerChannel;
     /**
-     * The number of bytes per sample: Two for 16-bit PCM.
+     * The number of bytes per sample: #BYTES_PER_SAMPLE
      */
-    int bytesPerSample;
+    agora::rtc::BYTES_PER_SAMPLE bytesPerSample;
     /**
      * The number of audio channels (data is interleaved, if stereo).
      */
@@ -428,10 +457,19 @@ class IAudioFrameObserver {
      */
     int64_t renderTimeMs;
     int avsync_type;
+
+    AudioFrame() : type(FRAME_TYPE_PCM16),
+                   samplesPerChannel(0),
+                   bytesPerSample(rtc::TWO_BYTES_PER_SAMPLE),
+                   channels(0),
+                   samplesPerSec(0),
+                   buffer(NULL),
+                   renderTimeMs(0),
+                   avsync_type(0) {}
   };
 
  public:
-  virtual ~IAudioFrameObserver() = default;
+  virtual ~IAudioFrameObserver() {}
 
   /**
    * Occurs when the recorded audio frame is received.
@@ -472,7 +510,8 @@ class IAudioFrameObserver {
  */
 class IVideoFrameObserver {
  public:
-  using VideoFrame = media::base::VideoFrame;
+  typedef media::base::VideoFrame VideoFrame;
+
   enum VIDEO_OBSERVER_POSITION {
     POSITION_POST_CAPTURER = 1 << 0,
     POSITION_PRE_RENDERER = 1 << 1,
@@ -524,6 +563,22 @@ class IVideoFrameObserver {
    */
   virtual bool onScreenCaptureVideoFrame(VideoFrame& videoFrame) = 0;
 
+  /**
+   * Occurs each time the SDK receives a video frame decoded by the MediaPlayer.
+   *
+   * After you successfully register the video frame observer, the SDK triggers this callback each
+   * time a video frame is decoded. In this callback, you can get the video data decoded by the
+   * MediaPlayer. You can then pre-process the data according to your scenarios.
+   *
+   * After pre-processing, you can send the processed video data back to the SDK by setting the
+   * `videoFrame` parameter in this callback.
+   *
+   * @param videoFrame A pointer to the video frame: VideoFrame
+   * @param mediaPlayerId of the mediaPlayer.
+   * @return Determines whether to ignore the current video frame if the pre-processing fails:
+   * - true: Do not ignore.
+   * - false: Ignore, in which case this method does not sent the current video frame to the SDK.
+   */
   virtual bool onMediaPlayerVideoFrame(VideoFrame& videoFrame, int mediaPlayerId) = 0;
 
   virtual bool onSecondaryScreenCaptureVideoFrame(VideoFrame& videoFrame) = 0;
