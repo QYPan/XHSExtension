@@ -115,7 +115,6 @@ size_t CFaceBeautyVideoFilter::setProperty(const char* key, const void* buf, siz
 
     case XHS_PLUGIN_BEAUTY_TYPE: 
     {
-        assert(buf_size == sizeof(BeautyFilterAid));
         BeautyFilterAid aid;
         aid.from_json(std::string{(char*)buf});
         m_pBeautyEngine->enableBeautyType(aid._type, aid._switch);

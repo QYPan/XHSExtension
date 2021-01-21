@@ -2,12 +2,14 @@
 //
 #include <thread>
 #include <chrono>
+#include "data_types.h"
 #include "framework.h"
 #include "ExtensionVideoFilterTestDriver.h"
 #include "AgoraBase.h"
 #include "IAgoraRtcEngine.h"
 #include "IAgoraRtcEngineEx.h"
 #include "EventHandler.h"
+#include "third_party/json.hpp"
 
 #define MAX_LOADSTRING 100
 
@@ -96,6 +98,29 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     if (error) {
         return error;
+    }
+
+    nlohmann::json j = true;
+    engine->setExtensionProperty("face_beauty.xhs", "XHS_PLUGIN_BEAUTY_FILTER_SWITCH", j.dump().c_str());
+
+    float intensity = 0.25;
+    while(true) {
+        BeautyFilterAid aid = { FaceBeautyType::XHS_SKIN_WHITENING, true, intensity };
+        engine->setExtensionProperty("face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid.to_json().c_str());
+
+        aid = BeautyFilterAid{ FaceBeautyType::XHS_SKIN_SMOOTH, true, intensity };
+        engine->setExtensionProperty("face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid.to_json().c_str());
+
+        aid = BeautyFilterAid{ FaceBeautyType::XHS_ROUND_EYE, true, intensity };
+        engine->setExtensionProperty("face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid.to_json().c_str());
+
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+
+        intensity += 0.125;
+
+        if (intensity > 1.00) {
+            intensity = 0.25;
+        }
     }
 
     std::this_thread::sleep_for(std::chrono::seconds(180));
