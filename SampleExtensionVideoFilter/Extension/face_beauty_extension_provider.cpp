@@ -10,5 +10,5 @@ CFaceBeautyVideoFilterProvider::~CFaceBeautyVideoFilterProvider() {
 }
 
 agora::agora_refptr<agora::rtc::IVideoFilter> CFaceBeautyVideoFilterProvider::createVideoFilter() {
-  return new agora::RefCountedObject<CFaceBeautyVideoFilter>("test", control_);
+  return new agora::RefCountedObject<CFaceBeautyVideoFilter>("face_beauty.xhs", control_);
 }
