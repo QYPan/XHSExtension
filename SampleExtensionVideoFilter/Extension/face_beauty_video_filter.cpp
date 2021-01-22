@@ -137,7 +137,7 @@ size_t CFaceBeautyVideoFilter::setProperty(const char* key, const void* buf, siz
         aid.from_json(std::string{ (char*)buf });
         m_pBeautyEngine->setColorfulTypeIntensity(aid._type, aid._color_intensity);
     }
-        break;
+    break;
 
     case XHS_PLUGIN_LUT_FILTER_SWITCH:
     {
@@ -146,7 +146,7 @@ size_t CFaceBeautyVideoFilter::setProperty(const char* key, const void* buf, siz
         j.get_to(value);
         m_pBeautyEngine->enableFilter(value);
     }
-        break;
+    break;
 
     case XHS_PLUGIN_LUT_FILTER_TYPE:
     {
@@ -159,7 +159,7 @@ size_t CFaceBeautyVideoFilter::setProperty(const char* key, const void* buf, siz
             core_->log(agora::commons::LOG_LEVEL::LOG_LEVEL_INFO, message.str().c_str());
             return -1;
         }
-
+        std::replace(aid._subPath.begin(), aid._subPath.end(), '/', '\\');
         m_pBeautyEngine->setFilterResourcePath(aid._subPath.c_str());
         m_pBeautyEngine->setFilterIntensity(aid._lut_intensity);
     }

@@ -58,9 +58,15 @@ NLOHMANN_JSON_SERIALIZE_ENUM(FaceBeautyType, {
 
     void from_json(std::string s) {
         auto j = nlohmann::json::parse(s);
-        j.at("_type").get_to(_type);
-        j.at("_switch").get_to(_switch);
-        j.at("_beauty_type_intensity").get_to(_beauty_type_intensity);
+        if (j.find("_type") != j.end()) {
+            j.at("_type").get_to(_type);
+        }
+        if (j.find("_switch") != j.end()) {
+            j.at("_switch").get_to(_switch);
+        }
+        if (j.find("_beauty_type_intensity") != j.end()) {
+            j.at("_beauty_type_intensity").get_to(_beauty_type_intensity);
+        }
     }
 };
 
@@ -84,9 +90,15 @@ NLOHMANN_JSON_SERIALIZE_ENUM(xhs_colorful_type, {
 
     void from_json(std::string s) {
         auto j = nlohmann::json::parse(s);
-        j.at("_type").get_to(_type);
-        j.at("_switch").get_to(_switch);
-        j.at("_color_intensity").get_to(_color_intensity);
+        if (j.find("_type") != j.end()) {
+            j.at("_type").get_to(_type);
+        }
+        if (j.find("_switch") != j.end()) {
+            j.at("_switch").get_to(_switch);
+        }
+        if (j.find("_color_intensity") != j.end()) {
+            j.at("_color_intensity").get_to(_color_intensity);
+        }
     }
 };
 
@@ -101,8 +113,12 @@ struct LutFilterAid {
 
     void from_json(std::string s) {
         auto j = nlohmann::json::parse(s);
-        j.at("_subPath").get_to(_subPath);
-        j.at("_lut_intensity").get_to(_lut_intensity);
+        if (j.find("_subPath") != j.end()) {
+            j.at("_subPath").get_to(_subPath);
+        }
+        if (j.find("_lut_intensity") != j.end()) {
+            j.at("_lut_intensity").get_to(_lut_intensity);
+        }
     }
 };
 
@@ -120,9 +136,17 @@ struct EngineInitParamsAid {
 
     void from_json(std::string s) {
         auto j = nlohmann::json::parse(s);
-        j.at("_license").get_to(_license);
-        j.at("_userId").get_to(_userId);
-        j.at("_aiModelPath").get_to(_aiModelPath);
-        j.at("_beautyResPath").get_to(_beautyResPath);
+        if (j.find("_license") != j.end()) {
+            j.at("_license").get_to(_license);
+        }
+        if (j.find("_userId") != j.end()) {
+            j.at("_userId").get_to(_userId);
+        }
+        if (j.find("_aiModelPath") != j.end()) {
+            j.at("_aiModelPath").get_to(_aiModelPath);
+        }
+        if (j.find("_beautyResPath") != j.end()) {
+            j.at("_beautyResPath").get_to(_beautyResPath);
+        }
     }
 };

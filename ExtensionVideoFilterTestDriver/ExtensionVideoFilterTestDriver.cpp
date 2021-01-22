@@ -109,6 +109,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     nlohmann::json j = true;
     engine->setExtensionProperty("face_beauty.xhs", "XHS_PLUGIN_BEAUTY_FILTER_SWITCH", j.dump().c_str());
+    engine->setExtensionProperty("face_beauty.xhs", "XHS_PLUGIN_COLOR_FILTER_SWITCH", j.dump().c_str());
 
     float intensity = 0.25;
     while(true) {
