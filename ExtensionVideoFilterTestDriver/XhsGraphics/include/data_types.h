@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
-#include "./XYCGWindowsEngine.h"
-#include "third_party/json.hpp"
+#include "XYCGWindowsEngine.h"
+#include "json.hpp"
 
 typedef enum {
     XHS_PLUGIN_COMMAND_INVALID,

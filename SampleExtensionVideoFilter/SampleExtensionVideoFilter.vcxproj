@@ -138,6 +138,22 @@
       <AdditionalLibraryDirectories>XhsGraphics/lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>xhsGraphicsWin_d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>rmdir $(ProjectDir)package /q /s
+xcopy $(ProjectDir)XhsGraphics\include $(ProjectDir)package\include\ /S/Y
+xcopy $(ProjectDir)Extension\data_types.h $(ProjectDir)package\include\ /Y
+xcopy $(ProjectDir)Extension\json.hpp $(ProjectDir)package\include\ /Y
+xcopy $(OutDir)$(TargetFileName) $(ProjectDir)package\face_beauty.xhs\ /Y
+xcopy $(ProjectDir)XhsGraphics\Beauty_Res $(ProjectDir)package\face_beauty.xhs\Beauty_Res\ /S/Y
+xcopy $(ProjectDir)XhsGraphics\vsco1 $(ProjectDir)package\face_beauty.xhs\vsco1\ /S/Y
+xcopy $(ProjectDir)XhsGraphics\vsco2 $(ProjectDir)package\face_beauty.xhs\vsco2\ /S/Y
+xcopy $(ProjectDir)XhsGraphics\vsco3 $(ProjectDir)package\face_beauty.xhs\vsco3\ /S/Y
+xcopy $(ProjectDir)XhsGraphics\slim-320.face_kpt_v2.mouth.eyebrow.bin $(ProjectDir)package\face_beauty.xhs\ /Y
+xcopy $(ProjectDir)XhsGraphics\dll\MNN_d.dll $(ProjectDir)package\face_beauty.xhs\ /Y
+xcopy $(ProjectDir)XhsGraphics\dll\opencv_world450d.dll $(ProjectDir)package\face_beauty.xhs\ /Y
+xcopy $(ProjectDir)XhsGraphics\dll\xhsGraphicsWin_d.dll $(ProjectDir)package\face_beauty.xhs\ /Y
+xcopy $(ProjectDir)XhsGraphics\dll\zlibd.dll $(ProjectDir)package\face_beauty.xhs\ /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -161,6 +177,22 @@
       <AdditionalDependencies>xhsGraphicsWin.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>XhsGraphics/lib</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>rmdir $(ProjectDir)package /q /s
+xcopy $(ProjectDir)XhsGraphics\include $(ProjectDir)package\include\ /S/Y
+xcopy $(ProjectDir)Extension\data_types.h $(ProjectDir)package\include\ /Y
+xcopy $(ProjectDir)Extension\json.hpp $(ProjectDir)package\include\ /Y
+xcopy $(OutDir)$(TargetFileName) $(ProjectDir)package\face_beauty.xhs\ /Y
+xcopy $(ProjectDir)XhsGraphics\Beauty_Res $(ProjectDir)package\face_beauty.xhs\Beauty_Res\ /S/Y
+xcopy $(ProjectDir)XhsGraphics\vsco1 $(ProjectDir)package\face_beauty.xhs\vsco1\ /S/Y
+xcopy $(ProjectDir)XhsGraphics\vsco2 $(ProjectDir)package\face_beauty.xhs\vsco2\ /S/Y
+xcopy $(ProjectDir)XhsGraphics\vsco3 $(ProjectDir)package\face_beauty.xhs\vsco3\ /S/Y
+xcopy $(ProjectDir)XhsGraphics\slim-320.face_kpt_v2.mouth.eyebrow.bin $(ProjectDir)package\face_beauty.xhs\ /Y
+xcopy $(ProjectDir)XhsGraphics\dll\MNN.dll $(ProjectDir)package\face_beauty.xhs\ /Y
+xcopy $(ProjectDir)XhsGraphics\dll\opencv_world450.dll $(ProjectDir)package\face_beauty.xhs\ /Y
+xcopy $(ProjectDir)XhsGraphics\dll\xhsGraphicsWin.dll $(ProjectDir)package\face_beauty.xhs\ /Y
+xcopy $(ProjectDir)XhsGraphics\dll\zlib.dll $(ProjectDir)package\face_beauty.xhs\ /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="exported_functions.h" />
