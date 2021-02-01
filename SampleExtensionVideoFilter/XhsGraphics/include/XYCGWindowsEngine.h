@@ -5,7 +5,7 @@
 #include<Windows.h>
 #include<glad.h>
 
-#define USE_CV_DEBUG
+//#define USE_CV_DEBUG
 //#define USE_TIME_DEBUG
 
 #ifdef APIEXPORT
@@ -36,7 +36,7 @@ public:
 	/// 初始化opengl windows环境以及渲染引擎
 	/// </summary>
 	/// <returns>返回0为成功，其他为失败</returns> 
-	int initWindowsEngine();
+	int initWindowsEngine(std::string license, std::string userId);
 	
 	/// <summary>
 	/// 销毁opengl windows环境以及渲染引擎
@@ -175,6 +175,6 @@ private:
 	void* m_outputData = nullptr;
 	xhs_handle_t m_filterEngineHandle = nullptr;
 	XYFilterRoiParam m_roi = {0};
-	bool m_licenseValid = true;
+	bool m_licenseValid = false;
 };
 };
