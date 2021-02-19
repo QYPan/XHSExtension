@@ -26,7 +26,7 @@ bool CFaceBeautyVideoFilter::onDataStreamWillStart() {
         initCommandDict();
 
         m_pBeautyEngine = new CG::XYCGWindowsEngine();
-        int result = m_pBeautyEngine->initWindowsEngine();
+        int result = m_pBeautyEngine->initWindowsEngine("", "");
         nlohmann::json result_json = result;
         if (core_) {
             core_->log(agora::commons::LOG_LEVEL::LOG_LEVEL_INFO, "init xhs_filter_engine");
