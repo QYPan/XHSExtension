@@ -26,7 +26,7 @@ bool CFaceBeautyVideoFilter::onDataStreamWillStart() {
         initCommandDict();
 
         m_pBeautyEngine = new CG::XYCGWindowsEngine();
-        int result = m_pBeautyEngine->initWindowsEngine("", "");
+        int result = m_pBeautyEngine->initWindowsEngine(config_._license.c_str(), config_._userId.c_str());
         nlohmann::json result_json = result;
         if (core_) {
             core_->log(agora::commons::LOG_LEVEL::LOG_LEVEL_INFO, "init xhs_filter_engine");
@@ -45,7 +45,6 @@ bool CFaceBeautyVideoFilter::onDataStreamWillStart() {
         result = m_pBeautyEngine->loadAIModel(config_._aiModelPath.c_str());
         // temp load beauty image here
         result = m_pBeautyEngine->setBeautyResourcePath(config_._beautyResPath.c_str());
-        //result = m_pBeautyEngine->setFilterResourcePath(m_lutResPath.c_str());
         init_ = true;
     }
     return true;
