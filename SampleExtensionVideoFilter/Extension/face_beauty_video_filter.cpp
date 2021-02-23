@@ -39,6 +39,7 @@ bool CFaceBeautyVideoFilter::onDataStreamWillStart() {
             m_pBeautyEngine->destroyWindowsEngine();
             delete m_pBeautyEngine;
             m_pBeautyEngine = nullptr;
+            return false;
         }
 
         // temp load ai here
