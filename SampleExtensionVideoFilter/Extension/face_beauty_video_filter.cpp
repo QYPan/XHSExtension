@@ -80,6 +80,9 @@ void initCommandDict() {
 
 bool CFaceBeautyVideoFilter::adaptVideoFrame(const agora::media::base::VideoFrame& capturedFrame,
     agora::media::base::VideoFrame& adaptedFrame) {
+    if (m_pBeautyEngine == nullptr) {
+        return false;
+    }
     m_pBeautyEngine->processYUV(capturedFrame.yBuffer, capturedFrame.uBuffer, capturedFrame.vBuffer,capturedFrame.width, capturedFrame.height);
     adaptedFrame = capturedFrame;
     m_pBeautyEngine->getOutputYUVData(adaptedFrame.yBuffer, adaptedFrame.uBuffer, adaptedFrame.vBuffer);
