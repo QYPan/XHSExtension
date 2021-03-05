@@ -739,6 +739,7 @@ struct ChannelMediaOptions {
       SET_FROM(publishEncodedVideoTrack);
       SET_FROM(publishMediaPlayerAudioTrack);
       SET_FROM(publishMediaPlayerVideoTrack);
+      SET_FROM(autoSubscribeAudio);
       SET_FROM(autoSubscribeVideo);
       SET_FROM(publishMediaPlayerId);
       SET_FROM(enableAudioRecordingOrPlayout);
@@ -834,13 +835,19 @@ struct LeaveChannelOptions {
    */
   bool stopAudioMixing;
   /**
+   * Determines whether to stop all music effects when leave channel.
+   * - true: (Default) Stop all music effects.
+   * - false: Do not stop the music effect.
+   */
+  bool stopAllEffect;
+  /**
    * Determines whether to stop microphone recording when leave channel.
    * - true: (Default) Stop microphone recording.
    * - false: Do not stop microphone recording.
   */
   bool stopMicrophoneRecording;
 
-  LeaveChannelOptions() : stopAudioMixing(true), stopMicrophoneRecording(true) {}
+  LeaveChannelOptions() : stopAudioMixing(true), stopAllEffect(true), stopMicrophoneRecording(true) {}
 };
 
 /**
@@ -3890,8 +3897,7 @@ class IRtcEngine : public agora::base::IEngineBase {
      */
     virtual int setLocalVoiceChanger(VOICE_CHANGER_PRESET voiceChanger) = 0;
 
-  /**
-   * Specifies an SDK output log file.
+  /** **DEPRECATED** Specifies an SDK output log file.
    *
    * The log file records all log data for the SDK’s operation. Ensure that the
    * directory for the log file exists and is writable.
@@ -4404,7 +4410,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int enableExtension(const char* id, bool enable=true) = 0;
+  virtual int enableExtension(VIDEO_SOURCE_TYPE type, const char* id, bool enable=true) = 0;
 
   /**
    * Set extension specific property.
@@ -4417,7 +4423,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int setExtensionProperty(const char* id, const char* key, const char* json_value) = 0;
+  virtual int setExtensionProperty(VIDEO_SOURCE_TYPE type, const char* id, const char* key, const char* json_value) = 0;
 
 #if defined(__ANDROID__) || (defined(__APPLE__) && TARGET_OS_IOS)
 

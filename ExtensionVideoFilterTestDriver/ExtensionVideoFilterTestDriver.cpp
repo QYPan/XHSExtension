@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 // ExtensionVideoFilterTestDriver.cpp : Defines the entry point for the application.
 //
 #include <thread>
@@ -92,37 +93,120 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     engine->setupLocalVideo(vc);*/
 
+    agora::rtc::VideoEncoderConfiguration cfg;
+    cfg.codecType = agora::rtc::VIDEO_CODEC_H264;
+    cfg.dimensions = {1280, 720};
+    cfg.bitrate = 2000;
+    cfg.frameRate = 30;
+    engine->setVideoEncoderConfiguration(cfg);
+
+    agora::util::AutoPtr<agora::rtc::IVideoDeviceManager> vdm;
+    vdm.queryInterface(engine, agora::rtc::AGORA_IID_VIDEO_DEVICE_MANAGER);
+    agora::util::AutoPtr<agora::rtc::IVideoDeviceCollection> vdc(vdm->enumerateVideoDevices());
+
+    agora::rtc::CameraCapturerConfiguration camera_config[2];
+    char dev_names[2][agora::rtc::MAX_DEVICE_ID_LENGTH] = {0};
+    int dev_cnt = vdc->getCount();
+
+    for (int idx = 0; idx < dev_cnt && idx < 2; idx++) {
+      vdc->getDevice(idx, dev_names[idx], camera_config[idx].deviceId);
+      //AGO_LOG("Get video device, idx: %d, dev_name: %s, dev_id: %s.", idx, dev_names[idx], camera_config[idx].deviceId);
+    }
+
+    camera_config[0].format.width = 1280;
+    camera_config[0].format.height = 720;
+    camera_config[0].format.fps = 20;
+
+    engine->startPrimaryCameraCapture(camera_config[0]);
+
+    if (dev_cnt > 1) {
+      camera_config[1].format.width = 1280;
+      camera_config[1].format.height = 720;
+      camera_config[1].format.fps = 20;
+
+      engine->startSecondaryCameraCapture(camera_config[1]);
+    }
+
+    agora::rtc::TranscodingVideoStream stream_infos[2];
+
+    stream_infos[0].sourceType = agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY;
+    stream_infos[0].x = 0;
+    stream_infos[0].y = 0;
+    stream_infos[0].width = 640;
+    stream_infos[0].height = 360;
+    stream_infos[0].mirror = false;
+    stream_infos[0].zOrder = 2;
+
+    if (dev_cnt > 1) {
+      stream_infos[1].sourceType = agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY;
+      stream_infos[1].x = 640;
+      stream_infos[1].y = 0;
+      stream_infos[1].width = 640;
+      stream_infos[1].height = 360;
+      stream_infos[1].mirror = false;
+      stream_infos[1].zOrder = 3;
+    }
+
+    agora::rtc::VideoEncoderConfiguration encoder_config;
+    encoder_config.codecType = agora::rtc::VIDEO_CODEC_H264;
+    encoder_config.dimensions = {1280, 720};
+    encoder_config.bitrate = 2000;
+    encoder_config.frameRate = 20;
+
+    agora::rtc::LocalTranscoderConfiguration transcoder_config;
+    transcoder_config.streamCount = (dev_cnt > 1 ? 2 : 1);
+    transcoder_config.VideoInputStreams = stream_infos;
+    transcoder_config.videoOutputConfiguration = encoder_config;
+
+    engine->startLocalVideoTranscoder(transcoder_config);
+
     // join channel
     agora::rtc::ChannelMediaOptions op;
-    op.publishAudioTrack = false;
-    op.publishCameraTrack = true;
-    op.publishCustomVideoTrack = false;
-    op.publishScreenTrack = false;
-    op.autoSubscribeAudio = false;
-    op.autoSubscribeVideo = false;
+    op.publishTrancodedVideoTrack = true;
     op.clientRoleType = agora::rtc::CLIENT_ROLE_TYPE::CLIENT_ROLE_BROADCASTER;
-    error = engine->joinChannel(0, "testX", uid, op);
+    error = engine->joinChannel(0, "pqy123", uid, op);
 
     if (error) {
         return error;
     }
 
+    system("pause");
+
     nlohmann::json j = true;
-    error = engine->setExtensionProperty("face_beauty.xhs", "XHS_PLUGIN_BEAUTY_FILTER_SWITCH", j.dump().c_str());
-    error = engine->setExtensionProperty("face_beauty.xhs", "XHS_PLUGIN_COLOR_FILTER_SWITCH", j.dump().c_str());
+    int r1 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_FILTER_SWITCH", j.dump().c_str());
+    int r2 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_COLOR_FILTER_SWITCH", j.dump().c_str());
+
+    int r3 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_FILTER_SWITCH", j.dump().c_str());
+    int r4 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_COLOR_FILTER_SWITCH", j.dump().c_str());
+
+    printf(">>>>>>> r1: %d, r2: %d, r3: %d, r4: %d\n", r1, r2, r3, r4);
+
+    //system("pause");
 
     float intensity = 0.25;
     while(true) {
+        printf("*************************************************************\n");
+
         BeautyFilterAid aid = { FaceBeautyType::XHS_SKIN_WHITENING, true, intensity };
-        engine->setExtensionProperty("face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid.to_json().c_str());
+        int r5 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid.to_json().c_str());
+        int r6 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid.to_json().c_str());
 
         aid = BeautyFilterAid{ FaceBeautyType::XHS_SKIN_SMOOTH, true, intensity };
-        engine->setExtensionProperty("face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid.to_json().c_str());
+        int r7 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid.to_json().c_str());
+        int r8 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid.to_json().c_str());
 
         aid = BeautyFilterAid{ FaceBeautyType::XHS_ROUND_EYE, true, intensity };
-        engine->setExtensionProperty("face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid.to_json().c_str());
+        int r9 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid.to_json().c_str());
+        int r10 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid.to_json().c_str());
+
+        printf(">>>>>>> r5: %d, r6: %d, r7: %d, r8: %d, r9: %d, r10: %d\n", r5, r6, r7, r8, r9, r10);
 
         std::this_thread::sleep_for(std::chrono::seconds(2));
+
+        int r11 = -1;
+        int r12 = -1;
+
+        //system("pause");
 
         intensity += 0.125;
 

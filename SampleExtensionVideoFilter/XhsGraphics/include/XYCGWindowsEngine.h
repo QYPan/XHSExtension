@@ -159,7 +159,9 @@ private:
 private:
 	HGLRC m_renderContext;
 	GLuint* m_inputTexture = nullptr;
-	GLuint* m_tmpTexture = nullptr;
+	GLuint* m_tmpTexture1 = nullptr;
+	GLuint* m_tmpTexture2 = nullptr;
+
 	GLuint* m_outputTexture = nullptr;
 	GLuint* m_uploadPboId = nullptr;
 	GLuint* m_downloadPboId = nullptr;
@@ -168,7 +170,7 @@ private:
 	int m_inputHeight = 0;
 	int m_frameIndex = 0;
 	bool m_ready = false;
-	bool m_beautyEnable = false;
+	bool m_beautyEnable = true;
 	bool m_filterEnable = false;
 	bool m_colorfulEnable = false;
 	void* m_inputData = nullptr;
