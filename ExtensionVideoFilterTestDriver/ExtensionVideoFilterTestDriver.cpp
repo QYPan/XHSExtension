@@ -54,7 +54,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     agora::rtc::RtcEngineContextEx ctx;
-    ctx.appId = "aab8b8f5a8cd4469a63042fcfafe7063";
+    ctx.appId = "";
     ctx.enableAudio = true;
     ctx.enableVideo = false;
     ctx.extensions = new agora::rtc::Extension[1];
@@ -108,8 +108,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     nlohmann::json j = true;
-    engine->setExtensionProperty("face_beauty.xhs", "XHS_PLUGIN_BEAUTY_FILTER_SWITCH", j.dump().c_str());
-    engine->setExtensionProperty("face_beauty.xhs", "XHS_PLUGIN_COLOR_FILTER_SWITCH", j.dump().c_str());
+    error = engine->setExtensionProperty("face_beauty.xhs", "XHS_PLUGIN_BEAUTY_FILTER_SWITCH", j.dump().c_str());
+    error = engine->setExtensionProperty("face_beauty.xhs", "XHS_PLUGIN_COLOR_FILTER_SWITCH", j.dump().c_str());
 
     float intensity = 0.25;
     while(true) {
