@@ -108,6 +108,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     char dev_names[2][agora::rtc::MAX_DEVICE_ID_LENGTH] = {0};
     int dev_cnt = vdc->getCount();
 
+    // 获取摄像头设备
     for (int idx = 0; idx < dev_cnt && idx < 2; idx++) {
       vdc->getDevice(idx, dev_names[idx], camera_config[idx].deviceId);
       //AGO_LOG("Get video device, idx: %d, dev_name: %s, dev_id: %s.", idx, dev_names[idx], camera_config[idx].deviceId);
@@ -117,6 +118,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     camera_config[0].format.height = 720;
     camera_config[0].format.fps = 20;
 
+    // 开启第一路摄像头采集
     engine->startPrimaryCameraCapture(camera_config[0]);
 
     if (dev_cnt > 1) {
@@ -124,6 +126,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
       camera_config[1].format.height = 720;
       camera_config[1].format.fps = 20;
 
+      // 开启第二路摄像头采集
       engine->startSecondaryCameraCapture(camera_config[1]);
     }
 
@@ -154,13 +157,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     encoder_config.frameRate = 20;
 
     agora::rtc::LocalTranscoderConfiguration transcoder_config;
-    transcoder_config.streamCount = (dev_cnt > 1 ? 2 : 1);
+    transcoder_config.streamCount = 2; //(dev_cnt > 1 ? 2 : 1);
     transcoder_config.VideoInputStreams = stream_infos;
     transcoder_config.videoOutputConfiguration = encoder_config;
 
+    // 开启合图
     engine->startLocalVideoTranscoder(transcoder_config);
 
-    // join channel
+    // 加入频道
     agora::rtc::ChannelMediaOptions op;
     op.publishTrancodedVideoTrack = true;
     op.clientRoleType = agora::rtc::CLIENT_ROLE_TYPE::CLIENT_ROLE_BROADCASTER;
@@ -170,50 +174,38 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return error;
     }
 
+    //Sleep(3000);
+
     system("pause");
 
+    // 开启第一第二路美颜开关
+    //******************************************************************************************************************************************************************
     nlohmann::json j = true;
-    int r1 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_FILTER_SWITCH", j.dump().c_str());
-    int r2 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_COLOR_FILTER_SWITCH", j.dump().c_str());
+    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_FILTER_SWITCH", j.dump().c_str());
+    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_COLOR_FILTER_SWITCH", j.dump().c_str());
 
-    int r3 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_FILTER_SWITCH", j.dump().c_str());
-    int r4 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_COLOR_FILTER_SWITCH", j.dump().c_str());
+    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_FILTER_SWITCH", j.dump().c_str());
+    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_COLOR_FILTER_SWITCH", j.dump().c_str());
 
-    printf(">>>>>>> r1: %d, r2: %d, r3: %d, r4: %d\n", r1, r2, r3, r4);
+    //******************************************************************************************************************************************************************
 
-    //system("pause");
+    // 设置第一路美颜参数
+    BeautyFilterAid aid1 = { FaceBeautyType::XHS_NARROW_FACE, true, 113.882 };
+    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid1.to_json().c_str());
+    system("pause");
 
-    float intensity = 0.25;
-    while(true) {
-        printf("*************************************************************\n");
+    // 设置第二路美颜参数
+    BeautyFilterAid aid2 = { FaceBeautyType::XHS_NARROW_FACE, true, 13.882 };
+    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid2.to_json().c_str());
+    system("pause");
 
-        BeautyFilterAid aid = { FaceBeautyType::XHS_SKIN_WHITENING, true, intensity };
-        int r5 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid.to_json().c_str());
-        int r6 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid.to_json().c_str());
+    BeautyFilterAid aid3 = { FaceBeautyType::XHS_NARROW_FACE, true, 45.882 };
+    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid3.to_json().c_str());
+    system("pause");
 
-        aid = BeautyFilterAid{ FaceBeautyType::XHS_SKIN_SMOOTH, true, intensity };
-        int r7 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid.to_json().c_str());
-        int r8 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid.to_json().c_str());
-
-        aid = BeautyFilterAid{ FaceBeautyType::XHS_ROUND_EYE, true, intensity };
-        int r9 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid.to_json().c_str());
-        int r10 = engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid.to_json().c_str());
-
-        printf(">>>>>>> r5: %d, r6: %d, r7: %d, r8: %d, r9: %d, r10: %d\n", r5, r6, r7, r8, r9, r10);
-
-        std::this_thread::sleep_for(std::chrono::seconds(2));
-
-        int r11 = -1;
-        int r12 = -1;
-
-        //system("pause");
-
-        intensity += 0.125;
-
-        if (intensity > 1.00) {
-            intensity = 0.25;
-        }
-    }
+    BeautyFilterAid aid4 = { FaceBeautyType::XHS_NARROW_FACE, true, 5.882 };
+    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid4.to_json().c_str());
+    system("pause");
 
     std::this_thread::sleep_for(std::chrono::seconds(180));
 

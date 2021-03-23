@@ -1,5 +1,7 @@
 #include "pch.h"
 #include <sstream>
+#include <windows.h>
+#include <stdio.h>
 #include "face_beauty_video_filter.h"
 
 #define ENUM_TO_STR(TYPE) std::string(#TYPE)
@@ -9,18 +11,22 @@ static void initCommandDict();
 
 CFaceBeautyVideoFilter::CFaceBeautyVideoFilter(const char* id, const EngineInitParamsAid& config, agora::rtc::IExtensionControl* core)
   : enabled_(true), id_(id), config_(config), core_(core), init_(false) {
+  printf("this: %p, thread: %d, CFaceBeautyVideoFilter::CFaceBeautyVideoFilter, id: %s\n", this, ::GetCurrentThreadId(), id);
 }
 
 CFaceBeautyVideoFilter::~CFaceBeautyVideoFilter() {
+    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::~CFaceBeautyVideoFilter\n", this, ::GetCurrentThreadId());
     if (m_pBeautyEngine != nullptr)
     {
         m_pBeautyEngine->destroyWindowsEngine();
         delete m_pBeautyEngine;
         m_pBeautyEngine = nullptr;
+        //printf("this: %p, thread: %d, CFaceBeautyVideoFilter::~CFaceBeautyVideoFilter, release beauty engine\n", this, ::GetCurrentThreadId());
     }
 }
 
 bool CFaceBeautyVideoFilter::onDataStreamWillStart() {
+    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDataStreamWillStart\n", this, ::GetCurrentThreadId());
     if (!init_)
     {
         initCommandDict();
@@ -48,6 +54,7 @@ bool CFaceBeautyVideoFilter::onDataStreamWillStart() {
         result = m_pBeautyEngine->setBeautyResourcePath(config_._beautyResPath.c_str());
         init_ = true;
     }
+    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDataStreamWillStart finish, init: %d\n", this, ::GetCurrentThreadId(), init_);
     return true;
 }
 
@@ -61,6 +68,7 @@ void CFaceBeautyVideoFilter::onDataStreamWillStop() {
             init_ = false;
         }
     }
+    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDataStreamWillStop, init: %d\n", this, ::GetCurrentThreadId(), init_);
     return;
 }
 
@@ -80,6 +88,7 @@ void initCommandDict() {
 
 bool CFaceBeautyVideoFilter::adaptVideoFrame(const agora::media::base::VideoFrame& capturedFrame,
     agora::media::base::VideoFrame& adaptedFrame) {
+    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::adaptVideoFrame, m_pBeautyEngine: %p\n", this, ::GetCurrentThreadId(), m_pBeautyEngine ? m_pBeautyEngine : 0);
     if (m_pBeautyEngine == nullptr) {
         return false;
     }
@@ -90,16 +99,18 @@ bool CFaceBeautyVideoFilter::adaptVideoFrame(const agora::media::base::VideoFram
 }
 
 size_t CFaceBeautyVideoFilter::setProperty(const char* key, const void* buf, size_t buf_size) {
+    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::setProperty, key: %s, buf: %s\n", this, ::GetCurrentThreadId(), key, (buf ? (char*)buf : "null"));
     //auto type = m_xhs_command_dict[key];
     auto it = m_xhs_command_dict.find(key);
     if (it == m_xhs_command_dict.end())
     {
-        printf("invalid xhs command key: %s\n", key);
+        printf("this: %p, thread: %d, invalid xhs command key: %s\n", this, ::GetCurrentThreadId(), key);
         return -1;
     }
     auto type = it->second;
     if (m_pBeautyEngine == nullptr || buf == nullptr)
     {
+        printf("this: %p, thread: %d, m_pBeautyEngine or buf null\n", this, ::GetCurrentThreadId());
         return -1;
     }
     switch (type)
@@ -160,6 +171,7 @@ size_t CFaceBeautyVideoFilter::setProperty(const char* key, const void* buf, siz
             std::ostringstream message;
             message << "invalid path for lut: " << aid._subPath;
             core_->log(agora::commons::LOG_LEVEL::LOG_LEVEL_INFO, message.str().c_str());
+            printf("this: %p, thread: %d, aid _subPath empty\n", this, ::GetCurrentThreadId());
             return -1;
         }
         std::replace(aid._subPath.begin(), aid._subPath.end(), '/', '\\');
@@ -168,9 +180,10 @@ size_t CFaceBeautyVideoFilter::setProperty(const char* key, const void* buf, siz
     }
 
     case XHS_PLUGIN_COMMAND_INVALID:
-        printf("invalid command: %s\n", key);
+        printf("this: %p, thread: %d, invalid command: %s\n",this, ::GetCurrentThreadId(), key);
         break;
     default:
+        printf("this: %p, thread: %d, unknown command: %s, type: %d\n",this, ::GetCurrentThreadId(), key, type);
         break;
     }
   return -1;

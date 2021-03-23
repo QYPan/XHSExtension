@@ -6,6 +6,7 @@
 #include<glad.h>
 
 //#define USE_CV_DEBUG
+//#define RSA_LICENSE
 //#define USE_TIME_DEBUG
 
 #ifdef APIEXPORT
@@ -17,7 +18,8 @@
 #include "xhs_mobile_common.h"
 #include<XYBaseFilter.h>
 
-//using zs_ai::AiSystem;
+
+class AiSystem;
 namespace CG{
 	static const int COLOR_UNKNOWN = 0;
 	static const int COLOR_BGR = 2;              // [bgrbgrbgr]
@@ -172,11 +174,13 @@ private:
 	bool m_ready = false;
 	bool m_beautyEnable = true;
 	bool m_filterEnable = false;
-	bool m_colorfulEnable = false;
+	bool m_colorfulEnable = true;
 	void* m_inputData = nullptr;
 	void* m_outputData = nullptr;
 	xhs_handle_t m_filterEngineHandle = nullptr;
 	XYFilterRoiParam m_roi = {0};
 	bool m_licenseValid = false;
+
+	AiSystem* m_AiSystem = nullptr;
 };
 };
