@@ -182,6 +182,8 @@ class IVideoFilter : public IVideoFilterBase {
    * - `false`: The filter is implemented by internal users.
    */
   virtual bool isExternal() { return true; }
+  virtual void onInitialize() {}
+  virtual void onDeInitialzie() {}
 };
 
 /**

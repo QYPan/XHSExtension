@@ -10,6 +10,9 @@
 
 namespace agora {
 namespace commons {
+const uint32_t DEFAULT_LOG_SIZE = 1 * 1024 * 1024;  // default is 1 MB
+const uint32_t MAX_LOG_SIZE = 20 * 1024 * 1024;
+const uint32_t MIN_LOG_SIZE = 128 * 1024;
 /**
  * Supported logging severities of SDK
  */
@@ -52,10 +55,6 @@ enum LOG_FILTER_TYPE {
   LOG_FILTER_MASK = 0x80f,
 };
 
-/** The default log size in kb
- */
-const uint32_t DEFAULT_LOG_SIZE_IN_KB = 1024;
-
 /** Definition of LogConfiguration
  */
 struct LogConfig
@@ -63,13 +62,14 @@ struct LogConfig
   /**The log file path, default is NULL for default log path
    */
   const char* filePath;
-  /** The log file size, KB , set 1024KB to use default log size
+  /** The log file size, 1024KB will be set for default log size
+   * if this value is less than or equal to 0.
    */
   int fileSizeInKB;
   /** The log level, set LOG_LEVEL_INFO to use default log level
    */
   LOG_LEVEL level;
-  LogConfig() : filePath(nullptr), fileSizeInKB(DEFAULT_LOG_SIZE_IN_KB), level(LOG_LEVEL::LOG_LEVEL_INFO) {}
+  LogConfig() : filePath(nullptr), fileSizeInKB(0), level(LOG_LEVEL::LOG_LEVEL_INFO) {}
 };
 } //namespace commons
 } //namespace agora

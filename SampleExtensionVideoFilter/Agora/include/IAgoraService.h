@@ -112,6 +112,10 @@ struct AgoraServiceConfiguration {
    * The App ID of your project.
    */
   const char* appId;
+  
+  /** The channel profile. For details, see \ref agora::CHANNEL_PROFILE_TYPE "CHANNEL_PROFILE_TYPE". The default channel profile is `CHANNEL_PROFILE_LIVE_BROADCASTING`.
+   */
+  agora::CHANNEL_PROFILE_TYPE channelProfile;
   /**
    * The audio scenario. See \ref agora::rtc::AUDIO_SCENARIO_TYPE "AUDIO_SCENARIO_TYPE". The default value is `AUDIO_SCENARIO_DEFAULT`.
    */
@@ -130,6 +134,7 @@ struct AgoraServiceConfiguration {
                                 enableVideo(false),
                                 context(NULL),
                                 appId(NULL),
+                                channelProfile(agora::CHANNEL_PROFILE_LIVE_BROADCASTING),
                                 audioScenario(rtc::AUDIO_SCENARIO_DEFAULT),
                                 logConfig(),
                                 serviceObserver(NULL) {}

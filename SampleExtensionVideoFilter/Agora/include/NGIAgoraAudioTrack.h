@@ -21,14 +21,17 @@ class IAudioTrackStateObserver;
  * This struct notifies the source of the properties of audio frames to be sent to a sink.
  */
 struct AudioSinkWants {
+
+    AudioSinkWants(int sampleRate, size_t chs) : samplesPerSec(sampleRate), channels(chs) {}
+    AudioSinkWants() : samplesPerSec(0), channels(0) {}
+    AudioSinkWants(const AudioSinkWants& o) : samplesPerSec(o.samplesPerSec), channels(o.channels) {};
+    ~AudioSinkWants() = default;
+
   /** The sample rate of the audio frame to be sent to the sink. */
   int samplesPerSec;
 
   /** The number of audio channels of the audio frame to be sent to the sink. */
   size_t channels;
-
-  AudioSinkWants() : samplesPerSec(0),
-                     channels(0) {}
 };
 
 /**
@@ -313,6 +316,22 @@ struct RemoteAudioTrackStats {
    * The audio energy.
    */
   int32_t audio_level;
+  /**
+   *  The count of 80 ms frozen in 2 seconds
+   */
+  uint16_t frozen_count_80_ms;
+  /**
+   *  The time of 80 ms frozen in 2 seconds
+   */
+  uint16_t frozen_time_80_ms;
+  /**
+   *  The count of 200 ms frozen in 2 seconds
+   */
+  uint16_t frozen_count_200_ms;
+  /**
+   *  The time of 200 ms frozen in 2 seconds
+   */
+  uint16_t frozen_time_200_ms;
 
   RemoteAudioTrackStats() :
     uid(0),
@@ -331,7 +350,12 @@ struct RemoteAudioTrackStats {
     expanded_noise_samples(0),
     timestamps_since_last_report(0),
     min_sequence_number(0xFFFF),
-    max_sequence_number(0) { }
+    max_sequence_number(0),
+    frozen_count_80_ms(0),
+    frozen_time_80_ms(0),
+    frozen_count_200_ms(0),
+    frozen_time_200_ms(0),
+    audio_level(0) { }
 };
 
 /**

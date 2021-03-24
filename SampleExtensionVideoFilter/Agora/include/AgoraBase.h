@@ -2131,12 +2131,12 @@ enum VIDEO_SOURCE_TYPE {
   /** Video for secondary screen sharing.
    */
   VIDEO_SOURCE_SCREEN_SECONDARY,
-  /** Video for media player sharing.
-   */
-  VIDEO_SOURCE_MEDIA_PLAYER,
   /** Not define.
    */
   VIDEO_SOURCE_CUSTOM,
+  /** Video for media player sharing.
+   */
+  VIDEO_SOURCE_MEDIA_PLAYER,
   /** Video for png image.
    */
   VIDEO_SOURCE_RTC_IMAGE_PNG,
@@ -2309,9 +2309,13 @@ enum AUDIO_SCENARIO_TYPE {
    */
   AUDIO_SCENARIO_HIGH_DEFINITION = 6,
   /**
-   * 7: Reserved.
+   * 7: Chorus
    */
-  AUDIO_SCENARIO_NUM = 7,
+  AUDIO_SCENARIO_CHORUS = 7,
+  /**
+   * 8: Reserved.
+   */
+  AUDIO_SCENARIO_NUM = 8,
 };
 
 /**

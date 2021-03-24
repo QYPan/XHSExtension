@@ -21,13 +21,13 @@ CFaceBeautyVideoFilter::~CFaceBeautyVideoFilter() {
         m_pBeautyEngine->destroyWindowsEngine();
         delete m_pBeautyEngine;
         m_pBeautyEngine = nullptr;
-        //printf("this: %p, thread: %d, CFaceBeautyVideoFilter::~CFaceBeautyVideoFilter, release beauty engine\n", this, ::GetCurrentThreadId());
+        printf("this: %p, thread: %d, CFaceBeautyVideoFilter::~CFaceBeautyVideoFilter, release beauty engine\n", this, ::GetCurrentThreadId());
     }
 }
 
-bool CFaceBeautyVideoFilter::onDataStreamWillStart() {
-    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDataStreamWillStart\n", this, ::GetCurrentThreadId());
-    if (!init_)
+void CFaceBeautyVideoFilter::onInitialize() {
+  printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onInitialize, init: %d\n", this, ::GetCurrentThreadId(), init_);
+  if (!init_)
     {
         initCommandDict();
 
@@ -41,11 +41,11 @@ bool CFaceBeautyVideoFilter::onDataStreamWillStart() {
 
         if (result != 0)
         {
-            printf("Beauty engine init failed. Error code:%d\n", result);
+            printf("this: %p, thread: %d, Beauty engine init failed. Error code:%d\n", this, ::GetCurrentThreadId(), result);
             m_pBeautyEngine->destroyWindowsEngine();
             delete m_pBeautyEngine;
             m_pBeautyEngine = nullptr;
-            return false;
+            return;
         }
 
         // temp load ai here
@@ -54,11 +54,11 @@ bool CFaceBeautyVideoFilter::onDataStreamWillStart() {
         result = m_pBeautyEngine->setBeautyResourcePath(config_._beautyResPath.c_str());
         init_ = true;
     }
-    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDataStreamWillStart finish, init: %d\n", this, ::GetCurrentThreadId(), init_);
-    return true;
+  printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onInitialize finish, init: %d\n", this, ::GetCurrentThreadId(), init_);
 }
 
-void CFaceBeautyVideoFilter::onDataStreamWillStop() {
+void CFaceBeautyVideoFilter::onDeInitialzie() {
+    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDeInitialzie, init: %d\n", this, ::GetCurrentThreadId(), init_);
     if (init_)
     {
         if (m_pBeautyEngine != nullptr) {
@@ -68,7 +68,16 @@ void CFaceBeautyVideoFilter::onDataStreamWillStop() {
             init_ = false;
         }
     }
-    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDataStreamWillStop, init: %d\n", this, ::GetCurrentThreadId(), init_);
+    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDeInitialzie finish, init: %d\n", this, ::GetCurrentThreadId(), init_);
+}
+
+bool CFaceBeautyVideoFilter::onDataStreamWillStart() {
+    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDataStreamWillStart\n", this, ::GetCurrentThreadId());
+    return true;
+}
+
+void CFaceBeautyVideoFilter::onDataStreamWillStop() {
+    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDataStreamWillStop\n", this, ::GetCurrentThreadId());
     return;
 }
 

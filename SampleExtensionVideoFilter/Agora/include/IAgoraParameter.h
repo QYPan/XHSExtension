@@ -39,6 +39,11 @@
 #define KEY_RTC_VIDEO_ENABLED_HW_DECODER             "engine.video.enable_hw_decoder"
 
  /**
+  * set the hardware video encoder provider (nv for nvidia or qsv for intel)
+  */
+#define KEY_RTC_VIDEO_HW_ENCODER_PROVIDER            "engine.video.hw_encoder_provider"
+
+ /**
   * override the lua policy
   */
 #define KEY_RTC_VIDEO_OVERRIDE_SMALLVIDEO_NOT_USE_HWENC_POLICY  "engine.video.override_smallvideo_not_use_hwenc_policy"
@@ -97,6 +102,21 @@
   * set the degradation fps up step
 */
 #define KEY_RTC_VIDEO_DEGRADATION_FPS_UP_STEP        "rtc.video.degradation_fps_up_step"
+
+/**
+  * only use average QP for quality scaling
+*/
+#define KEY_RTC_VIDEO_QUALITY_SCALE_ONLY_ON_AVERAGE_QP "engine.video.quality_scale_only_on_average_qp"
+
+/**
+  * low bound for quality scaling
+*/
+#define KEY_RTC_VIDEO_H264_QP_THRESHOLD_LOW         "engine.video.h264_qp_thresholds_low"
+
+/**
+  * high bound for quality scaling
+*/
+#define KEY_RTC_VIDEO_H264_QP_THRESHOLD_HIGH        "engine.video.h264_qp_thresholds_high"
 
 namespace agora {
 

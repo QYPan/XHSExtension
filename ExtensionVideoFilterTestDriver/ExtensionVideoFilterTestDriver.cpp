@@ -55,7 +55,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     agora::rtc::RtcEngineContextEx ctx;
-    ctx.appId = "";
+    ctx.appId = "aab8b8f5a8cd4469a63042fcfafe7063";
     ctx.enableAudio = true;
     ctx.enableVideo = false;
     ctx.extensions = new agora::rtc::Extension[1];
@@ -192,7 +192,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // 设置第一路美颜参数
     BeautyFilterAid aid1 = { FaceBeautyType::XHS_NARROW_FACE, true, 113.882 };
     engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid1.to_json().c_str());
-    system("pause");
+    //system("pause");
 
     // 设置第二路美颜参数
     BeautyFilterAid aid2 = { FaceBeautyType::XHS_NARROW_FACE, true, 13.882 };
@@ -201,7 +201,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     BeautyFilterAid aid3 = { FaceBeautyType::XHS_NARROW_FACE, true, 45.882 };
     engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid3.to_json().c_str());
-    system("pause");
+    //system("pause");
 
     BeautyFilterAid aid4 = { FaceBeautyType::XHS_NARROW_FACE, true, 5.882 };
     engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid4.to_json().c_str());

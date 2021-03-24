@@ -14,6 +14,10 @@ class CFaceBeautyVideoFilter : public agora::rtc::IVideoFilter {
 
   void onDataStreamWillStop() override;
 
+  void onInitialize() override;
+
+  void onDeInitialzie() override;
+
   void setEnabled(bool enable) override {
     enabled_ = enable;
   }
