@@ -6,6 +6,7 @@
 #include<glad.h>
 
 //#define USE_CV_DEBUG
+//#define DRAW_AI_DEBUG
 //#define RSA_LICENSE
 //#define USE_TIME_DEBUG
 
