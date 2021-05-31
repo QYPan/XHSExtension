@@ -1,5 +1,7 @@
 #include "pch.h"
 #include <sstream>
+#include <fstream>
+#include <map>
 #include <windows.h>
 #include <stdio.h>
 #include "face_beauty_video_filter.h"
@@ -9,8 +11,103 @@
 static std::map<std::string, xhs_Command_type> m_xhs_command_dict;
 static void initCommandDict();
 
+std::ofstream GLogFile;
+
+static void FilterLog(const char* fmt, ...) {
+  if (!fmt || !*fmt) {
+    return;
+  }
+
+  va_list ap;
+  va_start(ap, fmt);
+  auto size = vsnprintf(nullptr, 0, fmt, ap);
+  va_end(ap);
+  if (size <= 0) {
+    return;
+  }
+
+  std::unique_ptr<char[]> buf = std::make_unique<char[]>(size + 2);
+  memset(buf.get(), 0, size + 2);
+  va_start(ap, fmt);
+  size = vsnprintf(buf.get(), size + 2, fmt, ap);
+  va_end(ap);
+  if (size <= 0) {
+    return;
+  }
+
+  std::string msg(buf.get());
+}
+
+class SimpleLogger {
+public:
+  static SimpleLogger* GetInstance() {
+    if (!instance_) {
+      instance_ = new SimpleLogger();
+    }
+    return instance_;
+  }
+
+  static void DestroyInstance() {
+    if (instance_) {
+      delete instance_;
+      instance_ = nullptr;
+    }
+  }
+
+  enum LOG_TYPE {
+    L_INFO,
+    L_WARN,
+    L_ERROR
+  };
+
+  void Print(LOG_TYPE type, const char* fmt, ...) {
+    if (!fmt || !*fmt) {
+      return;
+    }
+
+    va_list ap;
+    va_start(ap, fmt);
+    auto size = vsnprintf(nullptr, 0, fmt, ap);
+    va_end(ap);
+    if (size <= 0) {
+      return;
+    }
+
+    std::unique_ptr<char[]> buf = std::make_unique<char[]>(size + 2);
+    memset(buf.get(), 0, size + 2);
+    va_start(ap, fmt);
+    size = vsnprintf(buf.get(), size + 2, fmt, ap);
+    va_end(ap);
+    if (size <= 0) {
+      return;
+    }
+
+    static std::map<LOG_TYPE, std::string> log_type_map = {{L_INFO, "[I]: "},{L_WARN, "[W]: "},{L_ERROR, "[E]: "}};
+
+    std::string msg(buf.get());
+    if (writer_.is_open()) {
+      writer_ << log_type_map[type] << msg << std::endl;
+    }
+  }
+
+private:
+  SimpleLogger() {
+    writer_.open("FaceBeautyVideoFilter.log", std::ofstream::out);
+  }
+
+  ~SimpleLogger() {
+    writer_.close();
+  }
+
+  static SimpleLogger *instance_;
+  std::ofstream writer_;
+};
+
+SimpleLogger* SimpleLogger::instance_ = nullptr;
+
 CFaceBeautyVideoFilter::CFaceBeautyVideoFilter(const char* id, const EngineInitParamsAid& config, agora::rtc::IExtensionControl* core)
   : enabled_(true), id_(id), config_(config), core_(core), init_(false) {
+  //std::string fileName = std::string("FaceBeautyVideoFilter_") + std::to_string((int)this);
   printf("this: %p, thread: %d, CFaceBeautyVideoFilter::CFaceBeautyVideoFilter, id: %s\n", this, ::GetCurrentThreadId(), id);
 }
 
@@ -25,8 +122,8 @@ CFaceBeautyVideoFilter::~CFaceBeautyVideoFilter() {
     }
 }
 
-void CFaceBeautyVideoFilter::onInitialize() {
-  printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onInitialize, init: %d\n", this, ::GetCurrentThreadId(), init_);
+bool CFaceBeautyVideoFilter::onDataStreamWillStart() {
+  printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDataStreamWillStart, init: %d\n", this, ::GetCurrentThreadId(), init_);
   if (!init_)
     {
         initCommandDict();
@@ -45,7 +142,7 @@ void CFaceBeautyVideoFilter::onInitialize() {
             m_pBeautyEngine->destroyWindowsEngine();
             delete m_pBeautyEngine;
             m_pBeautyEngine = nullptr;
-            return;
+            return false;
         }
 
         // temp load ai here
@@ -54,11 +151,12 @@ void CFaceBeautyVideoFilter::onInitialize() {
         result = m_pBeautyEngine->setBeautyResourcePath(config_._beautyResPath.c_str());
         init_ = true;
     }
-  printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onInitialize finish, init: %d\n", this, ::GetCurrentThreadId(), init_);
+  printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDataStreamWillStart finish, init: %d\n", this, ::GetCurrentThreadId(), init_);
+  return true;
 }
 
-void CFaceBeautyVideoFilter::onDeInitialzie() {
-    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDeInitialzie, init: %d\n", this, ::GetCurrentThreadId(), init_);
+void CFaceBeautyVideoFilter::onDataStreamWillStop() {
+    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDataStreamWillStop, init: %d\n", this, ::GetCurrentThreadId(), init_);
     if (init_)
     {
         if (m_pBeautyEngine != nullptr) {
@@ -68,17 +166,7 @@ void CFaceBeautyVideoFilter::onDeInitialzie() {
             init_ = false;
         }
     }
-    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDeInitialzie finish, init: %d\n", this, ::GetCurrentThreadId(), init_);
-}
-
-bool CFaceBeautyVideoFilter::onDataStreamWillStart() {
-    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDataStreamWillStart\n", this, ::GetCurrentThreadId());
-    return true;
-}
-
-void CFaceBeautyVideoFilter::onDataStreamWillStop() {
-    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDataStreamWillStop\n", this, ::GetCurrentThreadId());
-    return;
+    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDataStreamWillStop finish, init: %d\n", this, ::GetCurrentThreadId(), init_);
 }
 
 void initCommandDict() {
@@ -97,7 +185,7 @@ void initCommandDict() {
 
 bool CFaceBeautyVideoFilter::adaptVideoFrame(const agora::media::base::VideoFrame& capturedFrame,
     agora::media::base::VideoFrame& adaptedFrame) {
-    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::adaptVideoFrame, m_pBeautyEngine: %p\n", this, ::GetCurrentThreadId(), m_pBeautyEngine ? m_pBeautyEngine : 0);
+    //printf("this: %p, thread: %d, CFaceBeautyVideoFilter::adaptVideoFrame, m_pBeautyEngine: %p\n", this, ::GetCurrentThreadId(), m_pBeautyEngine ? m_pBeautyEngine : 0);
     if (m_pBeautyEngine == nullptr) {
         return false;
     }

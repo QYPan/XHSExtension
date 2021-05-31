@@ -1153,7 +1153,7 @@ class IRtcEngineEventHandler {
     (void)elapsed;
   }
 
-  virtual void onVideoSourceFrameSizeChanged(VIDEO_SOURCE_TYPE sourceType, int width, int height) {
+  virtual void onVideoSourceFrameSizeChanged(MEDIA_SOURCE_TYPE sourceType, int width, int height) {
     (void)sourceType;
     (void)width;
     (void)height;
@@ -2514,7 +2514,7 @@ public:
      - true:  Send.
      - false: Do not send.
      */
-    virtual bool onReadyToSendMetadata(Metadata &metadata, VIDEO_SOURCE_TYPE source_type) = 0;
+    virtual bool onReadyToSendMetadata(Metadata &metadata, MEDIA_SOURCE_TYPE source_type) = 0;
 
     /** Occurs when the local user receives the metadata.
 
@@ -4091,7 +4091,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * video using \ref setRemoteVideoStreamType "setRemoteVideoStreamType".
    * 
    * @param sourceType
-   * - The video source type.
+   * - The media source type.
    * @param enabled
    * - true: Enable the dual-stream mode.
    * - false: (default) Disable the dual-stream mode.
@@ -4099,7 +4099,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int enableDualStreamMode(VIDEO_SOURCE_TYPE sourceType, bool enabled) = 0;
+  virtual int enableDualStreamMode(MEDIA_SOURCE_TYPE sourceType, bool enabled) = 0;
 
   /**
    * Enables or disables the dual video stream mode.
@@ -4109,7 +4109,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * video using \ref setRemoteVideoStreamType "setRemoteVideoStreamType".
    *
    * @param sourceType
-   * - The video source type.
+   * - The media source type.
    * @param enabled
    * - true: Enable the dual-stream mode.
    * - false: (default) Disable the dual-stream mode.
@@ -4119,7 +4119,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int enableDualStreamMode(VIDEO_SOURCE_TYPE sourceType, bool enabled, const SimulcastStreamConfig& streamConfig) = 0;
+  virtual int enableDualStreamMode(MEDIA_SOURCE_TYPE sourceType, bool enabled, const SimulcastStreamConfig& streamConfig) = 0;
 
   /**
    * Sets the external audio source.
@@ -4375,16 +4375,12 @@ class IRtcEngine : public agora::base::IEngineBase {
    * @param enabled Determines whether to enable in-ear monitoring.
    * - true: Enable.
    * - false: (Default) Disable.
-   * @param includeAudioFilter Determines whether to include the audio filter (
-   * voice changer or reverberation) in the in-ear monitoring.
-   * - true: Include the audio filter.
-   * - false: Do not the include audio filter.
-   * This parameter will be ignored when `enabled` is set to `false`.
+   * @param includedAudioFilters The type of the ear monitoring: #EAR_MONITORING_FILTER_TYPE
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int enableInEarMonitoring(bool enabled, bool includeAudioFilter) = 0;
+  virtual int enableInEarMonitoring(bool enabled, int includedAudioFilters) = 0;
 
   /**
    * Sets the volume of the in-ear monitor (for Android and iOS only).
@@ -4410,7 +4406,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int enableExtension(VIDEO_SOURCE_TYPE type, const char* id, bool enable=true) = 0;
+  virtual int enableExtension(MEDIA_SOURCE_TYPE type, const char* id, bool enable=true) = 0;
 
   /**
    * Set extension specific property.
@@ -4423,7 +4419,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int setExtensionProperty(VIDEO_SOURCE_TYPE type, const char* id, const char* key, const char* json_value) = 0;
+  virtual int setExtensionProperty(MEDIA_SOURCE_TYPE type, const char* id, const char* key, const char* json_value) = 0;
 
 #if defined(__ANDROID__) || (defined(__APPLE__) && TARGET_OS_IOS)
 
@@ -4824,7 +4820,7 @@ class IRtcEngine : public agora::base::IEngineBase {
   virtual int stopPrimaryCameraCapture() = 0;
   virtual int stopSecondaryCameraCapture() = 0;
 
-  virtual int setCameraDeviceOrientation(VIDEO_SOURCE_TYPE type, VIDEO_ORIENTATION orientation) = 0;
+  virtual int setCameraDeviceOrientation(MEDIA_SOURCE_TYPE type, VIDEO_ORIENTATION orientation) = 0;
 
   virtual int startPrimaryScreenCapture(const ScreenCaptureConfiguration& config) = 0;
   virtual int startSecondaryScreenCapture(const ScreenCaptureConfiguration& config) = 0;

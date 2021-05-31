@@ -174,9 +174,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return error;
     }
 
-    //Sleep(3000);
+    Sleep(3000);
 
-    system("pause");
+    //system("pause");
 
     // 开启第一第二路美颜开关
     //******************************************************************************************************************************************************************
@@ -190,7 +190,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     //******************************************************************************************************************************************************************
 
     // 设置第一路美颜参数
-    BeautyFilterAid aid1 = { FaceBeautyType::XHS_NARROW_FACE, true, 113.882 };
+    BeautyFilterAid aid1 = { FaceBeautyType::XHS_NARROW_FACE, true, 41.882 };
     engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid1.to_json().c_str());
     //system("pause");
 
@@ -199,12 +199,24 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid2.to_json().c_str());
     system("pause");
 
-    BeautyFilterAid aid3 = { FaceBeautyType::XHS_NARROW_FACE, true, 45.882 };
+    //******************************************************************************************************************************************************************
+
+    BeautyFilterAid aid3 = { FaceBeautyType::XHS_NARROW_FACE, true, 454.882 };
     engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid3.to_json().c_str());
     //system("pause");
 
     BeautyFilterAid aid4 = { FaceBeautyType::XHS_NARROW_FACE, true, 5.882 };
     engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid4.to_json().c_str());
+    system("pause");
+
+    //******************************************************************************************************************************************************************
+
+    BeautyFilterAid aid5 = { FaceBeautyType::XHS_NARROW_FACE, true, 111 };
+    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid5.to_json().c_str());
+    //system("pause");
+
+    BeautyFilterAid aid6 = { FaceBeautyType::XHS_NARROW_FACE, true, 51.882 };
+    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid6.to_json().c_str());
     system("pause");
 
     std::this_thread::sleep_for(std::chrono::seconds(180));

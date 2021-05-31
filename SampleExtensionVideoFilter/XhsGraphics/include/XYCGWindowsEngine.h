@@ -16,7 +16,8 @@
 #endif
 
 #include "xhs_mobile_common.h"
-#include<XYBaseFilter.h>
+#include<vector>
+//#include<XYBaseFilter.h>
 
 
 class AiSystem;
@@ -182,5 +183,6 @@ private:
 	bool m_licenseValid = false;
 
 	AiSystem* m_AiSystem = nullptr;
+	std::vector<float> m_points;
 };
 };
