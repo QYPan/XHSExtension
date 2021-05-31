@@ -3779,6 +3779,82 @@ struct AudioFileRecordingConfig {
 };
 
 /**
+ * The Audio encoded frame receiver options.
+ * 
+ */
+struct AudioEncodedFrameReceiverConfig {
+
+    int sampleRate;
+
+/**
+ * The user you want to receive in OnPlaybackEncodedAudioReceived callback
+ * 
+ * useful only if postionType is AUDIO_FILE_RECORDING_PLAYBACK
+ */
+    uid_t uid;  
+
+/**
+ * The position where SDK record the audio, and callback to encoded audio frame receiver.
+ */
+    AUDIO_FILE_RECORDING_TYPE postionType;  
+
+    AUDIO_RECORDING_QUALITY_TYPE quality;
+
+/**
+ * codecType AAC or OPUS
+ */
+    AUDIO_CODEC_TYPE codecType; 
+    AudioEncodedFrameReceiverConfig(AUDIO_CODEC_TYPE codec_type)
+    :sampleRate(48000),
+    uid(0),
+    postionType(AUDIO_FILE_RECORDING_PLAYBACK),
+    quality(AUDIO_RECORDING_QUALITY_MEDIUM),
+    codecType(codec_type) {}
+
+};
+
+class IAudioEncodedFrameReceiver {
+public:
+/**
+* Occurs each time the SDK receives an encoded recorded audio frame.
+* @param frameBufferThe pointer to the audio frame buffer.
+* @param length The data length of the audio frame.
+* @param audioEncodedFrameInfoThe information of the encoded audio frame: EncodedAudioFrameInfo.
+
+*/
+virtual void OnRecordEncodedAudioReceived(const uint8_t* frameBuffer,  int length, const EncodedAudioFrameInfo& audioEncodedFrameInfo) = 0;
+
+/**
+* Occurs each time the SDK receives an encoded playback audio frame.
+* @param frameBufferThe pointer to the audio frame buffer.
+* @param length The data length of the audio frame.
+* @param audioEncodedFrameInfoThe information of the encoded audio frame: EncodedAudioFrameInfo.
+
+*/
+virtual void OnPlaybackEncodedAudioReceived(const uint8_t* frameBuffer,  int length, const EncodedAudioFrameInfo& audioEncodedFrameInfo) = 0;
+
+/**
+* Occurs each time the SDK receives an encoded mixed audio frame.
+* @param frameBufferThe pointer to the audio frame buffer.
+* @param length The data length of the audio frame.
+* @param audioEncodedFrameInfoThe information of the encoded audio frame: EncodedAudioFrameInfo.
+
+*/
+virtual void OnMixedEncodedAudioReceived(const uint8_t* frameBuffer,  int length, const EncodedAudioFrameInfo& audioEncodedFrameInfo) = 0;
+
+/**
+* Occurs each time the SDK receives an encoded before-mixing playback audio frame.
+* @param frameBufferThe pointer to the audio frame buffer.
+* @param length The data length of the audio frame.
+* @param audioEncodedFrameInfoThe information of the encoded audio frame: EncodedAudioFrameInfo.
+
+*/
+virtual void OnPlaybackEncodedAudioReceivedBeforeMixing(uid_t uid, const uint8_t* frameBuffer,  int length, const EncodedAudioFrameInfo& audioEncodedFrameInfo) = 0;
+
+virtual ~IAudioEncodedFrameReceiver () {}
+};
+
+/**
  * Preset local voice changer options.
  */
 enum VOICE_CHANGER_PRESET {

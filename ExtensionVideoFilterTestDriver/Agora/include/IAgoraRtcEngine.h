@@ -3434,6 +3434,14 @@ class IRtcEngine : public agora::base::IEngineBase {
   */
   virtual int startAudioRecording(const AudioFileRecordingConfig& config) = 0;
 
+  /** register encoded audio frame receiver
+   * note: only AUDIO_FILE_RECORDING_MIXED is available. other postion comming soon
+   @return
+  - 0: Success.
+  - < 0: Failure.
+   */
+  virtual int registerEncodedAudioFrameReceiver(const AudioEncodedFrameReceiverConfig& config,  IAudioEncodedFrameReceiver *receiver) = 0;
+
   /** Stops the audio recording on the client.
 
   The recording automatically stops when the leaveChannel() method is called.
@@ -4821,6 +4829,7 @@ class IRtcEngine : public agora::base::IEngineBase {
   virtual int stopSecondaryCameraCapture() = 0;
 
   virtual int setCameraDeviceOrientation(MEDIA_SOURCE_TYPE type, VIDEO_ORIENTATION orientation) = 0;
+  virtual int setScreenCaptureOrientation(MEDIA_SOURCE_TYPE type, VIDEO_ORIENTATION orientation) = 0;
 
   virtual int startPrimaryScreenCapture(const ScreenCaptureConfiguration& config) = 0;
   virtual int startSecondaryScreenCapture(const ScreenCaptureConfiguration& config) = 0;
