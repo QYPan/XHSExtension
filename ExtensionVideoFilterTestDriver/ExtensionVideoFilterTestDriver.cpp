@@ -2,6 +2,7 @@
 // ExtensionVideoFilterTestDriver.cpp : Defines the entry point for the application.
 //
 #include <thread>
+#include <fstream>
 #include <chrono>
 #include "data_types.h"
 #include "framework.h"
@@ -24,6 +25,14 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+
+std::string GetAppId() {
+    std::ifstream in("d:/appid.txt");
+    std::string appid;
+    in >> appid;
+    in.close();
+    return appid;
+}
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -55,7 +64,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     agora::rtc::RtcEngineContextEx ctx;
-    ctx.appId = "aab8b8f5a8cd4469a63042fcfafe7063";
+    ctx.appId = GetAppId().c_str();
     ctx.enableAudio = true;
     ctx.enableVideo = false;
     ctx.extensions = new agora::rtc::Extension[1];
