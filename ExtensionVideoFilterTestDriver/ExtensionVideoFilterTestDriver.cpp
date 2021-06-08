@@ -64,7 +64,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     agora::rtc::RtcEngineContextEx ctx;
-    ctx.appId = GetAppId().c_str();
+    std::string appid = GetAppId();
+    ctx.appId = appid.c_str();
     ctx.enableAudio = true;
     ctx.enableVideo = false;
     ctx.extensions = new agora::rtc::Extension[1];
