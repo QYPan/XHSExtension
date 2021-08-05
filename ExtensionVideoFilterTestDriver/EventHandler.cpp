@@ -8,8 +8,9 @@ void RtcEngineEventHandlerEx::onLeaveChannel(agora::rtc::conn_id_t conn_id, cons
     return;
 }
 
-void RtcEngineEventHandlerEx::onExtensionEvent(const char* id, const char* key, const char* json_value) {
-    (void)id;
+void RtcEngineEventHandlerEx::onExtensionEvent(const char* provider_name, const char* ext_name, const char* key, const char* json_value) {
+    (void)provider_name;
+    (void)ext_name;
     (void)key;
     (void)json_value;
 }

@@ -26,7 +26,7 @@ class IMediaPlayerSourceObserver;
  */
 class IMediaPlayer : public RefCountInterface {
 protected:
- virtual ~IMediaPlayer() {}
+  virtual ~IMediaPlayer() {}
 
 public:
   virtual int initialize(base::IAgoraService* agora_service) = 0;
@@ -100,7 +100,7 @@ public:
 
   virtual int getStreamCount(int64_t& count) = 0;
 
-  virtual int getStreamInfo(int64_t index, media::base::MediaStreamInfo* info) = 0;
+  virtual int getStreamInfo(int64_t index, media::base::PlayerStreamInfo* info) = 0;
 
   /**
    * Sets whether to loop the media file for playback.
@@ -113,6 +113,38 @@ public:
    * - < 0: Failure.
    */
   virtual int setLoopCount(int loopCount) = 0;
+
+ /**
+   * Mute the audio playing
+   * @param audio_mute : mute or unmute audio
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int muteAudio(bool audio_mute) = 0;
+
+  /**
+   * Gets whehter audio is muted
+   * @param None
+   * @return true or false
+   */
+  virtual bool isAudioMuted() = 0;
+
+  /**
+   * Mute the audio playing
+   * @param video_mute : mute or unmute video
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int muteVideo(bool video_mute) = 0;
+
+  /**
+   * Gets whehter audio is muted
+   * @param None
+   * @return true or false
+   */
+  virtual bool isVideoMuted() = 0;
 
   /**
    * Change playback speed
@@ -142,6 +174,15 @@ public:
    */
   virtual int setPlayerOption(const char* key, int value) = 0;
 
+  /**
+   * change player option before play a file
+   * @param key the key of the option param
+   * @param value the value of option param
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int setPlayerOption(const char* key, const char* value) = 0;
   /**
    * take screenshot while playing  video
    * @param filename the filename of screenshot file
@@ -268,6 +309,21 @@ public:
   virtual int registerAudioFrameObserver(media::base::IAudioFrameObserver* observer) = 0;
 
   /**
+   * Registers an audio observer.
+   *
+   * @param observer The audio observer, reporting the reception of each audio
+   * frame. See
+   * \ref media::base::IAudioFrameObserver "IAudioFrameObserver" for
+   * details.
+   * @param mode Use mode of the audio frame. See #RAW_AUDIO_FRAME_OP_MODE_TYPE.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int registerAudioFrameObserver(media::base::IAudioFrameObserver* observer,
+                                         RAW_AUDIO_FRAME_OP_MODE_TYPE mode) = 0;
+
+  /**
    * Releases the audio frame observer.
    * @param observer The pointer to the IAudioFrameObserver object.
    * @return
@@ -291,6 +347,15 @@ public:
    * @return int < 0 on behalf of an error, the value corresponds to one of MEDIA_PLAYER_ERROR
    */
   virtual int unregisterVideoFrameObserver(agora::media::base::IVideoFrameObserver* observer) = 0;
+
+  virtual const char* getPlayerSdkVersion() = 0;
+
+  /**
+   * Get the current play src.
+   * @return
+   * - current play src of raw bytes.
+   */
+  virtual const char* getPlaySrc() = 0;
 };
 
 } //namespace rtc

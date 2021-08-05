@@ -161,7 +161,7 @@ xcopy $(ProjectDir)XhsGraphics\dll\zlibd.dll $(ProjectDir)package\face_beauty.xh
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;SAMPLEEXTENSIONVIDEOFILTER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CRT_SECURE_NO_WARNINGS;SAMPLEEXTENSIONVIDEOFILTER_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -173,8 +173,9 @@ xcopy $(ProjectDir)XhsGraphics\dll\zlibd.dll $(ProjectDir)package\face_beauty.xh
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>extension.def</ModuleDefinitionFile>
-      <AdditionalDependencies>xhsGraphicsWin.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
+      <AdditionalDependencies>xhsGraphicsWin.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;agora_rtc_sdk.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>XhsGraphics/lib</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
@@ -195,7 +196,6 @@ xcopy $(ProjectDir)XhsGraphics\dll\zlib.dll $(ProjectDir)package\face_beauty.xhs
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="exported_functions.h" />
     <ClInclude Include="Extension\data_types.h" />
     <ClInclude Include="Extension\face_beauty_extension_provider.h" />
     <ClInclude Include="Extension\face_beauty_video_filter.h" />
@@ -206,7 +206,6 @@ xcopy $(ProjectDir)XhsGraphics\dll\zlib.dll $(ProjectDir)package\face_beauty.xhs
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="exported_functions.cpp" />
     <ClCompile Include="Extension\face_beauty_extension_provider.cpp" />
     <ClCompile Include="Extension\face_beauty_video_filter.cpp" />
     <ClCompile Include="pch.cpp">
@@ -215,9 +214,6 @@ xcopy $(ProjectDir)XhsGraphics\dll\zlib.dll $(ProjectDir)package\face_beauty.xhs
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="extension.def" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SampleExtensionVideoFilter.rc" />

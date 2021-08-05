@@ -3,9 +3,7 @@
 //
 //  Copyright (c) 2015 Agora IO. All rights reserved.
 //
-
-#ifndef AGORA_MEDIA_ENGINE_H
-#define AGORA_MEDIA_ENGINE_H
+#pragma once
 
 #include <stdint.h>
 #include "IAgoraRtcEngine.h"
@@ -207,11 +205,9 @@ class IMediaEngine {
   virtual void release() = 0;
 
  protected:
-  virtual ~IMediaEngine(){};
+  virtual ~IMediaEngine() {}
 };
 
 }  // namespace media
 
 }  // namespace agora
-
-#endif  // AGORA_MEDIA_ENGINE_H

@@ -6,124 +6,107 @@
 #include <stdio.h>
 #include "face_beauty_video_filter.h"
 
+namespace agora {
+namespace extension {
+
 #define ENUM_TO_STR(TYPE) std::string(#TYPE)
 
 static std::map<std::string, xhs_Command_type> m_xhs_command_dict;
 static void initCommandDict();
 
-std::ofstream GLogFile;
-
-static void FilterLog(const char* fmt, ...) {
-  if (!fmt || !*fmt) {
-    return;
-  }
-
-  va_list ap;
-  va_start(ap, fmt);
-  auto size = vsnprintf(nullptr, 0, fmt, ap);
-  va_end(ap);
-  if (size <= 0) {
-    return;
-  }
-
-  std::unique_ptr<char[]> buf = std::make_unique<char[]>(size + 2);
-  memset(buf.get(), 0, size + 2);
-  va_start(ap, fmt);
-  size = vsnprintf(buf.get(), size + 2, fmt, ap);
-  va_end(ap);
-  if (size <= 0) {
-    return;
-  }
-
-  std::string msg(buf.get());
-}
-
 class SimpleLogger {
 public:
-  static SimpleLogger* GetInstance() {
-    if (!instance_) {
-      instance_ = new SimpleLogger();
-    }
-    return instance_;
-  }
-
-  static void DestroyInstance() {
-    if (instance_) {
-      delete instance_;
-      instance_ = nullptr;
-    }
-  }
-
-  enum LOG_TYPE {
-    L_INFO,
-    L_WARN,
-    L_ERROR
-  };
-
-  void Print(LOG_TYPE type, const char* fmt, ...) {
-    if (!fmt || !*fmt) {
-      return;
+    static SimpleLogger* GetInstance() {
+        if (!instance_) {
+            instance_ = new SimpleLogger();
+        }
+        return instance_;
     }
 
-    va_list ap;
-    va_start(ap, fmt);
-    auto size = vsnprintf(nullptr, 0, fmt, ap);
-    va_end(ap);
-    if (size <= 0) {
-      return;
+    static void DestroyInstance() {
+        if (instance_) {
+            delete instance_;
+            instance_ = nullptr;
+        }
     }
 
-    std::unique_ptr<char[]> buf = std::make_unique<char[]>(size + 2);
-    memset(buf.get(), 0, size + 2);
-    va_start(ap, fmt);
-    size = vsnprintf(buf.get(), size + 2, fmt, ap);
-    va_end(ap);
-    if (size <= 0) {
-      return;
-    }
+    enum LOG_TYPE {
+        L_INFO,
+        L_WARN,
+        L_ERROR,
+        L_FUNC
+    };
 
-    static std::map<LOG_TYPE, std::string> log_type_map = {{L_INFO, "[I]: "},{L_WARN, "[W]: "},{L_ERROR, "[E]: "}};
+    void Print(LOG_TYPE type, const char* fmt, ...) {
+        if (!fmt || !*fmt) {
+            return;
+        }
 
-    std::string msg(buf.get());
-    if (writer_.is_open()) {
-      writer_ << log_type_map[type] << msg << std::endl;
+        va_list ap;
+        va_start(ap, fmt);
+        auto size = vsnprintf(nullptr, 0, fmt, ap);
+        va_end(ap);
+        if (size <= 0) {
+            return;
+        }
+
+        std::unique_ptr<char[]> buf = std::make_unique<char[]>(size + 2);
+        memset(buf.get(), 0, size + 2);
+        va_start(ap, fmt);
+        size = vsnprintf(buf.get(), size + 2, fmt, ap);
+        va_end(ap);
+        if (size <= 0) {
+            return;
+        }
+
+        static std::map<LOG_TYPE, std::string> log_type_map = {{L_INFO, "[I]:"},{L_WARN, "[W]:"},{L_ERROR, "[E]:"}, {L_FUNC, "[F]:"}};
+        SYSTEMTIME sysTime = { 0 };
+        GetLocalTime(&sysTime);
+        char strtime[64] = { 0 };
+        _snprintf_s(strtime, 64, " [%04d/%02d/%02d %02d:%02d:%02d:%02d] ", sysTime.wYear, sysTime.wMonth, sysTime.wDay,
+            sysTime.wHour, sysTime.wMinute, sysTime.wSecond, sysTime.wMilliseconds);
+
+        std::string msg(buf.get());
+        if (writer_.is_open()) {
+            writer_ << log_type_map[type] << strtime << "[" << ::GetCurrentThreadId() << "] " << msg << std::endl;
+        }
     }
-  }
 
 private:
-  SimpleLogger() {
-    writer_.open("FaceBeautyVideoFilter.log", std::ofstream::out);
-  }
+    SimpleLogger() {
+        writer_.open("face_beauty_video_filter.log", std::ofstream::out);
+    }
 
-  ~SimpleLogger() {
-    writer_.close();
-  }
+    ~SimpleLogger() {
+        writer_.close();
+    }
 
-  static SimpleLogger *instance_;
-  std::ofstream writer_;
+    static SimpleLogger *instance_;
+    std::ofstream writer_;
 };
 
 SimpleLogger* SimpleLogger::instance_ = nullptr;
 
+#define PRINT_LOG(type, ...) \
+	SimpleLogger::GetInstance()->Print(type, ##__VA_ARGS__)
+
 CFaceBeautyVideoFilter::CFaceBeautyVideoFilter(const char* id, const EngineInitParamsAid& config, agora::rtc::IExtensionControl* core)
   : enabled_(true), id_(id), config_(config), core_(core), init_(false) {
-  //std::string fileName = std::string("FaceBeautyVideoFilter_") + std::to_string((int)this);
-  printf("this: %p, thread: %d, CFaceBeautyVideoFilter::CFaceBeautyVideoFilter, id: %s\n", this, ::GetCurrentThreadId(), id);
+    PRINT_LOG(SimpleLogger::LOG_TYPE::L_FUNC, "%s: this: %p, id: %s.", __FUNCTION__, this, id);
 }
 
 CFaceBeautyVideoFilter::~CFaceBeautyVideoFilter() {
-    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::~CFaceBeautyVideoFilter\n", this, ::GetCurrentThreadId());
+    PRINT_LOG(SimpleLogger::LOG_TYPE::L_FUNC, "%s: this: %p, engine: %p.", __FUNCTION__, this, m_pBeautyEngine);
     if (m_pBeautyEngine != nullptr)
     {
         m_pBeautyEngine->destroyWindowsEngine();
         delete m_pBeautyEngine;
         m_pBeautyEngine = nullptr;
-        printf("this: %p, thread: %d, CFaceBeautyVideoFilter::~CFaceBeautyVideoFilter, release beauty engine\n", this, ::GetCurrentThreadId());
     }
 }
 
-bool CFaceBeautyVideoFilter::onDataStreamWillStart() {
-  printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDataStreamWillStart, init: %d\n", this, ::GetCurrentThreadId(), init_);
+int CFaceBeautyVideoFilter::start(agora::agora_refptr<Control> control) {
+  PRINT_LOG(SimpleLogger::LOG_TYPE::L_FUNC, "%s: this: %p, init: %d.", __FUNCTION__, this, init_);
   if (!init_)
     {
         initCommandDict();
@@ -133,12 +116,12 @@ bool CFaceBeautyVideoFilter::onDataStreamWillStart() {
         nlohmann::json result_json = result;
         if (core_) {
             core_->log(agora::commons::LOG_LEVEL::LOG_LEVEL_INFO, "init xhs_filter_engine");
-            core_->fireEvent(id_.c_str(), "INIT_XHS_FILTER_ENGINE", result_json.dump().c_str());
+            core_->fireEvent(id_.c_str(), "INIT_XHS_FILTER_ENGINE", "", result_json.dump().c_str());
         }
 
-        if (result != 0)
+        if (result)
         {
-            printf("this: %p, thread: %d, Beauty engine init failed. Error code:%d\n", this, ::GetCurrentThreadId(), result);
+            PRINT_LOG(SimpleLogger::LOG_TYPE::L_ERROR, "this: %p, beauty engine init failed. result: %d.", this, result);
             m_pBeautyEngine->destroyWindowsEngine();
             delete m_pBeautyEngine;
             m_pBeautyEngine = nullptr;
@@ -147,16 +130,23 @@ bool CFaceBeautyVideoFilter::onDataStreamWillStart() {
 
         // temp load ai here
         result = m_pBeautyEngine->loadAIModel(config_._aiModelPath.c_str());
+        if (result) {
+            PRINT_LOG(SimpleLogger::LOG_TYPE::L_WARN, "this: %p, load ai model failed. result: %d.", this, result);
+        }
+
         // temp load beauty image here
         result = m_pBeautyEngine->setBeautyResourcePath(config_._beautyResPath.c_str());
+        if (result) {
+            PRINT_LOG(SimpleLogger::LOG_TYPE::L_WARN, "this: %p, set beauty resource path failed. result: %d.", this, result);
+        }
+
         init_ = true;
     }
-  printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDataStreamWillStart finish, init: %d\n", this, ::GetCurrentThreadId(), init_);
   return true;
 }
 
-void CFaceBeautyVideoFilter::onDataStreamWillStop() {
-    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDataStreamWillStop, init: %d\n", this, ::GetCurrentThreadId(), init_);
+int CFaceBeautyVideoFilter::stop() {
+    PRINT_LOG(SimpleLogger::LOG_TYPE::L_FUNC, "%s: this: %p, init: %d", __FUNCTION__, this, init_);
     if (init_)
     {
         if (m_pBeautyEngine != nullptr) {
@@ -166,7 +156,7 @@ void CFaceBeautyVideoFilter::onDataStreamWillStop() {
             init_ = false;
         }
     }
-    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::onDataStreamWillStop finish, init: %d\n", this, ::GetCurrentThreadId(), init_);
+    return true;
 }
 
 void initCommandDict() {
@@ -183,31 +173,54 @@ void initCommandDict() {
     m_xhs_command_dict = std::map<std::string, xhs_Command_type>(pairs, pairs + XHS_PLUGIN_COMMAND_COUNT);
 }
 
-bool CFaceBeautyVideoFilter::adaptVideoFrame(const agora::media::base::VideoFrame& capturedFrame,
-    agora::media::base::VideoFrame& adaptedFrame) {
-    //printf("this: %p, thread: %d, CFaceBeautyVideoFilter::adaptVideoFrame, m_pBeautyEngine: %p\n", this, ::GetCurrentThreadId(), m_pBeautyEngine ? m_pBeautyEngine : 0);
-    if (m_pBeautyEngine == nullptr) {
-        return false;
-    }
-    m_pBeautyEngine->processYUV(capturedFrame.yBuffer, capturedFrame.uBuffer, capturedFrame.vBuffer,capturedFrame.width, capturedFrame.height);
-    adaptedFrame = capturedFrame;
-    m_pBeautyEngine->getOutputYUVData(adaptedFrame.yBuffer, adaptedFrame.uBuffer, adaptedFrame.vBuffer);
-    return true;
+void CFaceBeautyVideoFilter::getProcessMode(ProcessMode& mode, bool& isolated) {
+    mode = ProcessMode::kSync;
+    isolated = true;
 }
 
-size_t CFaceBeautyVideoFilter::setProperty(const char* key, const void* buf, size_t buf_size) {
-    printf("this: %p, thread: %d, CFaceBeautyVideoFilter::setProperty, key: %s, buf: %s\n", this, ::GetCurrentThreadId(), key, (buf ? (char*)buf : "null"));
+void CFaceBeautyVideoFilter::getVideoFormatWanted(agora::rtc::VideoFrameData::Type& type, agora::rtc::RawPixelBuffer::Format& format) {
+    type = agora::rtc::VideoFrameData::Type::kRawPixels;
+    format = agora::rtc::RawPixelBuffer::Format::kI420;
+}
+
+agora::rtc::IExtensionVideoFilter::ProcessResult CFaceBeautyVideoFilter::adaptVideoFrame(agora_refptr<rtc::IVideoFrame> in, agora_refptr<rtc::IVideoFrame>& out) {
+    if (!in || m_pBeautyEngine == nullptr) {
+      return kBypass;
+    }
+
+    agora::rtc::VideoFrameData frame;
+    in->getVideoFrameData(frame);
+
+    if (frame.type != agora::rtc::VideoFrameData::Type::kRawPixels || frame.pixels.format != agora::rtc::RawPixelBuffer::Format::kI420) {
+      return kBypass;
+    }
+
+    int stride_uv = (frame.width + 1) / 2;
+    uint8_t* data = frame.pixels.data;
+    uint8_t* buffer_y = data;
+    uint8_t* buffer_u = data + frame.width * frame.height;
+    uint8_t* buffer_v = buffer_u + stride_uv * frame.height / 2;
+
+    m_pBeautyEngine->processYUV(buffer_y, buffer_u, buffer_v, frame.width, frame.height);
+    out = in;
+    //m_pBeautyEngine->getOutputYUVData(adaptedFrame.yBuffer, adaptedFrame.uBuffer, adaptedFrame.vBuffer);
+
+    return kSuccess;
+}
+
+int CFaceBeautyVideoFilter::setProperty(const char* key, const void* buf, size_t buf_size) {
+    PRINT_LOG(SimpleLogger::LOG_TYPE::L_FUNC, "%s: this: %p, key: %s, buf: %s.", this, key, (buf ? (char*)buf : "null"));
     //auto type = m_xhs_command_dict[key];
     auto it = m_xhs_command_dict.find(key);
     if (it == m_xhs_command_dict.end())
     {
-        printf("this: %p, thread: %d, invalid xhs command key: %s\n", this, ::GetCurrentThreadId(), key);
+        PRINT_LOG(SimpleLogger::LOG_TYPE::L_ERROR, "this: %p, invalid xhs command key: %s.", this, key);
         return -1;
     }
     auto type = it->second;
     if (m_pBeautyEngine == nullptr || buf == nullptr)
     {
-        printf("this: %p, thread: %d, m_pBeautyEngine or buf null\n", this, ::GetCurrentThreadId());
+        PRINT_LOG(SimpleLogger::LOG_TYPE::L_ERROR, "this: %p, m_pBeautyEngine or buf null.", this);
         return -1;
     }
     switch (type)
@@ -268,7 +281,7 @@ size_t CFaceBeautyVideoFilter::setProperty(const char* key, const void* buf, siz
             std::ostringstream message;
             message << "invalid path for lut: " << aid._subPath;
             core_->log(agora::commons::LOG_LEVEL::LOG_LEVEL_INFO, message.str().c_str());
-            printf("this: %p, thread: %d, aid _subPath empty\n", this, ::GetCurrentThreadId());
+            PRINT_LOG(SimpleLogger::LOG_TYPE::L_ERROR, "this: %p, aid _subPath is empty, type: %d.", this, type);
             return -1;
         }
         std::replace(aid._subPath.begin(), aid._subPath.end(), '/', '\\');
@@ -277,10 +290,10 @@ size_t CFaceBeautyVideoFilter::setProperty(const char* key, const void* buf, siz
     }
 
     case XHS_PLUGIN_COMMAND_INVALID:
-        printf("this: %p, thread: %d, invalid command: %s\n",this, ::GetCurrentThreadId(), key);
+        PRINT_LOG(SimpleLogger::LOG_TYPE::L_ERROR, "this: %p, invalid type: %d.",this, type);
         break;
     default:
-        printf("this: %p, thread: %d, unknown command: %s, type: %d\n",this, ::GetCurrentThreadId(), key, type);
+        PRINT_LOG(SimpleLogger::LOG_TYPE::L_ERROR, "this: %p, unknown type: %d\n",this, type);
         break;
     }
   return -1;
@@ -297,4 +310,7 @@ xhs_Command_type getKeyCommandType(const char* key) {
     }
 
     return type;
+}
+
+}
 }

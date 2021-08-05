@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
 // ExtensionVideoFilterTestDriver.cpp : Defines the entry point for the application.
 //
 #include <thread>
@@ -27,7 +26,7 @@ LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 std::string GetAppId() {
-    std::ifstream in("d:/appid.txt");
+    std::ifstream in("C:/Users/qyou/space/appid.txt");
     std::string appid;
     in >> appid;
     in.close();
@@ -41,6 +40,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
+
+    std::string provider_name("xiaohongshu");
 
     // TODO: Place code here.
 
@@ -58,18 +59,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EXTENSIONVIDEOFILTERTESTDRIVER));
 
     // initialize rtc engine
-    auto engine = static_cast<agora::rtc::IRtcEngineEx*>(createAgoraRtcEngine());
+    auto engine = static_cast<agora::rtc::IRtcEngine*>(createAgoraRtcEngine());
     if (!engine) {
         return -1;
     }
 
-    agora::rtc::RtcEngineContextEx ctx;
+    agora::rtc::RtcEngineContext ctx;
     std::string appid = GetAppId();
     ctx.appId = appid.c_str();
-    ctx.enableAudio = true;
-    ctx.enableVideo = false;
-    ctx.extensions = new agora::rtc::Extension[1];
-    ctx.extensions[0].id = "face_beauty.xhs";
+    ctx.eventHandlerEx = new RtcEngineEventHandlerEx();
+    // initialize
+    int error = engine->initialize(ctx);
+
     // get current exe path
     char szFullPath[MAX_PATH];
     ::GetModuleFileNameA(NULL, szFullPath, MAX_PATH);
@@ -77,19 +78,29 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     auto pos = path.find_last_of('\\');
     path = path.replace(pos, path.length() - pos, "");
     std::string dll_path = path + "/extensions/face_beauty.xhs/XHSFaceBeautyExtension.dll";
-    ctx.extensions[0].path = dll_path.c_str();
+
+    int ret = engine->loadExtensionProvider("C:\\Users\\qyou\\space\\work\\Others\\SampleExtension\\ExtensionVideoFilterTestDriver\\x64\\Release\\extensions\\face_beauty.xhs\\XHSFaceBeautyExtension.dll");
+
+    char logret[100] = {0};
+    sprintf(logret, "load ret: %d\n", ret);
+    OutputDebugStringA(logret);
+
+    ret = engine->enableExtension(provider_name.c_str(), "face_beauty.xhs", true, agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY);
+    sprintf(logret, "enable ret1: %d\n", ret);
+    OutputDebugStringA(logret);
+
+    ret = engine->enableExtension(provider_name.c_str(), "face_beauty.xhs", true, agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY);
+    sprintf(logret, "enable ret2: %d\n", ret);
+    OutputDebugStringA(logret);
+
     EngineInitParamsAid config;
     config._license = path + "/extensions/face_beauty.xhs";
     config._userId = "test-driver";
     config._aiModelPath = path + "/extensions/face_beauty.xhs/slim-320.face_kpt_v2.mouth.eyebrow.bin";
     config._beautyResPath = path + "/extensions/face_beauty.xhs/Beauty_Res";
     std::string config_json = config.to_json();
-    ctx.extensions[0].config =  config_json.c_str();
-    ctx.numExtension = 1;
-    ctx.eventHandlerEx = new RtcEngineEventHandlerEx();
 
-    // initialize
-    int error = engine->initialize(ctx);
+    engine->setExtensionProperty(provider_name.c_str(), nullptr, "", config_json.c_str());
 
     error = engine->setChannelProfile(agora::CHANNEL_PROFILE_LIVE_BROADCASTING);
 
@@ -191,42 +202,42 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // 开启第一第二路美颜开关
     //******************************************************************************************************************************************************************
     nlohmann::json j = true;
-    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_FILTER_SWITCH", j.dump().c_str());
-    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_COLOR_FILTER_SWITCH", j.dump().c_str());
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_FILTER_SWITCH", j.dump().c_str(), agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY);
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_COLOR_FILTER_SWITCH", j.dump().c_str(), agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY);
 
-    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_FILTER_SWITCH", j.dump().c_str());
-    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_COLOR_FILTER_SWITCH", j.dump().c_str());
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_FILTER_SWITCH", j.dump().c_str(), agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY);
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_COLOR_FILTER_SWITCH", j.dump().c_str(), agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY);
 
     //******************************************************************************************************************************************************************
 
     // 设置第一路美颜参数
     BeautyFilterAid aid1 = { FaceBeautyType::XHS_NARROW_FACE, true, 41.882 };
-    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid1.to_json().c_str());
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid1.to_json().c_str(), agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY);
     //system("pause");
 
     // 设置第二路美颜参数
     BeautyFilterAid aid2 = { FaceBeautyType::XHS_NARROW_FACE, true, 13.882 };
-    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid2.to_json().c_str());
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid2.to_json().c_str(), agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY);
     system("pause");
 
     //******************************************************************************************************************************************************************
 
     BeautyFilterAid aid3 = { FaceBeautyType::XHS_NARROW_FACE, true, 454.882 };
-    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid3.to_json().c_str());
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid3.to_json().c_str(), agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY);
     //system("pause");
 
     BeautyFilterAid aid4 = { FaceBeautyType::XHS_NARROW_FACE, true, 5.882 };
-    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid4.to_json().c_str());
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid4.to_json().c_str(), agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY);
     system("pause");
 
     //******************************************************************************************************************************************************************
 
     BeautyFilterAid aid5 = { FaceBeautyType::XHS_NARROW_FACE, true, 111 };
-    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid5.to_json().c_str());
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid5.to_json().c_str(), agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY);
     //system("pause");
 
     BeautyFilterAid aid6 = { FaceBeautyType::XHS_NARROW_FACE, true, 51.882 };
-    engine->setExtensionProperty(agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY, "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid6.to_json().c_str());
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid6.to_json().c_str(), agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY);
     system("pause");
 
     std::this_thread::sleep_for(std::chrono::seconds(180));
@@ -244,7 +255,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     engine->release();
-    delete[] ctx.extensions;
     return (int) msg.wParam;
 }
 

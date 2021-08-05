@@ -27,9 +27,6 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="exported_functions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -53,20 +50,12 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="exported_functions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Extension\face_beauty_extension_provider.cpp">
       <Filter>Extension</Filter>
     </ClCompile>
     <ClCompile Include="Extension\face_beauty_video_filter.cpp">
       <Filter>Extension</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="extension.def">
-      <Filter>Header Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SampleExtensionVideoFilter.rc">

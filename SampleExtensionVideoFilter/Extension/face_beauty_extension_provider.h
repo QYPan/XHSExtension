@@ -5,21 +5,25 @@
 #include "NGIAgoraExtensionControl.h"
 #include "data_types.h"
 
+namespace agora {
+namespace extension {
+
 class CFaceBeautyVideoFilterProvider : public agora::rtc::IExtensionProvider {
  public:
-  CFaceBeautyVideoFilterProvider(const EngineInitParamsAid& config);
+  CFaceBeautyVideoFilterProvider();
   ~CFaceBeautyVideoFilterProvider();
  
   void setExtensionControl(agora::rtc::IExtensionControl* control) override {control_ = control;}
+  agora::agora_refptr<agora::rtc::IAudioFilter> createAudioFilter(const char* name) override {return nullptr;};
+  agora::agora_refptr<agora::rtc::IExtensionVideoFilter> createVideoFilter(const char* name) override;
+  agora::agora_refptr<agora::rtc::IVideoSinkBase> createVideoSink(const char* name) override {return nullptr;};
+  void enumerateExtensions(ExtensionMetaInfo* extension_list, int& extension_count) override;
+  void setProperty(const char* key, const char* value) override;
 
-  agora::rtc::IExtensionProvider::PROVIDER_TYPE getProviderType() override {
-      return agora::rtc::IExtensionProvider::LOCAL_VIDEO_FILTER;
-  }
-  agora::agora_refptr<agora::rtc::IAudioFilter> createAudioFilter() override {return nullptr;};
-  agora::agora_refptr<agora::rtc::IVideoFilter> createVideoFilter() override;
-  agora::agora_refptr<agora::rtc::IVideoSinkBase> createVideoSink() override {return nullptr;};
- 
  private:
   agora::rtc::IExtensionControl* control_;
   EngineInitParamsAid config_;
 };
+
+}
+}

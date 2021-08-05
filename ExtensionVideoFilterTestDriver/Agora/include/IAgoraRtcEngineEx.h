@@ -10,10 +10,26 @@
 #include <string>
 #include "IAgoraRtcEngine.h"
 
+#ifndef OPTIONAL_ENUM_CLASS
+#if __cplusplus >= 201103L || (defined(_MSC_VER) && _MSC_VER >= 1800)
+#define OPTIONAL_ENUM_CLASS enum class
+#else
+#define OPTIONAL_ENUM_CLASS enum
+#endif
+#endif
+
+#ifndef OPTIONAL_NULLPTR
+#if __cplusplus >= 201103L || (defined(_MSC_VER) && _MSC_VER >= 1800)
+#define OPTIONAL_NULLPTR nullptr
+#else
+#define OPTIONAL_NULLPTR NULL
+#endif
+#endif
+
 namespace agora {
 namespace rtc {
 
-enum class RTC_EVENT;
+// OPTIONAL_ENUM_CLASS RTC_EVENT;
 
 class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
  public:
@@ -35,7 +51,6 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
   using IRtcEngineEventHandler::onMediaDeviceChanged;
   using IRtcEngineEventHandler::onNetworkQuality;
   using IRtcEngineEventHandler::onIntraRequestReceived;
-  using IRtcEngineEventHandler::onBandwidthEstimationUpdated;
   using IRtcEngineEventHandler::onLastmileQuality;
   using IRtcEngineEventHandler::onFirstLocalVideoFrame;
   using IRtcEngineEventHandler::onFirstLocalVideoFramePublished;
@@ -317,10 +332,11 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
    * 
    * @param info The network info collections.
    */
+  /*
   virtual void onBandwidthEstimationUpdated(conn_id_t connId, const NetworkInfo& info) {
     (void)connId;
     (void)info;
-  }
+  }*/
 
   /**
    * Reports the last-mile network quality of the local user.
@@ -362,7 +378,7 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
     (void)elapsed;
   }
 
-  virtual void onVideoSourceFrameSizeChanged(conn_id_t connId, MEDIA_SOURCE_TYPE sourceType, int width, int height) {
+  virtual void onVideoSourceFrameSizeChanged(conn_id_t connId, VIDEO_SOURCE_TYPE sourceType, int width, int height) {
     (void)connId;
     (void)sourceType;
     (void)width;
@@ -427,6 +443,8 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
 
   /**
    * Occurs when the remote video state has changed.
+   * REMOTE_VIDEO_STATE_REASON_REMOTE_OFFLINE is not 100% guaranteed. When the
+   * remote user leaves, use onUserOffline to make a business decision.
    *
    * @param uid ID of the user whose video state has changed.
    * @param state The remote video state: #REMOTE_VIDEO_STATE.
@@ -694,6 +712,14 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
     (void)length;
   }
 
+  virtual void onStreamMessage(uid_t uid, int streamId, const char* data, size_t length, uint64_t sentTs) {
+    (void)uid;
+    (void)streamId;
+    (void)data;
+    (void)length;
+    (void)sentTs;
+  }
+
   /** Occurs when the local user fails to receive a remote data stream.
 
   The SDK triggers this callback when the local user fails to receive the stream
@@ -791,6 +817,8 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
   }
 
   /** Occurs when the remote audio state changes.
+   * REMOTE_AUDIO_STATE_REASON_REMOTE_OFFLINE is not 100% guaranteed. When the
+   * remote user leaves, use onUserOffline to make a business decision.
    *
    * This callback indicates the state change of the remote audio stream.
    *
@@ -1031,6 +1059,11 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
     (void)errorType;
   }
 
+  virtual void onUserAccountUpdated(uid_t uid, const char* userAccount){
+    (void)uid;
+    (void)userAccount;
+  }
+
   // TODO(tomiao): to be supported in Stream RTC Event Handler
 #if 0
   onLeaveChannel()
@@ -1081,27 +1114,43 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
     (void)length;
   }
 
-  virtual void onExtensionEvent(const char* id, const char* key, const char* json_value) {
-    (void)id;
+  virtual void onMediaEngineEvent(int evt) { (void)evt; }
+
+  virtual bool onCustomizedSei(const void** content, int* length) {
+    (void)content;
+    (void)length;
+
+    /* return false to indicate the SEI content is left to SDK to generate */
+    return false;
+  }
+
+  virtual void onExtensionEvent(const char* provider_name, const char* ext_name, const char* key, const char* json_value) {
+    (void)provider_name;
+    (void)ext_name;
     (void)key;
     (void)json_value;
+  }
+
+  virtual void onExtensionStarted(const char* provider_name, const char* ext_name) {
+    (void)provider_name;
+    (void)ext_name;
+  }
+
+  virtual void onExtensionStopped(const char* provider_name, const char* ext_name) {
+    (void)provider_name;
+    (void)ext_name;
+  }
+
+  virtual void onExtensionErrored(const char* provider_name, const char* ext_name, int error, const char* msg) {
+    (void)provider_name;
+    (void)ext_name;
+    (void)error;
+    (void)msg;
   }
 
 #ifdef INTERNAL_ENGINE_STATUS
   virtual void onInternalEngineStatus(InternalEngineStatus state) { (void)state; }
 #endif  // INTERNAL_ENGINE_STATUS
-};
-
-struct Extension {
-  // id of extension
-  const char* id;
-  // .so/.dll path
-  const char* path;
-  // extension configuration, e.g. resource path.
-  // config should be a json string.
-  const char* config;
-
-  Extension() : id(nullptr), path(nullptr), config(nullptr) {}
 };
 
 struct RtcEngineContextEx {
@@ -1117,9 +1166,7 @@ struct RtcEngineContextEx {
   bool enableVideo;
   unsigned int areaCode;
 
-  // extensions array.
-  Extension* extensions;
-  int numExtension;
+  bool useStringUid;
 
   RtcEngineContextEx()
       : eventHandlerEx(NULL)
@@ -1127,9 +1174,7 @@ struct RtcEngineContextEx {
       , context(NULL)
       , enableAudio(true)
       , enableVideo(false)
-      , areaCode(AREA_CODE_GLOBAL)
-      , extensions(nullptr)
-      , numExtension(0) {}
+      , areaCode(AREA_CODE_GLOB) {}
 };
 
 class IRtcEngineEx : public IRtcEngine {

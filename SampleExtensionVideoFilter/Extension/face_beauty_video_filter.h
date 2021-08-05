@@ -5,27 +5,33 @@
 #include "NGIAgoraExtensionControl.h"
 #include "data_types.h"
 
-class CFaceBeautyVideoFilter : public agora::rtc::IVideoFilter {
+namespace agora {
+namespace extension {
+
+class CFaceBeautyVideoFilter : public agora::rtc::IExtensionVideoFilter {
  public:
   CFaceBeautyVideoFilter(const char* id, const EngineInitParamsAid& config, agora::rtc::IExtensionControl* core);
   ~CFaceBeautyVideoFilter();
 
-  bool onDataStreamWillStart() override;
+  void setEnabled(bool enable) override {}
 
-  void onDataStreamWillStop() override;
+  bool isEnabled() override { return true; }
 
-  void setEnabled(bool enable) override {
-    enabled_ = enable;
-  }
+  int setProperty(const char *key, const void *buf, size_t buf_size) override;
 
-  bool isEnabled() override {
-    return enabled_;
-  }
+  int getProperty(const char *key, void *buf, size_t buf_size) override { return 0; }
 
-  size_t setProperty(const char* key, const void* buf, size_t buf_size) override;
+  void getProcessMode(ProcessMode& mode, bool& isolated) override;
 
-  bool adaptVideoFrame(const agora::media::base::VideoFrame& capturedFrame,
-                               agora::media::base::VideoFrame& adaptedFrame) override;
+  int start(agora::agora_refptr<Control> control) override;
+
+  int stop() override;
+
+  void getVideoFormatWanted(agora::rtc::VideoFrameData::Type& type, agora::rtc::RawPixelBuffer::Format& format) override;
+
+  ProcessResult pendVideoFrame(agora::agora_refptr<rtc::IVideoFrame> frame) override { return kBypass; }
+
+  ProcessResult adaptVideoFrame(agora_refptr<rtc::IVideoFrame> in, agora_refptr<rtc::IVideoFrame>& out) override;
 
  private:
   bool enabled_;
@@ -37,3 +43,6 @@ class CFaceBeautyVideoFilter : public agora::rtc::IVideoFilter {
   CG::XYCGWindowsEngine* m_pBeautyEngine = nullptr;
   const EngineInitParamsAid config_;
 };
+
+}
+}
