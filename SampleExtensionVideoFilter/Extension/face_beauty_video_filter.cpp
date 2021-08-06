@@ -91,7 +91,7 @@ SimpleLogger* SimpleLogger::instance_ = nullptr;
 	SimpleLogger::GetInstance()->Print(type, ##__VA_ARGS__)
 
 CFaceBeautyVideoFilter::CFaceBeautyVideoFilter(const char* id, const EngineInitParamsAid& config, agora::rtc::IExtensionControl* core)
-  : enabled_(true), id_(id), config_(config), core_(core), init_(false) {
+  : id_(id), config_(config), core_(core), init_(false) {
     PRINT_LOG(SimpleLogger::LOG_TYPE::L_FUNC, "%s: this: %p, id: %s.", __FUNCTION__, this, id);
 }
 
@@ -125,7 +125,7 @@ int CFaceBeautyVideoFilter::start(agora::agora_refptr<Control> control) {
             m_pBeautyEngine->destroyWindowsEngine();
             delete m_pBeautyEngine;
             m_pBeautyEngine = nullptr;
-            return false;
+            return -1;
         }
 
         // temp load ai here
@@ -142,7 +142,7 @@ int CFaceBeautyVideoFilter::start(agora::agora_refptr<Control> control) {
 
         init_ = true;
     }
-  return true;
+  return 0;
 }
 
 int CFaceBeautyVideoFilter::stop() {
@@ -156,7 +156,7 @@ int CFaceBeautyVideoFilter::stop() {
             init_ = false;
         }
     }
-    return true;
+    return 0;
 }
 
 void initCommandDict() {
@@ -202,14 +202,13 @@ agora::rtc::IExtensionVideoFilter::ProcessResult CFaceBeautyVideoFilter::adaptVi
     uint8_t* buffer_v = buffer_u + stride_uv * frame.height / 2;
 
     m_pBeautyEngine->processYUV(buffer_y, buffer_u, buffer_v, frame.width, frame.height);
+    m_pBeautyEngine->getOutputYUVData(buffer_y, buffer_u, buffer_v);
     out = in;
-    //m_pBeautyEngine->getOutputYUVData(adaptedFrame.yBuffer, adaptedFrame.uBuffer, adaptedFrame.vBuffer);
-
     return kSuccess;
 }
 
 int CFaceBeautyVideoFilter::setProperty(const char* key, const void* buf, size_t buf_size) {
-    PRINT_LOG(SimpleLogger::LOG_TYPE::L_FUNC, "%s: this: %p, key: %s, buf: %s.", this, key, (buf ? (char*)buf : "null"));
+    PRINT_LOG(SimpleLogger::LOG_TYPE::L_FUNC, "%s: this: %p, key: %s, buf: %s.", __FUNCTION__, this, key, (buf ? (char*)buf : "null"));
     //auto type = m_xhs_command_dict[key];
     auto it = m_xhs_command_dict.find(key);
     if (it == m_xhs_command_dict.end())

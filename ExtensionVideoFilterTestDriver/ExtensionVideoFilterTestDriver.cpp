@@ -195,7 +195,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return error;
     }
 
-    Sleep(3000);
+    //Sleep(3000);
 
     //system("pause");
 
