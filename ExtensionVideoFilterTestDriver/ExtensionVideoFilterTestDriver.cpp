@@ -77,9 +77,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     std::string path{ szFullPath };
     auto pos = path.find_last_of('\\');
     path = path.replace(pos, path.length() - pos, "");
-    std::string dll_path = path + "/extensions/face_beauty.xhs/XHSFaceBeautyExtension.dll";
+    std::string dll_path = path + "\\extensions\\face_beauty.xhs\\XHSFaceBeautyExtension.dll";
 
-    int ret = engine->loadExtensionProvider("C:\\Users\\qyou\\space\\work\\Others\\SampleExtension\\ExtensionVideoFilterTestDriver\\x64\\Release\\extensions\\face_beauty.xhs\\XHSFaceBeautyExtension.dll");
+    int ret = engine->loadExtensionProvider(dll_path.c_str());
 
     char logret[100] = {0};
     sprintf(logret, "load ret: %d\n", ret);
