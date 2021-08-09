@@ -116,7 +116,7 @@ int CFaceBeautyVideoFilter::start(agora::agora_refptr<Control> control) {
         nlohmann::json result_json = result;
         if (core_) {
             core_->log(agora::commons::LOG_LEVEL::LOG_LEVEL_INFO, "init xhs_filter_engine");
-            core_->fireEvent(id_.c_str(), "INIT_XHS_FILTER_ENGINE", "", result_json.dump().c_str());
+            core_->fireEvent("xiaohongshu", id_.c_str(), "INIT_XHS_FILTER_ENGINE", result_json.dump().c_str());
         }
 
         if (result)
