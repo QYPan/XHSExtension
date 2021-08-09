@@ -2229,44 +2229,57 @@ struct RtcStats {
 /**
 * Video source types definition.
 **/
-enum VIDEO_SOURCE_TYPE {
-  /** Video captured by the camera.
+enum MEDIA_SOURCE_TYPE {
+  /**
+   * Video captured by the camera.
    */
   VIDEO_SOURCE_CAMERA_PRIMARY,
   VIDEO_SOURCE_CAMERA = VIDEO_SOURCE_CAMERA_PRIMARY,
-  /** Video captured by the secondary camera.
+  /**
+   * Video captured by the secondary camera.
    */
   VIDEO_SOURCE_CAMERA_SECONDARY,
-  /** Video for screen sharing.
+  /**
+   * Video for screen sharing.
    */
   VIDEO_SOURCE_SCREEN_PRIMARY,
   VIDEO_SOURCE_SCREEN = VIDEO_SOURCE_SCREEN_PRIMARY,
-  /** Video for secondary screen sharing.
+  /**
+   * Video for secondary screen sharing.
    */
   VIDEO_SOURCE_SCREEN_SECONDARY,
-  /** Not define.
+  /**
+   * Video for custom source.
    */
   VIDEO_SOURCE_CUSTOM,
-  /** Video for media player sharing.
+  /**
+   * Video for media player sharing.
    */
   VIDEO_SOURCE_MEDIA_PLAYER,
-  /** Video for png image.
+  /**
+   * Video for png image.
    */
   VIDEO_SOURCE_RTC_IMAGE_PNG,
-  /** Video for png image.
+  /**
+   * Video for png image.
    */
   VIDEO_SOURCE_RTC_IMAGE_JPEG,
-  /** Video for png image.
+  /**
+   * Video for png image.
    */
   VIDEO_SOURCE_RTC_IMAGE_GIF,
-  /** Remote video received from network.
+  /**
+   * Remote video received from network.
    */
   VIDEO_SOURCE_REMOTE,
-  /** Video for transcoded.
+  /**
+   * Video for transcoded.
    */
   VIDEO_SOURCE_TRANSCODED,
-
-  VIDEO_SOURCE_UNKNOWN = 100
+  /**
+   * Not define.
+  */
+  MEDIA_SOURCE_UNKNOWN = 100
 };
 
 /**
@@ -2745,7 +2758,17 @@ enum REMOTE_VIDEO_STATE_REASON {
   /** 9: The remote audio-only stream switches back to the audio-and-video
    * stream after the network conditions improve.
    */
-  REMOTE_VIDEO_STATE_REASON_AUDIO_FALLBACK_RECOVERY = 9
+  REMOTE_VIDEO_STATE_REASON_AUDIO_FALLBACK_RECOVERY = 9,
+  
+  /** 10: The remote video stream type change to low stream type
+   *  just for internal use
+   */
+  REMOTE_VIDEO_STATE_REASON_VIDEO_STREAM_TYPE_CHANGE_TO_LOW = 10,
+  /** 11: The remote video stream type change to high stream type
+   *  just for internal use
+   */
+  REMOTE_VIDEO_STATE_REASON_VIDEO_STREAM_TYPE_CHANGE_TO_HIGH = 11,
+
 };
 
 /**
@@ -2791,9 +2814,9 @@ struct VideoTrackInfo {
    */
   bool encodedFrameOnly;
   /**
-   * The video source type: #VIDEO_SOURCE_TYPE
+   * The video source type: #MEDIA_SOURCE_TYPE
    */
-  VIDEO_SOURCE_TYPE sourceType;
+  MEDIA_SOURCE_TYPE sourceType;
 };
 
 /**
@@ -3360,7 +3383,7 @@ struct TranscodingVideoStream {
   /**
    * Source type of video stream.
    */
-  VIDEO_SOURCE_TYPE sourceType;
+  MEDIA_SOURCE_TYPE sourceType;
   /**
    * Remote user uid if sourceType is VIDEO_SOURCE_REMOTE.
    */
@@ -3686,7 +3709,7 @@ struct VideoCanvas {
 
   size_t priv_size;
 
-  VIDEO_SOURCE_TYPE sourceType;
+  MEDIA_SOURCE_TYPE sourceType;
 
   VideoCanvas() : view(NULL), renderMode(media::base::RENDER_MODE_HIDDEN), mirrorMode(VIDEO_MIRROR_MODE_AUTO),
       uid(0), isScreenView(false), priv(NULL), priv_size(0), sourceType(VIDEO_SOURCE_CAMERA_PRIMARY) {}

@@ -378,7 +378,7 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
     (void)elapsed;
   }
 
-  virtual void onVideoSourceFrameSizeChanged(conn_id_t connId, VIDEO_SOURCE_TYPE sourceType, int width, int height) {
+  virtual void onVideoSourceFrameSizeChanged(conn_id_t connId, MEDIA_SOURCE_TYPE sourceType, int width, int height) {
     (void)connId;
     (void)sourceType;
     (void)width;
