@@ -76,7 +76,7 @@ public:
 	/// <param name="data_height">原始数据所对应的图像的高</param>
 	/// <param name="stride">原始数据的stride</param>
 	/// <param name="data_len">原始数据的字节数</param>
-	void process(unsigned char *data, int pixelFormat, int data_width, int data_height, int stride, int data_len);
+	void process(unsigned char *data, int pixelFormat, int data_width, int data_height, int stride, int data_len, float rotation);
 	
 	/// <summary>
 	/// 处理yuv数据
@@ -86,7 +86,7 @@ public:
 	/// <param name="v"></param>
 	/// <param name="width"></param>
 	/// <param name="height"></param>
-	void processYUV(uint8_t* y, uint8_t* u, uint8_t* v, int width, int height);
+	void processYUV(uint8_t* y, uint8_t* u, uint8_t* v, int width, int height, float rotation);
 
 	/// <summary>
 	/// 设置美颜资源路径
