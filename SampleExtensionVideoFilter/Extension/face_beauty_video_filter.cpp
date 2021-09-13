@@ -189,7 +189,7 @@ bool CFaceBeautyVideoFilter::adaptVideoFrame(const agora::media::base::VideoFram
     if (m_pBeautyEngine == nullptr) {
         return false;
     }
-    m_pBeautyEngine->processYUV(capturedFrame.yBuffer, capturedFrame.uBuffer, capturedFrame.vBuffer,capturedFrame.width, capturedFrame.height);
+    m_pBeautyEngine->processYUV(capturedFrame.yBuffer, capturedFrame.uBuffer, capturedFrame.vBuffer,capturedFrame.width, capturedFrame.height, capturedFrame.rotation);
     adaptedFrame = capturedFrame;
     m_pBeautyEngine->getOutputYUVData(adaptedFrame.yBuffer, adaptedFrame.uBuffer, adaptedFrame.vBuffer);
     return true;
