@@ -201,7 +201,7 @@ agora::rtc::IExtensionVideoFilter::ProcessResult CFaceBeautyVideoFilter::adaptVi
     uint8_t* buffer_u = data + frame.width * frame.height;
     uint8_t* buffer_v = buffer_u + stride_uv * frame.height / 2;
 
-    m_pBeautyEngine->processYUV(buffer_y, buffer_u, buffer_v, frame.width, frame.height);
+    m_pBeautyEngine->processYUV(buffer_y, buffer_u, buffer_v, frame.width, frame.height, frame.rotation);
     m_pBeautyEngine->getOutputYUVData(buffer_y, buffer_u, buffer_v);
     out = in;
     return kSuccess;
