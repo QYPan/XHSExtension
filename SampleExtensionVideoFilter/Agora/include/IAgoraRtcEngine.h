@@ -2870,7 +2870,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - false: disables image enhancement.
    * @param options Sets the image enhancement option. See BeautyOptions.
    */
-  virtual int setBeautyEffectOptions(bool enabled, const BeautyOptions& options, MEDIA_SOURCE_TYPE type = VIDEO_SOURCE_CAMERA_PRIMARY) = 0;
+  virtual int setBeautyEffectOptions(bool enabled, const BeautyOptions& options, MEDIA_SOURCE_TYPE type = MEDIA_SOURCE_UNKNOWN) = 0;
 
   /**
    * Initializes the video view of a remote user.
@@ -4777,7 +4777,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - < 0: Failure.
    */
   virtual int enableExtension(
-      const char* provider_name, const char* extension_name, bool enable=true, MEDIA_SOURCE_TYPE type = VIDEO_SOURCE_CAMERA_PRIMARY) = 0;
+      const char* provider_name, const char* extension_name, bool enable=true, MEDIA_SOURCE_TYPE type = MEDIA_SOURCE_UNKNOWN) = 0;
 
   /**
    * Set extension specific property.
@@ -4793,7 +4793,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    */
   virtual int setExtensionProperty(
       const char* provider_name, const char* extension_name,
-      const char* key, const char* json_value, MEDIA_SOURCE_TYPE type = VIDEO_SOURCE_CAMERA_PRIMARY) = 0;
+      const char* key, const char* json_value, MEDIA_SOURCE_TYPE type = MEDIA_SOURCE_UNKNOWN) = 0;
 
   /**
    * Get extension specific property.
@@ -4810,7 +4810,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    */
   virtual int getExtensionProperty(
       const char* provider_name, const char* extension_name,
-      const char* key, char* json_value, int buf_len, MEDIA_SOURCE_TYPE type = VIDEO_SOURCE_CAMERA_PRIMARY) = 0;
+      const char* key, char* json_value, int buf_len, MEDIA_SOURCE_TYPE type = MEDIA_SOURCE_UNKNOWN) = 0;
 
   /** Sets the camera capture configuration.
    * @note Call this method before enabling the local camera.
@@ -5355,6 +5355,7 @@ class IRtcEngine : public agora::base::IEngineBase {
   virtual int stopSecondaryCameraCapture() = 0;
 
   virtual int setCameraDeviceOrientation(MEDIA_SOURCE_TYPE type, VIDEO_ORIENTATION orientation) = 0;
+  virtual int setScreenCaptureOrientation(MEDIA_SOURCE_TYPE type, VIDEO_ORIENTATION orientation) = 0;
 
   virtual int startPrimaryScreenCapture(const ScreenCaptureConfiguration& config) = 0;
   virtual int startSecondaryScreenCapture(const ScreenCaptureConfiguration& config) = 0;

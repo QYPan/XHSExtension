@@ -102,6 +102,12 @@ class IScreenCapturer : public RefCountInterface {
    */
   virtual int updateScreenCaptureRegion(const Rectangle& regionRect) = 0;
 
+  /**
+   * Set orientation of the captured screen image
+   * @param VIDEO_ORIENTATION orientaion of the device 0(by default), 90, 180, 270
+   */
+  virtual void setScreenOrientation(VIDEO_ORIENTATION orientation) = 0;
+
 #if defined(__ANDROID__)
   /**
    * Initializes the screen capturer by specifying the Intent data obtained from MediaProjection.
