@@ -84,15 +84,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     int ret = engine->loadExtensionProvider(dll_path.c_str());
 
     char logret[100] = {0};
-    sprintf(logret, "load ret: %d\n", ret);
+    sprintf(logret, "\nload ret: %d\n", ret);
     OutputDebugStringA(logret);
 
     ret = engine->enableExtension(provider_name.c_str(), "face_beauty.xhs", true, agora::rtc::VIDEO_SOURCE_CAMERA_PRIMARY);
-    sprintf(logret, "enable ret1: %d\n", ret);
+    sprintf(logret, "\nenableExtension ret1: %d\n", ret);
     OutputDebugStringA(logret);
 
     ret = engine->enableExtension(provider_name.c_str(), "face_beauty.xhs", true, agora::rtc::VIDEO_SOURCE_CAMERA_SECONDARY);
-    sprintf(logret, "enable ret2: %d\n", ret);
+    sprintf(logret, "\nenableExtension ret2: %d\n", ret);
     OutputDebugStringA(logret);
 
     EngineInitParamsAid config;
@@ -102,7 +102,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     config._beautyResPath = path + "/extensions/face_beauty.xhs/Beauty_Res";
     std::string config_json = config.to_json();
 
-    engine->setExtensionProperty(provider_name.c_str(), nullptr, "", config_json.c_str());
+    ret = engine->setExtensionProperty(provider_name.c_str(), nullptr, "", config_json.c_str());
+    sprintf(logret, "\nsetExtensionProperty config, ret: %d\n", ret);
+    OutputDebugStringA(logret);
 
     error = engine->setChannelProfile(agora::CHANNEL_PROFILE_LIVE_BROADCASTING);
 
