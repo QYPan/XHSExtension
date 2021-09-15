@@ -12,6 +12,8 @@
 #include "EventHandler.h"
 #include "third_party/json.hpp"
 
+#include "SimpleWindow.h"
+
 #define MAX_LOADSTRING 100
 
 // Global Variables:
@@ -178,18 +180,26 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     encoder_config.frameRate = 20;
 
     agora::rtc::LocalTranscoderConfiguration transcoder_config;
-    transcoder_config.streamCount = 2; //(dev_cnt > 1 ? 2 : 1);
+    transcoder_config.streamCount = dev_cnt > 1 ? 2 : 1;
     transcoder_config.VideoInputStreams = stream_infos;
     transcoder_config.videoOutputConfiguration = encoder_config;
 
     // 开启合图
     engine->startLocalVideoTranscoder(transcoder_config);
 
+    auto transcoded_win = std::make_unique<SimpleWindow>("TranscodedWin");
+    agora::rtc::VideoCanvas cv_transcoded;
+
+    cv_transcoded.sourceType = agora::rtc::VIDEO_SOURCE_TRANSCODED;
+    cv_transcoded.view = transcoded_win->GetView();
+    engine->setupLocalVideo(cv_transcoded);
+    engine->startPreview();
+
     // 加入频道
     agora::rtc::ChannelMediaOptions op;
     op.publishTrancodedVideoTrack = true;
     op.clientRoleType = agora::rtc::CLIENT_ROLE_TYPE::CLIENT_ROLE_BROADCASTER;
-    error = engine->joinChannel(0, "pqy123", uid, op);
+    error = engine->joinChannel(0, "xhs123", uid, op);
 
     if (error) {
         return error;

@@ -72,12 +72,18 @@
     <ClInclude Include="third_party\json.hpp">
       <Filter>third_party</Filter>
     </ClInclude>
+    <ClInclude Include="SimpleWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExtensionVideoFilterTestDriver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EventHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SimpleWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

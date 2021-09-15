@@ -146,7 +146,8 @@
       <AdditionalDependencies>agora_rtc_sdk.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>rmdir $(TargetDir)extensions /q /s</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -165,12 +166,14 @@
     <ClInclude Include="ExtensionVideoFilterTestDriver.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SimpleWindow.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="third_party\json.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EventHandler.cpp" />
     <ClCompile Include="ExtensionVideoFilterTestDriver.cpp" />
+    <ClCompile Include="SimpleWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ExtensionVideoFilterTestDriver.rc" />
