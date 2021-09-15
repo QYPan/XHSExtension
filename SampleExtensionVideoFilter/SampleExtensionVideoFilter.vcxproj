@@ -184,15 +184,12 @@ xcopy $(ProjectDir)XhsGraphics\include $(ProjectDir)package\include\ /S/Y
 xcopy $(ProjectDir)Extension\data_types.h $(ProjectDir)package\include\ /Y
 xcopy $(ProjectDir)Extension\json.hpp $(ProjectDir)package\include\ /Y
 xcopy $(OutDir)$(TargetFileName) $(ProjectDir)package\face_beauty.xhs\ /Y
-xcopy $(ProjectDir)XhsGraphics\Beauty_Res $(ProjectDir)package\face_beauty.xhs\Beauty_Res\ /S/Y
-xcopy $(ProjectDir)XhsGraphics\vsco1 $(ProjectDir)package\face_beauty.xhs\vsco1\ /S/Y
-xcopy $(ProjectDir)XhsGraphics\vsco2 $(ProjectDir)package\face_beauty.xhs\vsco2\ /S/Y
-xcopy $(ProjectDir)XhsGraphics\vsco3 $(ProjectDir)package\face_beauty.xhs\vsco3\ /S/Y
-xcopy $(ProjectDir)XhsGraphics\slim-320.face_kpt_v2.mouth.eyebrow.bin $(ProjectDir)package\face_beauty.xhs\ /Y
-xcopy $(ProjectDir)XhsGraphics\dll\MNN.dll $(ProjectDir)package\face_beauty.xhs\ /Y
-xcopy $(ProjectDir)XhsGraphics\dll\opencv_world450.dll $(ProjectDir)package\face_beauty.xhs\ /Y
-xcopy $(ProjectDir)XhsGraphics\dll\xhsGraphicsWin.dll $(ProjectDir)package\face_beauty.xhs\ /Y
-xcopy $(ProjectDir)XhsGraphics\dll\zlib.dll $(ProjectDir)package\face_beauty.xhs\ /Y</Command>
+xcopy $(ProjectDir)XhsGraphics\dll $(ProjectDir)package\face_beauty.xhs\ /Y
+xcopy $(ProjectDir)XhsGraphics\Beauty_Res $(ProjectDir)..\ExtensionVideoFilterTestDriver\x64\Release\extensions\face_beauty.xhs\Beauty_Res\ /S/Y
+xcopy $(ProjectDir)XhsGraphics\vsco1 $(ProjectDir)..\ExtensionVideoFilterTestDriver\x64\Release\extensions\face_beauty.xhs\vsco1\ /S/Y
+xcopy $(ProjectDir)XhsGraphics\vsco2 $(ProjectDir)..\ExtensionVideoFilterTestDriver\x64\Release\extensions\face_beauty.xhs\vsco2\ /S/Y
+xcopy $(ProjectDir)XhsGraphics\vsco3 $(ProjectDir)..\ExtensionVideoFilterTestDriver\x64\Release\extensions\face_beauty.xhs\vsco3\ /S/Y
+xcopy $(ProjectDir)package\face_beauty.xhs $(ProjectDir)..\ExtensionVideoFilterTestDriver\x64\Release\extensions\face_beauty.xhs\ /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

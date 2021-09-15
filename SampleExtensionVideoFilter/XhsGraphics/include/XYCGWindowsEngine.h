@@ -178,6 +178,7 @@ private:
 	bool m_filterEnable = false;
 	bool m_colorfulEnable = true;
 	void* m_inputData = nullptr;
+	void* m_inputYUVData = nullptr;
 	void* m_outputData = nullptr;
 	xhs_handle_t m_filterEngineHandle = nullptr;
 	XYFilterRoiParam m_roi = {0};
