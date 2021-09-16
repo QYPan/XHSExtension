@@ -231,7 +231,7 @@ int CFaceBeautyVideoFilter::setProperty(const char* key, const void* buf, size_t
         j.get_to(value);
         m_pBeautyEngine->enableBeauty(value);
     }
-        break;
+    break;
 
     case XHS_PLUGIN_BEAUTY_TYPE: 
     {
@@ -287,15 +287,17 @@ int CFaceBeautyVideoFilter::setProperty(const char* key, const void* buf, size_t
         m_pBeautyEngine->setFilterResourcePath(aid._subPath.c_str());
         m_pBeautyEngine->setFilterIntensity(aid._lut_intensity);
     }
+    break;
 
     case XHS_PLUGIN_COMMAND_INVALID:
         PRINT_LOG(SimpleLogger::LOG_TYPE::L_ERROR, "this: %p, invalid type: %d.",this, type);
-        break;
+        return -1;
+
     default:
         PRINT_LOG(SimpleLogger::LOG_TYPE::L_ERROR, "this: %p, unknown type: %d\n",this, type);
-        break;
-    }
-  return -1;
+        return -1;
+  }
+  return 0;
 }
 
 xhs_Command_type getKeyCommandType(const char* key) {
