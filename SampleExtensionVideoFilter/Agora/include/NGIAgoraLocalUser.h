@@ -293,6 +293,11 @@ class ILocalUser {
    */
   virtual CLIENT_ROLE_TYPE getUserRole() = 0;
 
+
+  virtual void setAudienceLatencyLevel(AUDIENCE_LATENCY_LEVEL_TYPE level) = 0;
+
+  virtual AUDIENCE_LATENCY_LEVEL_TYPE getAudienceLatencyLevel() = 0;
+
   /**
    * Configures the audio encoder.
    *
@@ -588,29 +593,29 @@ class ILocalUser {
   /**
    * Registers an audio frame observer.
    *
-   * You need to implement the `IAudioFrameObserver` class in this method, and register the following callbacks
+   * You need to implement the `IAudioFrameObserverBase` class in this method, and register the following callbacks
    * according to your scenario:
-   * - \ref agora::media::IAudioFrameObserver::onRecordAudioFrame "onRecordAudioFrame": Occurs when the SDK receives the audio data captured by the local recording device.
-   * - \ref agora::media::IAudioFrameObserver::onPlaybackAudioFrame "onPlaybackAudioFrame": Occurs when the SDK receives the remote audio data for playback.
-   * - \ref agora::media::IAudioFrameObserver::onPlaybackAudioFrameBeforeMixing "onPlaybackAudioFrameBeforeMixing": Occurs when the SDK receives the remote audio data of a specified
+   * - \ref agora::media::IAudioFrameObserverBase::onRecordAudioFrame "onRecordAudioFrame": Occurs when the SDK receives the audio data captured by the local recording device.
+   * - \ref agora::media::IAudioFrameObserverBase::onPlaybackAudioFrame "onPlaybackAudioFrame": Occurs when the SDK receives the remote audio data for playback.
+   * - \ref agora::media::IAudioFrameObserverBase::onPlaybackAudioFrameBeforeMixing "onPlaybackAudioFrameBeforeMixing": Occurs when the SDK receives the remote audio data of a specified
    * remote user before mixing.
-   * - \ref agora::media::IAudioFrameObserver::onMixedAudioFrame "onMixedAudioFrame": Occurs when the SDK receives the mixed data of recorded and playback audio.
+   * - \ref agora::media::IAudioFrameObserverBase::onMixedAudioFrame "onMixedAudioFrame": Occurs when the SDK receives the mixed data of recorded and playback audio.
    *
-   * @param observer A pointer to the audio frame observer: \ref agora::media::IAudioFrameObserver "IAudioFrameObserver".
+   * @param observer A pointer to the audio frame observer: \ref agora::media::IAudioFrameObserverBase "IAudioFrameObserverBase".
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int registerAudioFrameObserver(agora::media::IAudioFrameObserver * observer) = 0;
+  virtual int registerAudioFrameObserver(agora::media::IAudioFrameObserverBase * observer) = 0;
   /**
    * Releases the audio frame observer.
    *
-   * @param observer The pointer to the audio frame observer: \ref agora::media::IAudioFrameObserver "IAudioFrameObserver".
+   * @param observer The pointer to the audio frame observer: \ref agora::media::IAudioFrameObserverBase "IAudioFrameObserverBase".
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int unregisterAudioFrameObserver(agora::media::IAudioFrameObserver * observer) = 0;
+  virtual int unregisterAudioFrameObserver(agora::media::IAudioFrameObserverBase * observer) = 0;
 
   /**
    * Enable the audio spectrum monitor.
@@ -986,6 +991,18 @@ class ILocalUserObserver {
                                             int elapsed) = 0;
 
   /**
+   * Occurs when the first remote video frame is rendered.
+   *
+   * @param userId the ID of the remote user.
+   * @param width Width (px) of the video frame.
+   * @param height Height (px) of the video stream.
+   * @param elapsed The time (ms) since the user connects to an Agora channel.
+  */
+  virtual void onFirstRemoteVideoFrameRendered(user_id_t userId, int width,
+                                               int height, int elapsed) = 0;
+
+
+  /**
    * Reports the statistics of a remote video track.
    *
    * @param videoTrack The pointer to `IRemoteVideoTrack`.
@@ -1116,7 +1133,7 @@ class ILocalUserObserver {
    * datastream from this connection.
    */
   virtual void onStreamMessage(user_id_t userId, int streamId, const char* data,
-                       size_t length) {}
+                               size_t length) {}
 };
 
 class IVideoFrameObserver2 {
@@ -1126,9 +1143,11 @@ class IVideoFrameObserver2 {
    *
    * After registering the video frame observer,
    * the callback occurs each time receives a video frame to report the detailed information of the video frame.
+   * @param channelId The channel name
+   * @param remoteUid ID of the remote user.
    * @param frame The detailed information of the video frame. See {@link VideoFrame}.
    */
-  virtual void onFrame(user_id_t uid, rtc::conn_id_t connectionId, const media::base::VideoFrame* frame) = 0;
+  virtual void onFrame(const char* channelId, user_id_t remoteUid, const media::base::VideoFrame* frame) = 0;
 
   virtual ~IVideoFrameObserver2() {}
 };

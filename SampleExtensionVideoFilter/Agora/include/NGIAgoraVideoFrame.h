@@ -92,11 +92,53 @@ struct ColorSpace {
     RANGEID_DERIVED = 3,
   };
 
+  enum MatrixID {
+    // The indices are equal to the values specified in T-REC H.273 Table 4.
+    MATRIXID_RGB = 0,
+    MATRIXID_BT709 = 1,
+    MATRIXID_UNSPECIFIED = 2,
+    MATRIXID_FCC = 4,
+    MATRIXID_BT470BG = 5,
+    MATRIXID_SMPTE170M = 6,
+    MATRIXID_SMPTE240M = 7,
+    MATRIXID_YCOCG = 8,
+    MATRIXID_BT2020_NCL = 9,
+    MATRIXID_BT2020_CL = 10,
+    MATRIXID_SMPTE2085 = 11,
+    MATRIXID_CDNCLS = 12,
+    MATRIXID_CDCLS = 13,
+    MATRIXID_BT2100_ICTCP = 14,
+  };
+
+  enum TransferID {
+    // The indices are equal to the values specified in T-REC H.273 Table 3.
+    TRANSFERID_BT709 = 1,
+    TRANSFERID_UNSPECIFIED = 2,
+    TRANSFERID_GAMMA22 = 4,
+    TRANSFERID_GAMMA28 = 5,
+    TRANSFERID_SMPTE170M = 6,
+    TRANSFERID_SMPTE240M = 7,
+    TRANSFERID_LINEAR = 8,
+    TRANSFERID_LOG = 9,
+    TRANSFERID_LOG_SQRT = 10,
+    TRANSFERID_IEC61966_2_4 = 11,
+    TRANSFERID_BT1361_ECG = 12,
+    TRANSFERID_IEC61966_2_1 = 13,
+    TRANSFERID_BT2020_10 = 14,
+    TRANSFERID_BT2020_12 = 15,
+    TRANSFERID_SMPTEST2084 = 16,
+    TRANSFERID_SMPTEST428 = 17,
+    TRANSFERID_ARIB_STD_B67 = 18,
+  };
+
   PrimaryID primaries;
+  TransferID transfer;
+  MatrixID matrix;
   RangeID range;
 
   ColorSpace()
-      : primaries(PRIMARYID_UNSPECIFIED), range(RANGEID_INVALID) {}
+      : primaries(PRIMARYID_UNSPECIFIED), transfer(TRANSFERID_UNSPECIFIED),
+        matrix(MATRIXID_UNSPECIFIED), range(RANGEID_INVALID) {}
 };
 
 /**

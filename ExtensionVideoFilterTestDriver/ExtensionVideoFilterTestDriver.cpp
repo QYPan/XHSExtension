@@ -69,7 +69,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     agora::rtc::RtcEngineContext ctx;
     std::string appid = GetAppId();
     ctx.appId = appid.c_str();
-    ctx.eventHandlerEx = new RtcEngineEventHandlerEx();
+    ctx.eventHandler = new RtcEngineEventHandlerEx();
     // initialize
     int error = engine->initialize(ctx);
 

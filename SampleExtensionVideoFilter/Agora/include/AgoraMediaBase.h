@@ -29,6 +29,7 @@ typedef unsigned int conn_id_t;
 static const unsigned int DEFAULT_CONNECTION_ID = 0;
 static const unsigned int DUMMY_CONNECTION_ID = (std::numeric_limits<unsigned int>::max)();
 
+
 struct EncodedVideoFrameInfo;
 
 /**
@@ -548,9 +549,9 @@ enum VIDEO_MODULE_POSITION {
 }  // namespace base
 
 /**
- * The IAudioFrameObserver class.
+ * The IAudioFrameObserverBase class.
  */
-class IAudioFrameObserver {
+class IAudioFrameObserverBase {
  public:
   /**
    * Audio frame types.
@@ -610,7 +611,7 @@ class IAudioFrameObserver {
   };
 
  public:
-  virtual ~IAudioFrameObserver() {}
+  virtual ~IAudioFrameObserverBase() {}
 
   /**
    * Occurs when the recorded audio frame is received.
@@ -644,7 +645,28 @@ class IAudioFrameObserver {
    * - true: The before-mixing playback audio frame is valid and is encoded and sent.
    * - false: The before-mixing playback audio frame is invalid and is not encoded or sent.
    */
-  virtual bool onPlaybackAudioFrameBeforeMixing(base::user_id_t userId, AudioFrame& audioFrame) = 0;
+  virtual bool onPlaybackAudioFrameBeforeMixing(base::user_id_t userId, AudioFrame& audioFrame) {
+    (void) userId;
+    (void) audioFrame;
+    return true;
+  }
+};
+
+/**
+ * The IAudioFrameObserver class.
+ */
+class IAudioFrameObserver : public IAudioFrameObserverBase {
+ public:
+  using IAudioFrameObserverBase::onPlaybackAudioFrameBeforeMixing;
+  /**
+   * Occurs when the before-mixing playback audio frame is received.
+   * @param uid ID of the remote user.
+   * @param audioFrame The reference to the audio frame: AudioFrame.
+   * @return
+   * - true: The before-mixing playback audio frame is valid and is encoded and sent.
+   * - false: The before-mixing playback audio frame is invalid and is not encoded or sent.
+   */
+  virtual bool onPlaybackAudioFrameBeforeMixing(rtc::uid_t uid, AudioFrame& audioFrame) = 0;
 };
 
 struct AudioSpectrumData {
@@ -819,15 +841,14 @@ class IVideoFrameObserver {
    * After post-processing, you can send the processed data back to the SDK by setting the `videoFrame`
    * parameter in this callback.
    *
-   * @param uid ID of the remote user who sends the current video frame.
-   * @param connectionId ID of the connection.
+   * @param channelId The channel name
+   * @param remoteUid ID of the remote user who sends the current video frame.
    * @param videoFrame A pointer to the video frame: VideoFrame
    * @return Determines whether to ignore the current video frame if the post-processing fails:
    * - true: Do not ignore.
    * - false: Ignore, in which case this method does not sent the current video frame to the SDK.
    */
-  virtual bool onRenderVideoFrame(rtc::uid_t uid, rtc::conn_id_t connectionId,
-                                  VideoFrame& videoFrame) = 0;
+  virtual bool onRenderVideoFrame(const char* channelId, rtc::uid_t remoteUid, VideoFrame& videoFrame) = 0;
 
   virtual bool onTranscodedVideoFrame(VideoFrame& videoFrame) = 0;
 

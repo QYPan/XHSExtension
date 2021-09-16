@@ -35,7 +35,7 @@ class IScreenCapturer : public RefCountInterface {
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int initWithDisplayId(view_t displayId, const Rectangle& regionRect) = 0;
+  virtual int initWithDisplayId(uint32_t displayId, const Rectangle& regionRect) = 0;
 #elif defined(_WIN32)
   /**
    * Initializes the screen capturer by specifying a screen Rect.

@@ -566,7 +566,7 @@ struct CameraCapturerConfiguration {
 
 struct ScreenCaptureConfiguration {
   bool isCaptureWindow; // true - capture window, false - capture display
-  unsigned int displayId; // MacOS only
+  uint32_t displayId; // MacOS only
   Rectangle screenRect; //Windows only
   view_t windowId;
   ScreenCaptureParameters params;
@@ -681,6 +681,10 @@ struct ChannelMediaOptions {
    */
   Optional<CLIENT_ROLE_TYPE> clientRoleType;
   /**
+   * The audience latency level type. See \ref agora::rtc::AUDIENCE_LATENCY_LEVEL_TYPE "AUDIENCE_LATENCY_LEVEL_TYPE"
+   */
+  Optional<AUDIENCE_LATENCY_LEVEL_TYPE> audienceLatencyLevel;
+  /**
    * The default video stream type: #VIDEO_STREAM_TYPE.
    */
   Optional<VIDEO_STREAM_TYPE> defaultVideoStreamType;
@@ -717,6 +721,7 @@ struct ChannelMediaOptions {
       SET_FROM(publishMediaPlayerId);
       SET_FROM(enableAudioRecordingOrPlayout);
       SET_FROM(clientRoleType);
+      SET_FROM(audienceLatencyLevel);
       SET_FROM(defaultVideoStreamType);
       SET_FROM(channelProfile);
       SET_FROM(audioDelayMs);
@@ -746,6 +751,7 @@ struct ChannelMediaOptions {
       ADD_COMPARE(publishMediaPlayerId);
       ADD_COMPARE(enableAudioRecordingOrPlayout);
       ADD_COMPARE(clientRoleType);
+      ADD_COMPARE(audienceLatencyLevel);
       ADD_COMPARE(defaultVideoStreamType);
       ADD_COMPARE(channelProfile);
       ADD_COMPARE(audioDelayMs);
@@ -778,6 +784,7 @@ struct ChannelMediaOptions {
         REPLACE_BY(publishMediaPlayerId);
         REPLACE_BY(enableAudioRecordingOrPlayout);
         REPLACE_BY(clientRoleType);
+        REPLACE_BY(audienceLatencyLevel);
         REPLACE_BY(defaultVideoStreamType);
         REPLACE_BY(channelProfile);
         REPLACE_BY(audioDelayMs);
@@ -835,9 +842,12 @@ struct LeaveChannelOptions {
  * only some of the required events instead of all. In the callback methods, the app should avoid
  * time-consuming tasks or calling blocking APIs, otherwise the SDK may not work properly.
  */
+
 class IRtcEngineEventHandler {
  public:
   virtual ~IRtcEngineEventHandler() {}
+
+  virtual const char* eventHandlerType() const { return "event_handler"; }
 
   /**
    * Occurs when the local user successfully joins the specified channel.
@@ -1020,11 +1030,6 @@ class IRtcEngineEventHandler {
    */
   virtual void onAudioMixingFinished() {}
 
-  virtual void onRemoteAudioMixingBegin() {}
-
-  virtual void onRemoteAudioMixingEnd() {}
-
-
   virtual void onAudioEffectFinished(int soundId) {}
 
   /** Occurs when the video device state changes.
@@ -1138,7 +1143,7 @@ class IRtcEngineEventHandler {
     (void)elapsed;
   }
 
-  virtual void onVideoSourceFrameSizeChanged(MEDIA_SOURCE_TYPE sourceType, int width, int height) {
+  virtual void onVideoSourceFrameSizeChanged(VIDEO_SOURCE_TYPE sourceType, int width, int height) {
     (void)sourceType;
     (void)width;
     (void)height;
@@ -1410,7 +1415,7 @@ class IRtcEngineEventHandler {
     (void)width;
     (void)height;
   }
-#if defined(WEBRTC_ANDROID) || (defined(__APPLE__) && TARGET_OS_IOS)
+#if defined(__ANDROID__) || (defined(__APPLE__) && TARGET_OS_IOS)
   virtual void onFacePositionChanged(int imageWidth, int imageHeight,
                                      const Rectangle* vecRectangle, const int* vecDistance,
                                      int numFaces) {
@@ -1470,10 +1475,6 @@ class IRtcEngineEventHandler {
    */
   virtual void onConnectionBanned() {}
 
-  virtual void onRefreshRecordingServiceStatus(int status) {
-    (void)status;
-  }
-
   /** Occurs when the user receives the data stream.
    *
    * The SDK triggers this callback when the user receives the data stream that another user sends
@@ -1484,12 +1485,15 @@ class IRtcEngineEventHandler {
    * @param streamId The ID of the stream data.
    * @param data The data stream.
    * @param length The length (byte) of the data stream.
+   * @param sentTs The time of the data stream sent.
    */
-  virtual void onStreamMessage(uid_t userId, int streamId, const char* data, size_t length) {
+
+  virtual void onStreamMessage(uid_t userId, int streamId, const char* data, size_t length, uint64_t sentTs) {
     (void)userId;
     (void)streamId;
     (void)data;
     (void)length;
+    (void)sentTs;
   }
 
   /** Occurs when the user fails to receive the data stream.
@@ -1512,9 +1516,6 @@ class IRtcEngineEventHandler {
     (void)missed;
     (void)cached;
   }
-
-  virtual void onMediaEngineLoadSuccess() {}
-  virtual void onMediaEngineStartCallSuccess() {}
 
   /**
    * Occurs when the token has expired.
@@ -1726,18 +1727,6 @@ class IRtcEngineEventHandler {
    * does not trigger this callback.
    */
   virtual void onTranscodingUpdated() {}
-
-  /** Reports the status of injecting the online media stream.
-
-  @param url The URL address of theinjected stream.
-  @param uid The user ID.
-  @param status Status of the injected stream: #INJECT_STREAM_STATUS.
-  */
-  virtual void onStreamInjectedStatus(const char* url, uid_t uid, int status) {
-    (void)url;
-    (void)uid;
-    (void)status;
-  }
 
   /** Occurs when the local audio route changes (for Android and iOS only).
 
@@ -1993,6 +1982,35 @@ class IRtcEngineEventHandler {
     (void)newState;
     (void)elapseSinceLastState;
   }
+
+  virtual void onExtensionEvent(const char* provider_name, const char* ext_name, const char* key, const char* json_value) {
+    (void)provider_name;
+    (void)ext_name;
+    (void)key;
+    (void)json_value;
+  }
+
+  virtual void onExtensionStarted(const char* provider_name, const char* ext_name) {
+    (void)provider_name;
+    (void)ext_name;
+  }
+
+  virtual void onExtensionStopped(const char* provider_name, const char* ext_name) {
+    (void)provider_name;
+    (void)ext_name;
+  }
+
+  virtual void onExtensionErrored(const char* provider_name, const char* ext_name, int error, const char* msg) {
+    (void)provider_name;
+    (void)ext_name;
+    (void)error;
+    (void)msg;
+  }
+
+  virtual void onUserAccountUpdated(uid_t uid, const char* userAccount){
+    (void)uid;
+    (void)userAccount;
+  }
 };
 
 /**
@@ -2121,7 +2139,6 @@ struct RtcEngineContext {
    * The event handler for IRtcEngine.
    */
   IRtcEngineEventHandler* eventHandler;
-  IRtcEngineEventHandlerEx* eventHandlerEx;
 
   /**
    * The App ID issued to the developers by Agora. Apply for a new one from Agora if it is missing from
@@ -2176,7 +2193,7 @@ struct RtcEngineContext {
   commons::LogConfig logConfig;
 
   RtcEngineContext()
-      : eventHandler(NULL), eventHandlerEx(NULL), appId(NULL), context(NULL),
+      : eventHandler(NULL), appId(NULL), context(NULL),
         enableAudioDevice(true), channelProfile(CHANNEL_PROFILE_LIVE_BROADCASTING),
         audioScenario(AUDIO_SCENARIO_HIGH_DEFINITION),
         areaCode(AREA_CODE_GLOB),
@@ -2254,7 +2271,7 @@ public:
      - true:  Send.
      - false: Do not send.
      */
-    virtual bool onReadyToSendMetadata(Metadata &metadata, MEDIA_SOURCE_TYPE source_type) = 0;
+    virtual bool onReadyToSendMetadata(Metadata &metadata, VIDEO_SOURCE_TYPE source_type) = 0;
 
     /** Occurs when received the metadata.
      *
@@ -2546,61 +2563,14 @@ class IRtcEngine : public agora::base::IEngineBase {
                           const ChannelMediaOptions& options) = 0;
 
   /**
-   * Joins a channel with the connection ID.
-   *
-   * You can call this method multiple times to join more than one channels at a time.
-   *
-   * @note
-   * - If you are already in a channel, you cannot rejoin it with the same uid.
-   * - We recommend using different user IDs for different channels.
-   * - If you want to join the same channel from different devices, ensure that the user IDs in all devices are different.
-   * - Ensure that the app ID you use to generate the token is the same with the app ID used when creating the RtcEngine instance.
-   * @param token The token generated at your server:
-   * - In situations not requiring high security: You can use the temporary token generated at Console. For details, see [Get a temporary token](https://docs.agora.io/en/Agora%20Platform/token?platform=All%20Platforms#get-a-temporary-token).
-   * - In situations requiring high security: Set it as the token generated at your server. For details, see [Generate a token](https://docs.agora.io/en/Interactive%20Broadcast/token_server_cpp?platform=CPP).
-   * @param channelId The unique channel name for the AgoraRTC session in the string format. The string length must be less than 64 bytes. Supported character scopes are:
-   * - All lowercase English letters: a to z.
-   * - All uppercase English letters: A to Z.
-   * - All numeric characters: 0 to 9.
-   * - The space character.
-   * - Punctuation characters and other symbols, including: "!", "#", "$", "%", "&", "(", ")", "+", "-", ":", ";", "<", "=", ".", ">", "?", "@", "[", "]", "^", "_", " {", "}", "|", "~", ",".
-   * @param uid The user ID. A 32-bit unsigned integer with a value ranging from 1 to (2^32-1).
-   * @param options The channel media options: ChannelMediaOptions.
-   * @param eventHandler The pointer to the IRtcEngine event handler: IRtcEngineEventHandler.
-   * @param[in,out] connectionId The connection ID to control different connection instances when
-   * you join the same channel multiple times.
-   *
-   * @return
-   * - 0: Success.
-   * - < 0: Failure.
-   */
-  virtual int joinChannelEx(const char* token, const char* channelId, uid_t uid,
-                            const ChannelMediaOptions& options,
-                            IRtcEngineEventHandler* eventHandler,
-                            conn_id_t* connectionId) = 0;
-
-  /**
    *  Updates the channel media options after joining the channel.
    *
    * @param options The channel media options: ChannelMediaOptions.
-   * @param connectionId The ID of the current connection.
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int updateChannelMediaOptions(const ChannelMediaOptions& options,
-                                        conn_id_t connectionId = agora::rtc::DEFAULT_CONNECTION_ID) = 0;
-
-  /**
-   * Leaves the channel with the connection ID.
-   *
-   * @param channelId The channel name.
-   * @param connectionId The connection ID.
-   * @return
-   * - 0: Success.
-   * - < 0: Failure.
-   */
-  virtual int leaveChannelEx(const char* channelId, conn_id_t connectionId) = 0;
+  virtual int updateChannelMediaOptions(const ChannelMediaOptions& options) = 0;
 
   /**
    * Leaves the channel.
@@ -2704,6 +2674,29 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - < 0: Failure.
    */
   virtual int setClientRole(CLIENT_ROLE_TYPE role) = 0;
+
+  /** Sets the role of the user, such as a host or an audience (default), before joining a channel in the live interactive streaming.
+    *
+    * This method can be used to switch the user role in the live interactive streaming after the user joins a channel.
+    *
+    * In the `LIVE_BROADCASTING` profile, when a user switches user roles after joining a channel, a successful \ref agora::rtc::IRtcEngine::setClientRole "setClientRole" method call triggers the following callbacks:
+    * - The local client: \ref agora::rtc::IRtcEngineEventHandler::onClientRoleChanged "onClientRoleChanged"
+    * - The remote client: \ref agora::rtc::IRtcEngineEventHandler::onUserJoined "onUserJoined" or \ref agora::rtc::IRtcEngineEventHandler::onUserOffline "onUserOffline" (BECOME_AUDIENCE)
+    *
+    * @note
+    * This method applies only to the `LIVE_BROADCASTING` profile.
+    *
+    * @param role Sets the role of the user. See #CLIENT_ROLE_TYPE.
+    * @param options Sets the audience latency level of the user. See #ClientRoleOptions.
+    * 
+    * @return
+    * - 0(ERR_OK): Success.
+    * - < 0: Failure.
+    *  - -1(ERR_FAILED): A general error occurs (no specified reason).
+    *  - -2(ERR_INALID_ARGUMENT): The parameter is invalid.
+    *  - -7(ERR_NOT_INITIALIZED): The SDK is not initialized.
+    */
+  virtual int setClientRole(CLIENT_ROLE_TYPE role, const ClientRoleOptions& options) = 0;
 
   /** Starts an audio call test.
 
@@ -2853,13 +2846,11 @@ class IRtcEngine : public agora::base::IEngineBase {
    * until a successful configuration is found.
    *
    * @param config The local video encoder configuration: VideoEncoderConfiguration.
-   * @param connectionId ID of the connection.
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int setVideoEncoderConfiguration(const VideoEncoderConfiguration& config,
-                               conn_id_t connectionId = DEFAULT_CONNECTION_ID) = 0;
+  virtual int setVideoEncoderConfiguration(const VideoEncoderConfiguration& config) = 0;
 
   /** Enables/Disables image enhancement and sets the options.
    *
@@ -2870,7 +2861,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - false: disables image enhancement.
    * @param options Sets the image enhancement option. See BeautyOptions.
    */
-  virtual int setBeautyEffectOptions(bool enabled, const BeautyOptions& options, MEDIA_SOURCE_TYPE type = MEDIA_SOURCE_UNKNOWN) = 0;
+  virtual int setBeautyEffectOptions(bool enabled, const BeautyOptions& options, VIDEO_SOURCE_TYPE type = VIDEO_SOURCE_UNKNOWN) = 0;
 
   /**
    * Initializes the video view of a remote user.
@@ -2888,13 +2879,11 @@ class IRtcEngine : public agora::base::IEngineBase {
    * Ensure that you call this method in the UI thread.
    *
    * @param canvas The remote video view settings: VideoCanvas.
-   * @param connectionId ID of the current connection.
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int setupRemoteVideo(const VideoCanvas& canvas,
-                               conn_id_t connectionId = DEFAULT_CONNECTION_ID) = 0;
+  virtual int setupRemoteVideo(const VideoCanvas& canvas) = 0;
 
   /**
    * Initializes the local video view.
@@ -3110,14 +3099,12 @@ class IRtcEngine : public agora::base::IEngineBase {
    * @param mute Whether to stop receiving the audio stream of the specified user:
    * - true: Stop receiving the audio stream of the specified user.
    * - false: (Default) Resume receiving the audio stream of the specified user.
-   * @param connectionId The connection ID.
    *
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int muteRemoteAudioStream(uid_t uid, bool mute,
-                                    conn_id_t connectionId = DEFAULT_CONNECTION_ID) = 0;
+  virtual int muteRemoteAudioStream(uid_t uid, bool mute) = 0;
 
   /**
    * Stops or resumes sending the local video stream.
@@ -3234,14 +3221,12 @@ class IRtcEngine : public agora::base::IEngineBase {
    * @param mute Whether to stop receiving the video stream of the specified user:
    * - true: Stop receiving the video stream of the specified user.
    * - false: (Default) Resume receiving the video stream of the specified user.
-   * @param connectionId The connection ID.
    *
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int muteRemoteVideoStream(uid_t uid, bool mute,
-                                    conn_id_t connectionId = DEFAULT_CONNECTION_ID) = 0;
+  virtual int muteRemoteVideoStream(uid_t uid, bool mute) = 0;
 
   /**
    * Sets the remote video stream type.
@@ -3338,7 +3323,7 @@ class IRtcEngine : public agora::base::IEngineBase {
   - 0: Success.
   - < 0: Failure.
   */
-  virtual int startAudioRecording(const char* filePath, 
+  virtual int startAudioRecording(const char* filePath,
                                   int sampleRate,
                                   AUDIO_RECORDING_QUALITY_TYPE quality) = 0;
 
@@ -3770,7 +3755,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - < 0: Failure.
    */
   virtual int unloadAllEffects() = 0;
-  
+
   /** Enables/Disables stereo panning for remote users.
 
    Ensure that you call this method before joinChannel to enable stereo panning for remote users so that the local user can track the position of a remote user by calling \ref agora::rtc::IRtcEngine::setRemoteVoicePosition "setRemoteVoicePosition".
@@ -3799,13 +3784,12 @@ class IRtcEngine : public agora::base::IEngineBase {
    - -1.0: the remote sound comes from the left.
    - 1.0: the remote sound comes from the right.
    @param gain Gain of the remote user. The value ranges from 0.0 to 100.0. The default value is 100.0 (the original gain of the remote user). The smaller the value, the less the gain.
-   * @param connectionId ID of the connection.
-   
+
    @return
    - 0: Success.
    - < 0: Failure.
    */
-  virtual int setRemoteVoicePosition(uid_t uid, double pan, double gain, conn_id_t connectionId = DEFAULT_CONNECTION_ID) = 0;
+  virtual int setRemoteVoicePosition(uid_t uid, double pan, double gain) = 0;
 
   /** Sets an SDK preset voice beautifier effect.
    *
@@ -3907,7 +3891,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * or `AUDIO_PROFILE_IOT(6)`; otherwise, this method call fails.
    * - This method works best with the human voice. Agora does not recommend using this method for
    * audio containing music.
-   * - If you call this method and set the `preset` parameter to enumerators, 
+   * - If you call this method and set the `preset` parameter to enumerators,
    * - After calling this method, Agora recommends not calling the following methods, because they
    * can override `setVoiceConversionPreset`:
    *  - \ref IRtcEngine::setVoiceBeautifierPreset "setVoiceBeautifierPreset"
@@ -4051,7 +4035,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int setVoiceBeautifierParameters(VOICE_BEAUTIFIER_PRESET preset, 
+  virtual int setVoiceBeautifierParameters(VOICE_BEAUTIFIER_PRESET preset,
                                             int param1, int param2) = 0;
 
   /** Set parameters for SDK preset voice conversion.
@@ -4066,7 +4050,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int setVoiceConversionParameters(VOICE_CONVERSION_PRESET preset, 
+  virtual int setVoiceConversionParameters(VOICE_CONVERSION_PRESET preset,
                                             int param1, int param2) = 0;
 
   /** Changes the voice pitch of the local speaker.
@@ -4247,15 +4231,13 @@ class IRtcEngine : public agora::base::IEngineBase {
    * @param uid ID of the remote user.
    * @param renderMode Sets the remote display mode. See #RENDER_MODE_TYPE.
    * @param mirrorMode Sets the mirror type. See #VIDEO_MIRROR_MODE_TYPE.
-   * @param connectionId ID of the connection.
    *
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
   virtual int setRemoteRenderMode(uid_t uid, media::base::RENDER_MODE_TYPE renderMode,
-                                  VIDEO_MIRROR_MODE_TYPE mirrorMode,
-                                  conn_id_t connectionId = DEFAULT_CONNECTION_ID) = 0;
+                                  VIDEO_MIRROR_MODE_TYPE mirrorMode) = 0;
 
   // The following APIs are either deprecated and going to deleted.
 
@@ -4277,29 +4259,6 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - < 0: Failure.
    */
   virtual int setLocalRenderMode(media::base::RENDER_MODE_TYPE renderMode) = 0;
-
-  /**
-   * Updates the display mode of the video view of a remote user.
-   *
-   * After initializing the video view of a remote user, you can call this method to update its
-   * rendering and mirror modes. This method affects only the video view that the local user sees.
-   *
-   * @note
-   * - Ensure that you have called \ref setupRemoteVideo "setupRemoteVideo" to initialize the remote video
-   * view before calling this method.
-   * - During a call, you can call this method as many times as necessary to update the display mode
-   * of the video view of a remote user.
-   *
-   * @param uid ID of the remote user.
-   * @param renderMode Sets the remote display mode. See \ref agora::media::base::RENDER_MODE_TYPE "RENDER_MODE_TYPE".
-   * @param connectionId ID of the connection.
-   *
-   * @return
-   * - 0: Success.
-   * - < 0: Failure.
-   */
-  virtual int setRemoteRenderMode(uid_t uid, media::base::RENDER_MODE_TYPE renderMode,
-                                  conn_id_t connectionId = DEFAULT_CONNECTION_ID) = 0;
 
   /**
    * Sets the local video mirror mode.
@@ -4336,7 +4295,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * If dual-stream mode is enabled, the subscriber can choose to receive the high-stream
    * (high-resolution high-bitrate video stream) or low-stream (low-resolution low-bitrate video stream)
    * video using \ref setRemoteVideoStreamType "setRemoteVideoStreamType".
-   * 
+   *
    * @param sourceType
    * - The video source type.
    * @param enabled
@@ -4346,7 +4305,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int enableDualStreamMode(MEDIA_SOURCE_TYPE sourceType, bool enabled) = 0;
+  virtual int enableDualStreamMode(VIDEO_SOURCE_TYPE sourceType, bool enabled) = 0;
 
   /**
    * Enables or disables the dual video stream mode.
@@ -4366,7 +4325,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int enableDualStreamMode(MEDIA_SOURCE_TYPE sourceType, bool enabled, const SimulcastStreamConfig& streamConfig) = 0;
+  virtual int enableDualStreamMode(VIDEO_SOURCE_TYPE sourceType, bool enabled, const SimulcastStreamConfig& streamConfig) = 0;
 
   /**
    * Sets the external audio source.
@@ -4678,39 +4637,23 @@ class IRtcEngine : public agora::base::IEngineBase {
    */
   virtual int adjustUserPlaybackSignalVolume(unsigned int uid, int volume) = 0;
 
- /** Enables loopback recording.
-  *
-  * If you enable loopback recording, the output of the default sound card is mixed into
-  * the audio stream sent to the other end.
-  *
-  * @note This method is for Windows only.
-  *
-  * @param enabled Sets whether to enable/disable loopback recording.
-  * - true: Enable loopback recording.
-  * - false: (Default) Disable loopback recording.
-  *
-  * @return
-  * - 0: Success.
-  * - < 0: Failure.
-  */
+  /** Enables loopback recording.
+   *
+   * If you enable loopback recording, the output of the default sound card is mixed into
+   * the audio stream sent to the other end.
+   *
+   * @note This method is for Windows only.
+   *
+   * @param enabled Sets whether to enable/disable loopback recording.
+   * - true: Enable loopback recording.
+   * - false: (Default) Disable loopback recording.
+   *
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
   virtual int enableLoopbackRecording(bool enabled) = 0;
- /** Enables loopback recording.
-  *
-  * If you enable loopback recording, the output of the default sound card is mixed into
-  * the audio stream sent to the other end.
-  *
-  * @note This method is for Windows only.
-  *
-  * @param connectionId The connection ID.
-  * @param enabled Sets whether to enable/disable loopback recording.
-  * - true: Enable loopback recording.
-  * - false: (Default) Disable loopback recording.
-  *
-  * @return
-  * - 0: Success.
-  * - < 0: Failure.
-  */
-  virtual int enableLoopbackRecording(conn_id_t connectionId, bool enabled) = 0;
+
 
   /** Adjusts the loopback recording volume.
 
@@ -4777,7 +4720,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - < 0: Failure.
    */
   virtual int enableExtension(
-      const char* provider_name, const char* extension_name, bool enable=true, MEDIA_SOURCE_TYPE type = MEDIA_SOURCE_UNKNOWN) = 0;
+      const char* provider_name, const char* extension_name, bool enable=true, VIDEO_SOURCE_TYPE type = VIDEO_SOURCE_UNKNOWN) = 0;
 
   /**
    * Set extension specific property.
@@ -4793,7 +4736,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    */
   virtual int setExtensionProperty(
       const char* provider_name, const char* extension_name,
-      const char* key, const char* json_value, MEDIA_SOURCE_TYPE type = MEDIA_SOURCE_UNKNOWN) = 0;
+      const char* key, const char* json_value, VIDEO_SOURCE_TYPE type = VIDEO_SOURCE_UNKNOWN) = 0;
 
   /**
    * Get extension specific property.
@@ -4810,7 +4753,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    */
   virtual int getExtensionProperty(
       const char* provider_name, const char* extension_name,
-      const char* key, char* json_value, int buf_len, MEDIA_SOURCE_TYPE type = MEDIA_SOURCE_UNKNOWN) = 0;
+      const char* key, char* json_value, int buf_len, VIDEO_SOURCE_TYPE type = VIDEO_SOURCE_UNKNOWN) = 0;
 
   /** Sets the camera capture configuration.
    * @note Call this method before enabling the local camera.
@@ -4968,7 +4911,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * </ul>
    */
   virtual int setCameraExposurePosition(float positionXinView, float positionYinView) = 0;
-  
+
 #if defined(__APPLE__)
   /**
    * Checks whether the camera auto exposure function is supported.
@@ -5088,7 +5031,7 @@ class IRtcEngine : public agora::base::IEngineBase {
     the current screen sharing.
     - ERR_INVALID_ARGUMENT: The argument is invalid.
   */
-  virtual int startScreenCaptureByDisplayId(unsigned int displayId, const Rectangle& regionRect,
+  virtual int startScreenCaptureByDisplayId(uint32_t displayId, const Rectangle& regionRect,
                                             const ScreenCaptureParameters& captureParams) = 0;
 
 #endif  // __APPLE__ && TARGET_OS_MAC && !TARGET_OS_IPHONE
@@ -5354,8 +5297,8 @@ class IRtcEngine : public agora::base::IEngineBase {
   virtual int stopPrimaryCameraCapture() = 0;
   virtual int stopSecondaryCameraCapture() = 0;
 
-  virtual int setCameraDeviceOrientation(MEDIA_SOURCE_TYPE type, VIDEO_ORIENTATION orientation) = 0;
-  virtual int setScreenCaptureOrientation(MEDIA_SOURCE_TYPE type, VIDEO_ORIENTATION orientation) = 0;
+  virtual int setCameraDeviceOrientation(VIDEO_SOURCE_TYPE type, VIDEO_ORIENTATION orientation) = 0;
+  virtual int setScreenCaptureOrientation(VIDEO_SOURCE_TYPE type, VIDEO_ORIENTATION orientation) = 0;
 
   virtual int startPrimaryScreenCapture(const ScreenCaptureConfiguration& config) = 0;
   virtual int startSecondaryScreenCapture(const ScreenCaptureConfiguration& config) = 0;
@@ -5366,7 +5309,7 @@ class IRtcEngine : public agora::base::IEngineBase {
 
    @return #CONNECTION_STATE_TYPE.
    */
-  virtual CONNECTION_STATE_TYPE getConnectionState(conn_id_t connectionId = 0) = 0;
+  virtual CONNECTION_STATE_TYPE getConnectionState() = 0;
 
   // The following APIs are not implemented yet.
   virtual bool registerEventHandler(IRtcEngineEventHandler* eventHandler) = 0;
@@ -5389,23 +5332,20 @@ class IRtcEngine : public agora::base::IEngineBase {
   /**
    * Sets the built-in encryption mode.
    *
-   * The Agora Native SDK supports built-in encryption, which is in AES-128-XTS mode
-   * by default. If you want to use other modes, call this API to set the encryption
-   * mode.
+   * @deprecated This method is deprecated. Use enableEncryption(bool enabled, const EncryptionConfig&) instead.
+   *
+   * The Agora Native SDK supports built-in encryption.
+   * Call this API to set the encryption mode.
    *
    * All users in the same channel must use the same encryption mode and password.
-   * Refer to information related to the AES encryption algorithm on the differences
+   * Refer to information related to the encryption algorithm on the differences
    * between encryption modes.
    *
    * @note
    * Call \ref setEncryptionSecret "setEncryptionSecret" to enable the built-in encryption function
    * before calling this API.
    * @param encryptionMode Encryption mode:
-   * - "aes-128-xts":128-bit AES encryption, XTS mode
-   * - "aes-128-ecb":128-bit AES encryption, ECB mode
-   * - "aes-256-xts": 256-bit AES encryption, XTS mode
-   * - "": When it is set to NUL string, the encryption is in "aes-128-xts" by
-   * default.
+   * - "sm4-128-ecb": 128-bit SM4 encryption, ECB mode.
    *
    * @return
    * - 0: Success.
@@ -5415,6 +5355,8 @@ class IRtcEngine : public agora::base::IEngineBase {
 
   /**
    * Enables built-in encryption.
+   *
+   * @deprecated This method is deprecated. Use enableEncryption(bool enabled, const EncryptionConfig&) instead.
    *
    * Use this method to specify an encryption password to enable built-in
    * encryption before joining a channel. All users in a channel must set the same
@@ -5437,7 +5379,6 @@ class IRtcEngine : public agora::base::IEngineBase {
    *
    * @note
    * - If you enable the built-in encryption, you cannot use the RTMP streaming function.
-   * - Agora only supports `SM4_128_ECB` encryption mode for now.
    *
    * @param enabled Whether to enable the built-in encryption:
    * - true: Enable the built-in encryption.
@@ -5484,19 +5425,21 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int createDataStream(int* streamId, bool reliable, bool ordered, conn_id_t connectionId = agora::rtc::DEFAULT_CONNECTION_ID) = 0;
+  virtual int createDataStream(int* streamId, bool reliable, bool ordered) = 0;
+
   /** Creates a data stream.
-
-   Each user can create up to five data streams during the lifecycle of the IChannel.
-
-   @param streamId The ID of the created data stream.
-   @param config  The config of data stream.
-
-   @return
-   - Returns 0: Success.
-   - < 0: Failure.
+   *
+   * Each user can create up to five data streams during the lifecycle of the IChannel.
+   * @param streamId The ID of the created data stream.
+   * @param config  The config of data stream.
+   * @param channelId The channel name.
+   * @param uid ID of the local user.
+   * @return
+   * - Returns 0: Success.
+   * - < 0: Failure.
    */
-  virtual int createDataStream(int* streamId, DataStreamConfig& config, conn_id_t connectionId = agora::rtc::DEFAULT_CONNECTION_ID) = 0;
+  virtual int createDataStream(int* streamId, DataStreamConfig& config) = 0;
+
   /** Sends a data stream.
    *
    * After calling \ref IRtcEngine::createDataStream "createDataStream", you can call
@@ -5522,12 +5465,14 @@ class IRtcEngine : public agora::base::IEngineBase {
    * @param streamId The ID of the stream data.
    * @param data The data stream.
    * @param length The length (byte) of the data stream.
+   * @param channelId The channel name.
+   * @param uid ID of the local user.
    *
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int sendStreamMessage(int streamId, const char* data, size_t length, conn_id_t connectionId = agora::rtc::DEFAULT_CONNECTION_ID) = 0;
+  virtual int sendStreamMessage(int streamId, const char* data, size_t length) = 0;
 
   /** **DEPRECATED** Adds a watermark image to the local video or CDN live stream.
 
@@ -5572,24 +5517,26 @@ class IRtcEngine : public agora::base::IEngineBase {
 
    @param watermarkUrl The local file path of the watermark image to be added. This method supports adding a watermark image from the local absolute or relative file path.
    @param options Pointer to the watermark's options to be added. See WatermarkOptions for more infomation.
-   @param connectionId The ID of the current connection.
+   @param channelId The channel name.
+   @param uid ID of the local user.
 
    @return
    - 0: Success.
    - < 0: Failure.
    */
-  virtual int addVideoWatermark(const char* watermarkUrl, const WatermarkOptions& options, conn_id_t connectionId = agora::rtc::DEFAULT_CONNECTION_ID) = 0;
+  virtual int addVideoWatermark(const char* watermarkUrl, const WatermarkOptions& options) = 0;
 
   /** Removes the watermark image on the video stream added by
   addVideoWatermark().
 
-  @param connectionId The ID of the current connection.
+  @param channelId The channel name.
+  @param uid ID of the local user.
 
   @return
   - 0: Success.
   - < 0: Failure.
   */
-  virtual int clearVideoWatermark(conn_id_t connectionId = agora::rtc::DEFAULT_CONNECTION_ID) = 0;
+  virtual int clearVideoWatermark() = 0;
 
   /** Removes the watermark image on the video stream added by
   addVideoWatermark().
@@ -5691,8 +5638,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * and discuss the format of customized messages with us.
    */
   virtual int sendCustomReportMessage(
-      const char* id, const char* category, const char* event, const char* label, int value,
-      conn_id_t connectionId = agora::rtc::DEFAULT_CONNECTION_ID) = 0;
+      const char* id, const char* category, const char* event, const char* label, int value) = 0;
 
   /** Registers the metadata observer.
 
@@ -5868,17 +5814,14 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - Punctuation characters and other symbols, including: "!", "#", "$", "%", "&", "(", ")", "+", "-", ":", ";", "<", "=", ".", ">", "?", "@", "[", "]", "^", "_", " {", "}", "|", "~", ",".
    * @param options  The channel media options: \ref agora::rtc::ChannelMediaOptions::ChannelMediaOptions "ChannelMediaOptions"
    * @param eventHandler The pointer to the IRtcEngine event handler: IRtcEngineEventHandler.
-   * @param[in,out] connectionId The connection ID to control different connection instances when
-   * you join the same channel multiple times.
-   * 
+   *
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
   virtual int joinChannelWithUserAccountEx(const char* token, const char* channelId,
                                            const char* userAccount, const ChannelMediaOptions& options,
-                                           IRtcEngineEventHandler* eventHandler,
-                                           conn_id_t* connectionId = 0) = 0;
+                                           IRtcEngineEventHandler* eventHandler) = 0;
 
   /** Gets the user information by passing in the user account.
    * 
@@ -5892,13 +5835,14 @@ class IRtcEngine : public agora::base::IEngineBase {
    * @param [in,out] userInfo  A userInfo object that identifies the user:
    * - Input: A userInfo object.
    * - Output: A userInfo object that contains the user account and user ID of the user.
-   * @param connectionId The connection ID.
+   * @param channelId The channel name.
+   * @param localUserAccount The user account of the local user.
    * 
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int getUserInfoByUserAccount(const char* userAccount, rtc::UserInfo* userInfo, conn_id_t connectionId = agora::rtc::DEFAULT_CONNECTION_ID) = 0;
+  virtual int getUserInfoByUserAccount(const char* userAccount, rtc::UserInfo* userInfo, const char* channelId = NULL, const char* localUserAccount = NULL) = 0;
 
   /** Gets the user information by passing in the user ID.
    * 
@@ -5912,13 +5856,15 @@ class IRtcEngine : public agora::base::IEngineBase {
    * @param[in,out] userInfo A userInfo object that identifies the user:
    * - Input: A userInfo object.
    * - Output: A userInfo object that contains the user account and user ID of the user.
-   * @param connectionId The connection ID.
+   * @param channelId The channel name.
+   * @param localUserAccount The user account of the local user.
+   *
    * 
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int getUserInfoByUid(uid_t uid, rtc::UserInfo* userInfo, conn_id_t connectionId = agora::rtc::DEFAULT_CONNECTION_ID) = 0;
+  virtual int getUserInfoByUid(uid_t uid, rtc::UserInfo* userInfo, const char* channelId = NULL, const char* localUserAccount = NULL) = 0;
     /** Starts to relay media streams across channels.
      *
      * After a successful method call, the SDK triggers the

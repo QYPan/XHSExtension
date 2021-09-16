@@ -420,7 +420,6 @@ class IRtcConnection : public RefCountInterface {
    *
    * @note
    * - If you enable the built-in encryption, you cannot use the RTMP streaming function.
-   * - Agora only supports the `SM4_128_ECB` encryption mode for now.
    *
    * @param enabled Whether to enable the built-in encryption:
    * - true: Enable the built-in encryption.

@@ -1,10 +1,10 @@
 #include "./EventHandler.h"
 
-void RtcEngineEventHandlerEx::onJoinChannelSuccess(agora::rtc::conn_id_t conn_id, const char* channel, agora::rtc::uid_t uid, int elapsed) {
+void RtcEngineEventHandlerEx::onJoinChannelSuccess(const char* channel, agora::rtc::uid_t uid, int elapsed) {
     return;
 }
 
-void RtcEngineEventHandlerEx::onLeaveChannel(agora::rtc::conn_id_t conn_id, const agora::rtc::RtcStats& stats) {
+void RtcEngineEventHandlerEx::onLeaveChannel(const agora::rtc::RtcStats& stats) {
     return;
 }
 

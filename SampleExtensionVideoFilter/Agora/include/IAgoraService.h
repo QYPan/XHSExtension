@@ -868,12 +868,12 @@ class IAgoraService {
   virtual int loadExtensionProvider(const char* extension_lib_path) = 0;
 #endif
   /**
-   * Disable extension.
+   * Enable extension.
    * If the extension is enabled, the track loads the extension automatically.
    *
    * @param provider_name name for provider, e.g. agora.io.
    * @param extension_name name for extension, e.g. agora.beauty.
-   * @param id id for the track, nullptr is all tracks
+   * @param track_id id for the track, nullptr means effective on all tracks
    * @param auto_enable_on_track if the extension is automatically open on track.
    *
    * @return
@@ -881,21 +881,21 @@ class IAgoraService {
    * - < 0: Failure.
    */
   virtual int enableExtension(
-      const char* provider_name, const char* extension_name, const char* id = NULL,
+      const char* provider_name, const char* extension_name, const char* track_id = NULL,
       bool auto_enable_on_track = false) = 0;
   /**
    * Disable extension.
    * 
    * @param provider_name name for provider, e.g. agora.io.
    * @param extension_name name for extension, e.g. agora.beauty.
-   * @param id id for the track, nullptr is all tracks
+   * @param track_id id for the track, nullptr means effective on all tracks
    *
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
   virtual int disableExtension(
-      const char* provider_name, const char* extension_name, const char* id = NULL) = 0;
+      const char* provider_name, const char* extension_name, const char* track_id = NULL) = 0;
 
  protected:
   virtual ~IAgoraService() {}

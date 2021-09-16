@@ -2049,10 +2049,6 @@ struct WatermarkOptions {
  */
 struct RtcStats {
   /**
-   * The connection ID.
-   */
-  unsigned int connectionId;
-  /**
    * The call duration (s), represented by an aggregate value.
    */
   unsigned int duration;
@@ -2191,7 +2187,6 @@ struct RtcStats {
    */
   int rxPacketLossRate;
   RtcStats() :
-      connectionId(0),
       duration(0),
       txBytes(0),
       rxBytes(0),
@@ -2229,57 +2224,44 @@ struct RtcStats {
 /**
 * Video source types definition.
 **/
-enum MEDIA_SOURCE_TYPE {
-  /**
-   * Video captured by the camera.
+enum VIDEO_SOURCE_TYPE {
+  /** Video captured by the camera.
    */
   VIDEO_SOURCE_CAMERA_PRIMARY,
   VIDEO_SOURCE_CAMERA = VIDEO_SOURCE_CAMERA_PRIMARY,
-  /**
-   * Video captured by the secondary camera.
+  /** Video captured by the secondary camera.
    */
   VIDEO_SOURCE_CAMERA_SECONDARY,
-  /**
-   * Video for screen sharing.
+  /** Video for screen sharing.
    */
   VIDEO_SOURCE_SCREEN_PRIMARY,
   VIDEO_SOURCE_SCREEN = VIDEO_SOURCE_SCREEN_PRIMARY,
-  /**
-   * Video for secondary screen sharing.
+  /** Video for secondary screen sharing.
    */
   VIDEO_SOURCE_SCREEN_SECONDARY,
-  /**
-   * Video for custom source.
+  /** Not define.
    */
   VIDEO_SOURCE_CUSTOM,
-  /**
-   * Video for media player sharing.
+  /** Video for media player sharing.
    */
   VIDEO_SOURCE_MEDIA_PLAYER,
-  /**
-   * Video for png image.
+  /** Video for png image.
    */
   VIDEO_SOURCE_RTC_IMAGE_PNG,
-  /**
-   * Video for png image.
+  /** Video for png image.
    */
   VIDEO_SOURCE_RTC_IMAGE_JPEG,
-  /**
-   * Video for png image.
+  /** Video for png image.
    */
   VIDEO_SOURCE_RTC_IMAGE_GIF,
-  /**
-   * Remote video received from network.
+  /** Remote video received from network.
    */
   VIDEO_SOURCE_REMOTE,
-  /**
-   * Video for transcoded.
+  /** Video for transcoded.
    */
   VIDEO_SOURCE_TRANSCODED,
-  /**
-   * Not define.
-  */
-  MEDIA_SOURCE_UNKNOWN = 100
+
+  VIDEO_SOURCE_UNKNOWN = 100
 };
 
 /**
@@ -2294,6 +2276,27 @@ enum CLIENT_ROLE_TYPE {
    * 2: Audience. An audience can only receive streams.
    */
   CLIENT_ROLE_AUDIENCE = 2,
+};
+
+/** Client role levels in a live broadcast. */
+enum AUDIENCE_LATENCY_LEVEL_TYPE
+{
+    /** 1: Low latency. A low latency audience's jitter buffer is 1.2 second. */
+    AUDIENCE_LATENCY_LEVEL_LOW_LATENCY = 1,
+    /** 2: Ultra low latency. A default ultra low latency audience's jitter buffer is 0.5 second. */
+    AUDIENCE_LATENCY_LEVEL_ULTRA_LOW_LATENCY = 2,
+};
+
+/** Client role options, contains audience latency level.
+ */
+struct ClientRoleOptions
+{
+    /**
+    Audience latency level, support 0.5s and 1.2s.
+    */
+    AUDIENCE_LATENCY_LEVEL_TYPE audienceLatencyLevel;
+    ClientRoleOptions()
+        : audienceLatencyLevel(AUDIENCE_LATENCY_LEVEL_ULTRA_LOW_LATENCY) {}
 };
 
 /**
@@ -2777,7 +2780,7 @@ enum REMOTE_VIDEO_STATE_REASON {
  */
 struct VideoTrackInfo {
   VideoTrackInfo()
-  : isLocal(false), ownerUid(0), trackId(0), connectionId(0)
+  : isLocal(false), ownerUid(0), trackId(0), channelId(OPTIONAL_NULLPTR)
   , streamType(VIDEO_STREAM_HIGH), codecType(VIDEO_CODEC_H264)
   , encodedFrameOnly(false), sourceType(VIDEO_SOURCE_CAMERA_PRIMARY) {}
   /**
@@ -2796,9 +2799,9 @@ struct VideoTrackInfo {
    */
   track_id_t trackId;
   /**
-   * The connection ID of the video track.
+   * The channel ID of the video track.
    */
-  conn_id_t connectionId;
+  const char* channelId;
   /**
    * The video stream type: #VIDEO_STREAM_TYPE.
    */
@@ -2814,9 +2817,9 @@ struct VideoTrackInfo {
    */
   bool encodedFrameOnly;
   /**
-   * The video source type: #MEDIA_SOURCE_TYPE
+   * The video source type: #VIDEO_SOURCE_TYPE
    */
-  MEDIA_SOURCE_TYPE sourceType;
+  VIDEO_SOURCE_TYPE sourceType;
 };
 
 /**
@@ -3383,16 +3386,11 @@ struct TranscodingVideoStream {
   /**
    * Source type of video stream.
    */
-  MEDIA_SOURCE_TYPE sourceType;
+  VIDEO_SOURCE_TYPE sourceType;
   /**
    * Remote user uid if sourceType is VIDEO_SOURCE_REMOTE.
    */
   uid_t remoteUserUid;
-  /**
-   * connectionId of Remote user uid if sourceType is VIDEO_SOURCE_REMOTE.
-   * Set to DEFAULT_CONNECTION_ID if you only join single channel.
-   */
-  conn_id_t connectionId;
   /**
    * RTC image if sourceType is VIDEO_SOURCE_RTC_IMAGE.
    */
@@ -3431,7 +3429,6 @@ struct TranscodingVideoStream {
   TranscodingVideoStream()
       : sourceType(VIDEO_SOURCE_CAMERA_PRIMARY),
         remoteUserUid(0),
-        connectionId(DEFAULT_CONNECTION_ID),
         imageUrl(NULL),
         x(0),
         y(0),
@@ -3709,7 +3706,7 @@ struct VideoCanvas {
 
   size_t priv_size;
 
-  MEDIA_SOURCE_TYPE sourceType;
+  VIDEO_SOURCE_TYPE sourceType;
 
   VideoCanvas() : view(NULL), renderMode(media::base::RENDER_MODE_HIDDEN), mirrorMode(VIDEO_MIRROR_MODE_AUTO),
       uid(0), isScreenView(false), priv(NULL), priv_size(0), sourceType(VIDEO_SOURCE_CAMERA_PRIMARY) {}
