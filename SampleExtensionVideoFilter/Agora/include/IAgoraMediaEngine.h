@@ -10,20 +10,6 @@
 
 namespace agora {
 namespace media {
-/** 
- * The type of media device.
- */
-enum MEDIA_SOURCE_TYPE {
-  /** 
-   * 0: The audio playback device.
-   */
-  AUDIO_PLAYOUT_SOURCE = 0,
-  /** 
-   * 1: Microphone.
-   */
-  AUDIO_RECORDING_SOURCE = 1,
-};
-
 /**
  * The IMediaEngine class.
  */

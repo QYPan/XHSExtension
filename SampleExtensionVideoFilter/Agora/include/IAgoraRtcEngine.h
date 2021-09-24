@@ -6,6 +6,7 @@
 #pragma once
 
 #include "AgoraBase.h"
+#include "AgoraMediaBase.h"
 #include "IAgoraLog.h"
 #include "AgoraOptional.h"
 #include "IAudioDeviceManager.h"
@@ -2861,7 +2862,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - false: disables image enhancement.
    * @param options Sets the image enhancement option. See BeautyOptions.
    */
-  virtual int setBeautyEffectOptions(bool enabled, const BeautyOptions& options, VIDEO_SOURCE_TYPE type = VIDEO_SOURCE_UNKNOWN) = 0;
+  virtual int setBeautyEffectOptions(bool enabled, const BeautyOptions& options, agora::media::MEDIA_SOURCE_TYPE type = agora::media::UNKNOWN_MEDIA_SOURCE) = 0;
 
   /**
    * Initializes the video view of a remote user.
@@ -4720,7 +4721,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - < 0: Failure.
    */
   virtual int enableExtension(
-      const char* provider_name, const char* extension_name, bool enable=true, VIDEO_SOURCE_TYPE type = VIDEO_SOURCE_UNKNOWN) = 0;
+      const char* provider_name, const char* extension_name, bool enable=true, agora::media::MEDIA_SOURCE_TYPE type = agora::media::UNKNOWN_MEDIA_SOURCE) = 0;
 
   /**
    * Set extension specific property.
@@ -4736,7 +4737,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    */
   virtual int setExtensionProperty(
       const char* provider_name, const char* extension_name,
-      const char* key, const char* json_value, VIDEO_SOURCE_TYPE type = VIDEO_SOURCE_UNKNOWN) = 0;
+      const char* key, const char* json_value, agora::media::MEDIA_SOURCE_TYPE type = agora::media::UNKNOWN_MEDIA_SOURCE) = 0;
 
   /**
    * Get extension specific property.
@@ -4753,7 +4754,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    */
   virtual int getExtensionProperty(
       const char* provider_name, const char* extension_name,
-      const char* key, char* json_value, int buf_len, VIDEO_SOURCE_TYPE type = VIDEO_SOURCE_UNKNOWN) = 0;
+      const char* key, char* json_value, int buf_len, agora::media::MEDIA_SOURCE_TYPE type = agora::media::UNKNOWN_MEDIA_SOURCE) = 0;
 
   /** Sets the camera capture configuration.
    * @note Call this method before enabling the local camera.
