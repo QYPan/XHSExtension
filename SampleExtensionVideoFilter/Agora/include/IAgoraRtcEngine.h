@@ -4708,6 +4708,20 @@ class IRtcEngine : public agora::base::IEngineBase {
 #endif
 
   /**
+   * Set extension provider specific property.
+   *
+   * @param provider_name name for provider, e.g. agora.io.
+   * @param key key for the property.
+   * @param json_value property value.
+   *
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int setExtensionProviderProperty(
+      const char* provider_name, const char* key, const char* json_value) = 0;
+
+  /**
    * Enable/Disable extension.
    *
    * @param provider_name name for provider, e.g. agora.io.

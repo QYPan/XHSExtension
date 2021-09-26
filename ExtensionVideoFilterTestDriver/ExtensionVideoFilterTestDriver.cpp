@@ -102,7 +102,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     config._beautyResPath = path + "/extensions/face_beauty.xhs/Beauty_Res";
     std::string config_json = config.to_json();
 
-    ret = engine->setExtensionProperty(provider_name.c_str(), nullptr, "", config_json.c_str());
+    ret = engine->setExtensionProviderProperty(provider_name.c_str(), "", config_json.c_str());
     sprintf(logret, "\nsetExtensionProperty config, ret: %d\n", ret);
     OutputDebugStringA(logret);
 
