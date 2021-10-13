@@ -3010,6 +3010,10 @@ struct LocalAudioStats
    * The internal payload type
    */
   int internalCodec;
+  /**
+   * The packet loss rate of uplink.
+   */
+  int txPacketLossRate;
 };
 
 

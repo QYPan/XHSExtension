@@ -274,6 +274,10 @@ struct LocalVideoStats
      * - VIDEO_CODEC_H264 = 2: (Default) H.264.
      */
     VIDEO_CODEC_TYPE codecType;
+    /**
+     * The packet loss rate of uplink.
+     */
+    int txPacketLossRate;
 };
 
 /**
@@ -698,6 +702,10 @@ struct ChannelMediaOptions {
  * To switch off the delay, set the value to zero.
  */
   Optional<int> audioDelayMs;
+  /**
+   * The token
+   */
+  Optional<char*> token;
 
   ChannelMediaOptions() {}
   ~ChannelMediaOptions() {}
@@ -726,6 +734,7 @@ struct ChannelMediaOptions {
       SET_FROM(defaultVideoStreamType);
       SET_FROM(channelProfile);
       SET_FROM(audioDelayMs);
+      SET_FROM(token);
 #undef SET_FROM
   }
 
@@ -756,6 +765,7 @@ struct ChannelMediaOptions {
       ADD_COMPARE(defaultVideoStreamType);
       ADD_COMPARE(channelProfile);
       ADD_COMPARE(audioDelayMs);
+      ADD_COMPARE(token);
       END_COMPARE();
 
 #undef BEGIN_COMPARE
@@ -789,6 +799,7 @@ struct ChannelMediaOptions {
         REPLACE_BY(defaultVideoStreamType);
         REPLACE_BY(channelProfile);
         REPLACE_BY(audioDelayMs);
+        REPLACE_BY(token);
 #undef REPLACE_BY
     }
     return *this;
@@ -2789,6 +2800,15 @@ class IRtcEngine : public agora::base::IEngineBase {
   virtual int startPreview() = 0;
 
   /**
+   * Starts the local video preview for specific source type.
+   * @param sourceType - The video source type.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int startPreview(VIDEO_SOURCE_TYPE sourceType) = 0;
+
+  /**
    * Stops the local video preview and the video.
    *
    * @return
@@ -2796,6 +2816,15 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - < 0: Failure.
    */
   virtual int stopPreview() = 0;
+
+  /**
+   * Stops the local video preview for specific source type.
+   * @param sourceType - The video source type.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int stopPreview(VIDEO_SOURCE_TYPE sourceType) = 0;
 
   /** Starts the last-mile network probe test.
 

@@ -809,6 +809,8 @@ public:
 
     virtual CONNECTION_STATE_TYPE getConnectionStateEx(const RtcConnection& connection) = 0;
 
+    virtual int enableEncryptionEx(const RtcConnection& connection, bool enabled, const EncryptionConfig& config) = 0;
+
     virtual int createDataStreamEx(int* streamId, bool reliable, bool ordered, const RtcConnection& connection) = 0;
 
     virtual int createDataStreamEx(int* streamId, DataStreamConfig& config, const RtcConnection& connection) = 0;
