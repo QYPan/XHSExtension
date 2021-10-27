@@ -578,6 +578,7 @@ class IVideoFrameObserver {
   virtual void onFrame(const VideoFrame* frame) = 0;
   virtual ~IVideoFrameObserver() {}
   virtual bool isExternal() { return true; }
+  virtual VIDEO_PIXEL_FORMAT getVideoPixelFormatPreference() { return VIDEO_PIXEL_UNKNOWN; }
 };
 
 enum MEDIA_PLAYER_SOURCE_TYPE {

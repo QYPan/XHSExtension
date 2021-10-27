@@ -897,6 +897,21 @@ class IAgoraService {
   virtual int disableExtension(
       const char* provider_name, const char* extension_name, const char* track_id = NULL) = 0;
 
+  /**
+   * Set extension specific property.
+   *
+   * @param provider_name name for provider, e.g. agora.io.
+   * @param key key for the property. if want to enabled filter, use a special
+   * key kExtensionPropertyEnabledKey.
+   * @param json_value property value.
+   *
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int setExtensionProviderProperty(const char* provider_name,
+                                           const char* key,
+                                           const char* json_value) = 0;
  protected:
   virtual ~IAgoraService() {}
 };

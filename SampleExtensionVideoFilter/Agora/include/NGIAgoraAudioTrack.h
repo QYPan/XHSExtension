@@ -509,6 +509,8 @@ class IRemoteAudioTrack : public IAudioTrack {
    - < 0: Failure.
    */
   virtual int setRemoteVoicePosition(float pan, float gain) = 0;
+  
+  virtual int setRemoteVoice3DPosition(float azimuth, float elevation, float distance) = 0;
 };
 
 }  // namespace rtc

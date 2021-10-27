@@ -3820,6 +3820,8 @@ class IRtcEngine : public agora::base::IEngineBase {
    - < 0: Failure.
    */
   virtual int setRemoteVoicePosition(uid_t uid, double pan, double gain) = 0;
+  
+  virtual int setRemoteVoice3DPosition(uid_t uid, double azimuth, double elevation, double distance) = 0;
 
   /** Sets an SDK preset voice beautifier effect.
    *
@@ -6204,6 +6206,9 @@ enum QUALITY_REPORT_FORMAT_TYPE {
 
 /** Media device states. */
 enum MEDIA_DEVICE_STATE_TYPE {
+  /** 0: The device is available
+   */
+  MEDIA_DEVICE_STATE_IDLE = 0,
   /** 1: The device is active.
    */
   MEDIA_DEVICE_STATE_ACTIVE = 1,

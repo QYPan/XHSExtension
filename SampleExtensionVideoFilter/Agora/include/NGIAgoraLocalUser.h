@@ -502,6 +502,8 @@ class ILocalUser {
    - < 0: Failure.
    */
   virtual int setRemoteVoicePosition(uid_t uid, double pan, double gain) = 0;
+  
+  virtual int setRemoteVoice3DPosition(uid_t uid, double azimuth, double elevation, double distance) = 0;
 
   /**
    * Pulls the mixed PCM audio data from the channel.

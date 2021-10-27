@@ -801,6 +801,8 @@ public:
     virtual int muteRemoteVideoStreamEx(uid_t remoteUid, bool mute, const RtcConnection& connection) = 0;
 
     virtual int setRemoteVoicePositionEx(uid_t remoteUid, double pan, double gain, const RtcConnection& connection) = 0;
+  
+    virtual int setRemoteVoice3DPositionEx(uid_t remoteUid, double azimuth, double elevation, double distance, const RtcConnection& connection) = 0;
 
     virtual int setRemoteRenderModeEx(uid_t remoteUid, media::base::RENDER_MODE_TYPE renderMode,
                                       VIDEO_MIRROR_MODE_TYPE mirrorMode, const RtcConnection& connection) = 0;
