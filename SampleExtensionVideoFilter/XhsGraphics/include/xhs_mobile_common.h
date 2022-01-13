@@ -26,7 +26,8 @@
 #           define XHS_SDK_API  extern "C"
 #       else
 #           ifdef SDK_EXPORTS
-#               define XHS_SDK_API extern "C" __declspec(dllexport)
+//#               define XHS_SDK_API extern "C" __declspec(dllexport)
+#               define XHS_SDK_API 
 #           else
 #               define XHS_SDK_API extern "C" __declspec(dllimport)
 #           endif
