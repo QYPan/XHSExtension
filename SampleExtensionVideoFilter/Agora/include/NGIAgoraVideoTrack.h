@@ -176,6 +176,14 @@ struct LocalVideoTrackStats {
    */
   uint32_t ssrc_minor_stream;
   /**
+   * The capture frame rate of the video.
+   */
+  int capture_frame_rate;
+  /**
+   * The regulated frame rate of capture frame rate according to video encoder configuration.
+   */
+  int regulated_capture_frame_rate;
+  /**
    * The input frame rate of the encoder.
    */
   int input_frame_rate;
@@ -200,6 +208,22 @@ struct LocalVideoTrackStats {
    */
   int total_bitrate_bps;  // Include FEC
   /**
+   * The capture frame width (pixel).
+   */
+  int capture_width;
+  /**
+   * The capture frame height (pixel).
+   */
+  int capture_height;
+  /**
+   * The regulated frame width (pixel) of capture frame width according to video encoder configuration.
+   */
+  int regulated_capture_width;
+  /**
+   * The regulated frame height (pixel) of capture frame height according to video encoder configuration.
+   */
+  int regulated_capture_height;
+  /**
    * The frame width (pixel).
    */
   int width;
@@ -218,23 +242,75 @@ struct LocalVideoTrackStats {
    */
   int tx_packet_loss_rate;
 
+  /** Quality change of the local video in terms of target frame rate and
+   * target bit rate in this reported interval. See #QUALITY_ADAPT_INDICATION.
+   */
+  QUALITY_ADAPT_INDICATION quality_adapt_indication;
+
   LocalVideoTrackStats() : number_of_streams(0),
                            bytes_major_stream(0),
                            bytes_minor_stream(0),
                            frames_encoded(0),
                            ssrc_major_stream(0),
                            ssrc_minor_stream(0),
+                           capture_frame_rate(0),
+                           regulated_capture_frame_rate(0),
                            input_frame_rate(0),
                            encode_frame_rate(0),
                            render_frame_rate(0),
                            target_media_bitrate_bps(0),
                            media_bitrate_bps(0),
                            total_bitrate_bps(0),
+                           capture_width(0),
+                           capture_height(0),
+                           regulated_capture_width(0),
+                           regulated_capture_height(0),
                            width(0),
                            height(0),
                            encoder_type(0),
                            uplink_cost_time_ms(0),
-                           tx_packet_loss_rate(0) {}
+                           tx_packet_loss_rate(0),
+                           quality_adapt_indication(ADAPT_NONE) {}
+};
+
+/**
+ * The observer of the video track.
+ */
+class IVideoTrackObserver {
+ public:
+
+  /**
+   * Indicate if the observer is for internal use.
+   * Note: Never override this function
+   * @return
+   * - true: the observer is for external use
+   * - false: the observer is for internal use
+   */
+  virtual bool isExternal() { return true; }
+
+  /** Occurs when the local video stream state changes.
+   *
+   * @param track_id The id of the local video track.
+   * @param state State type #LOCAL_VIDEO_STREAM_STATE. When the state is LOCAL_VIDEO_STREAM_STATE_FAILED (3), see the `error_code` parameter for details.
+   * @param error_code The detailed error information: #LOCAL_VIDEO_STREAM_ERROR.
+   * @param timestamp_ms The timestamp when the event is triggered.
+   */
+  virtual void onLocalVideoStateChanged(int track_id,
+                                        LOCAL_VIDEO_STREAM_STATE state,
+                                        LOCAL_VIDEO_STREAM_ERROR error_code,
+                                        int timestamp_ms) = 0;
+
+  /**
+   * Occurs when the first video frame is rendered.
+   * @param user_id the user id of the video track, If it's local video track, uid is "".
+   * @param width the width of the video frame.
+   * @param height the height of the video frame.
+   * @param timestamp_ms The timestamp when the event is triggered.
+   **/
+  virtual void onFirstVideoFrameRendered(user_id_t user_id, int width, int height, int timestamp_ms) = 0;
+
+ protected:
+  ~IVideoTrackObserver() {}
 };
 
 /**
@@ -320,6 +396,10 @@ class ILocalVideoTrack : public IVideoTrack {
    */
   virtual bool getStatistics(LocalVideoTrackStats& stats) = 0;
 
+  virtual bool registerTrackObserver(IVideoTrackObserver* observer, void (*safeDeleter)(IVideoTrackObserver*)) = 0;
+
+  virtual bool unregisterTrackObserver(IVideoTrackObserver* observer) = 0;
+
   virtual VideoTrackType getType() OPTIONAL_OVERRIDE { return LOCAL_VIDEO_TRACK; }
 
  protected:
@@ -393,12 +473,21 @@ struct RemoteVideoTrackStats {
    The average time cost in renderer.
    */
   uint32_t frame_render_delay_ms;
+  /**
+   The total time (ms) when the remote user neither stops sending the video
+   stream nor disables the video module after joining the channel.
+   */
+  uint64_t totalActiveTime;
+  /**
+   The total publish duration (ms) of the remote video stream.
+   */
+  uint64_t publishDuration;
 
   RemoteVideoTrackStats() : uid(0), delay(0), width(0), height(0),
                             receivedBitrate(0), decoderOutputFrameRate(0), rendererOutputFrameRate(0),
                             frameLossRate(0), packetLossRate(0), rxStreamType(VIDEO_STREAM_HIGH),
                             totalFrozenTime(0), frozenRate(0), totalDecodedFrames(0), avSyncTimeMs(0),
-                            downlink_process_time_ms(0), frame_render_delay_ms(0) {}
+                            downlink_process_time_ms(0), frame_render_delay_ms(0), totalActiveTime(0), publishDuration(0) {}
 };
 
 /**

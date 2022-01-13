@@ -520,6 +520,7 @@ class ILocalUser {
    * - `false`: Failure.
    */
   virtual bool pullMixedAudioPcmData(void* payload_data, AudioPcmDataInfo &audioFrameInfo) = 0;
+
   /**
    * Sets the audio frame parameters for the \ref agora::media::IAudioFrameObserver::onPlaybackAudioFrame
    * "onPlaybackAudioFrame" callback.
@@ -529,6 +530,8 @@ class ILocalUser {
    * - 2: Stereo.
    * @param sampleRateHz The sample rate (Hz) of the audio frame in the `onPlaybackAudioFrame` callback. You can
    * set it as 8000, 16000, 32000, 44100, or 48000.
+   * @param mode Use mode of the audio frame. See #RAW_AUDIO_FRAME_OP_MODE_TYPE.
+   * @param samplesPerCall The number of samples of the audio frame.
    *
    * @return
    * - 0: Success.
@@ -536,7 +539,9 @@ class ILocalUser {
    */
   virtual int setPlaybackAudioFrameParameters(size_t numberOfChannels,
                                               uint32_t sampleRateHz,
+                                              RAW_AUDIO_FRAME_OP_MODE_TYPE mode = RAW_AUDIO_FRAME_OP_MODE_READ_ONLY,
                                               int samplesPerCall = 0) = 0;
+
   /**
    * Sets the audio frame parameters for the \ref agora::media::IAudioFrameObserver::onRecordAudioFrame
    * "onRecordAudioFrame" callback.
@@ -778,7 +783,7 @@ class ILocalUser {
    * - < 0: Failure.
    *   - -2(ERR_INVALID_ARGUMENT), if `intervalInMS` or `smooth` is out of range.
    */
-  virtual int setAudioVolumeIndicationParameters(int intervalInMS, int smooth) = 0;
+  virtual int setAudioVolumeIndicationParameters(int intervalInMS, int smooth, bool reportVad) = 0;
 
   /**
    * Registers a local user observer object.
@@ -848,6 +853,33 @@ class ILocalUser {
    * - < 0: Failure.
    */
   virtual int sendIntraRequest(user_id_t userId) = 0;
+};
+
+/**
+ * The definition of the AudioVolumeInformation struct.
+ */
+struct AudioVolumeInformation {
+  /**
+   * User ID of the speaker.
+   */
+  user_id_t userId;
+
+  /**
+   * The volume of the speaker that ranges from 0 to 255.
+   */
+  unsigned int volume;
+
+  /*
+   * The activity status of remote users
+   */
+  unsigned int vad;
+
+  /**
+   * Voice pitch frequency in Hz
+   */
+  double voicePitch;
+
+  AudioVolumeInformation() : userId(NULL), volume(0), vad(0), voicePitch(0.0) {}
 };
 
 /**
@@ -1027,7 +1059,7 @@ class ILocalUserObserver {
    * @note
    * - To detect whether the local user is speaking, set `report_vad` in `enableAudioVolumeIndication` to `true`.
    *
-   * @param speakers The pointer to \ref agora::rtc::AudioVolumeInfo "AudioVolumeInfo", which is an array containing the user ID and volume information for each speaker.
+   * @param speakers The pointer to \ref agora::rtc::AudioVolumeInformation "AudioVolumeInformation", which is an array containing the user ID and volume information for each speaker.
    * - In the local user's callback, this array contains the following members:
    *   - `uid`, which is always `0`
    *   - `volume`, which reports the sum of the voice volume and the audio-mixing volume of the local user
@@ -1042,7 +1074,7 @@ class ILocalUserObserver {
    * - In the local user's callback, `totalVolume` is the sum of the voice volume and the audio-mixing volume of the local user.
    * - In the remote speakers' callback, `totalVolume` is the sum of the voice volume and the audio-mixing volume of all remote speakers.
    */
-  virtual void onAudioVolumeIndication(const AudioVolumeInfo* speakers, unsigned int speakerNumber,
+  virtual void onAudioVolumeIndication(const AudioVolumeInformation* speakers, unsigned int speakerNumber,
                                        int totalVolume) = 0;
 
   /**
@@ -1086,6 +1118,42 @@ class ILocalUserObserver {
    * @param elapseSinceLastState The time elapsed (ms) from the old state to the new state.
    */
   virtual void onVideoPublishStateChanged(const char* channel, STREAM_PUBLISH_STATE oldState, STREAM_PUBLISH_STATE newState, int elapseSinceLastState) = 0;
+
+  /** Occurs when the first remote audio frame is received.
+   *
+   * @param userId ID of the remote user.
+   * @param elapsed The time (ms) since the user connects to an Agora channel.
+   **/
+  virtual void onFirstRemoteAudioFrame(user_id_t userId, int elapsed) = 0;
+
+  /**
+   * Occurs when the SDK decodes the first remote audio frame for playback.
+   *
+   * @param uid User ID of the remote user sending the audio stream.
+   * @param elapsed The time (ms) since the user connects to an Agora channel.
+   */
+  virtual void onFirstRemoteAudioDecoded(user_id_t userId, int elapsed) = 0;
+
+  /**
+   * Occurs when the first remote video frame is rendered.
+   * The SDK triggers this callback when the first frame of the remote video is displayed in the user's video window. The application can get the time elapsed from a user joining the channel until the first video frame is displayed.
+   *
+   * @param userId ID of the remote user.
+   * @param width Width (px) of the video frame.
+   * @param height Height (px) of the video stream.
+   * @param elapsed Time elapsed (ms) from the local user calling the \ref IRtcEngine::joinChannel "joinChannel" method until the SDK triggers this callback.
+   */
+  virtual void onFirstRemoteVideoFrame(user_id_t userId, int width, int height, int elapsed) = 0;
+
+  /**
+   * Occurs when the SDK decodes the first remote video frame for playback.
+   *
+   * @param userId ID of the remote user.
+   * @param width Width (px) of the video stream.
+   * @param height Height (px) of the video stream.
+   * @param elapsed The time (ms) since the user connects to an Agora channel.
+   */
+  virtual void onFirstRemoteVideoDecoded(user_id_t userId, int width, int height, int elapsed) = 0;
 
   /**
    * The media information of a specified user.
@@ -1136,6 +1204,36 @@ class ILocalUserObserver {
    */
   virtual void onStreamMessage(user_id_t userId, int streamId, const char* data,
                                size_t length) {}
+
+   /**
+   * The remote user state information.
+   */
+  enum REMOTE_USER_STATE {
+    /**
+     * The remote user has muted the audio.
+     */
+    PEER_STATE_MUTE_AUDIO = (1 << 0),
+    /**
+     * The remote user has muted the video.
+     */
+    PEER_STATE_MUTE_VIDEO = (1 << 1),
+    /**
+     * The remote user has enabled the video, which includes video capturing and encoding.
+     */
+    PEER_STATE_ENABLE_VIDEO = (1 << 4),
+    /**
+     * The remote user has enabled the local video capturing.
+     */
+    PEER_STATE_ENABLE_LOCAL_VIDEO = (1 << 8),
+
+  };
+
+  /**
+   * Occurs when the remote user state is updated.
+   * @param uid The uid of the remote user. 
+   * @param state The remote user state.Just & #REMOTE_USER_STATE
+   */
+  virtual void onUserStateChanged(user_id_t userId, uint32_t state){}
 };
 
 class IVideoFrameObserver2 {

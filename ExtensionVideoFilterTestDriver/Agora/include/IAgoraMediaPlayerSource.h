@@ -14,6 +14,38 @@ namespace agora {
 namespace rtc {
 
 class IMediaPlayerSourceObserver;
+class IMediaPlayerCustomDataProvider;
+
+/**
+ * The custom data source provides a data stream input callback, and the player will continue to call back this interface, requesting the user to fill in the data that needs to be played.
+ */
+class IMediaPlayerCustomDataProvider {
+public:
+    
+    /**
+     * @brief The player requests to read the data callback, you need to fill the specified length of data into the buffer
+     * @param buffer the buffer pointer that you need to fill data.
+     * @param bufferSize the bufferSize need to fill of the buffer pointer.
+     * @return you need return offset value if succeed. return 0 if failed.
+     */
+    virtual int onReadData(unsigned char *buffer, int bufferSize) = 0;
+    
+    /**
+     * @brief The Player seek event callback, you need to operate the corresponding stream seek operation, You can refer to the definition of lseek() at https://man7.org/linux/man-pages/man2/lseek.2.html
+     * @param offset the value of seek offset.
+     * @param whence the postion of start seeking, the directive whence as follows:
+     * 0 - SEEK_SET : The file offset is set to offset bytes.
+     * 1 - SEEK_CUR : The file offset is set to its current location plus offset bytes.
+     * 2 - SEEK_END : The file offset is set to the size of the file plus offset bytes.
+     * 65536 - AVSEEK_SIZE : Optional. Passing this as the "whence" parameter to a seek function causes it to return the filesize without seeking anywhere.
+     * @return
+     * whence == 65536, return filesize if you need.
+     * whence >= 0 && whence < 3 , return offset value if succeed. return -1 if failed.
+     */
+    virtual int64_t onSeek(int64_t offset, int whence) = 0;
+    
+    virtual ~IMediaPlayerCustomDataProvider() {}
+};
 
 /**
  * The IMediaPlayerSource class provides access to a media player source. To playout multiple media sources simultaneously,
@@ -42,6 +74,16 @@ public:
    * - < 0: Failure.
    */
   virtual int open(const char* url, int64_t startPos) = 0;
+    
+  /**
+   * @brief Open media file or stream with custom soucrce.
+   * @param startPos Set the starting position for playback, in seconds (ms)
+   * @param provider dataProvider object
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int openWithCustomSource(int64_t startPos, IMediaPlayerCustomDataProvider* provider) = 0;
 
   /**
    * Plays the media file.

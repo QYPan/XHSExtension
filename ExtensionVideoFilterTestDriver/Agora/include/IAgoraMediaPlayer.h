@@ -19,6 +19,8 @@ namespace rtc {
 class ILocalAudioTrack;
 class ILocalVideoTrack;
 class IMediaPlayerSourceObserver;
+class IMediaPlayerCustomDataProvider;
+
 
 /**
  * The IMediaPlayerEntity class provides access to a media player entity. If yout want to playout
@@ -47,6 +49,16 @@ public:
    * - < 0: Failure.
    */
   virtual int open(const char* url, int64_t startPos) = 0;
+    
+  /**
+   * @brief Open media file or stream with custom soucrce.
+   * @param startPos Set the starting position for playback, in seconds (ms)
+   * @param provider dataProvider object
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int openWithCustomSource(int64_t startPos, IMediaPlayerCustomDataProvider* provider) = 0;
 
   /**
    * Plays the media file.
@@ -79,6 +91,18 @@ public:
    * - < 0: Failure.
    */
   virtual int seek(int64_t newPos) = 0;
+  
+  /** Sets the pitch of the current media file.
+   * @param pitch Sets the pitch of the local music file by chromatic scale. The default value is 0,
+   * which means keeping the original pitch. The value ranges from -12 to 12, and the pitch value between
+   * consecutive values is a chromatic value. The greater the absolute value of this parameter, the
+   * higher or lower the pitch of the local music file.
+   *
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int setAudioMixingPitch(int pitch) = 0;
 
   /**
    * Gets the duration of the media file.
@@ -347,6 +371,32 @@ public:
    * @return int < 0 on behalf of an error, the value corresponds to one of MEDIA_PLAYER_ERROR
    */
   virtual int unregisterVideoFrameObserver(agora::media::base::IVideoFrameObserver* observer) = 0;
+
+   /**
+   * Registers the audio frame spectrum observer.
+   *
+   * @param observer The pointer to the {@link media::base::IAudioSpectrumObserver  IAudioSpectrumObserver} object.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual  int registerMediaPlayerAudioSpectrumObserver(media::IAudioSpectrumObserver* observer,int intervalInMS)  = 0;
+
+  /**
+   * Releases the audio frame spectrum observer.
+   * @param observer The pointer to the {@link media::base::IAudioSpectrumObserver IAudioSpectrumObserver} object.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure. 
+   */
+   virtual int unregisterMediaPlayerAudioSpectrumObserver(media::IAudioSpectrumObserver* observer)  = 0;
+
+  /**
+   * @brief Set dual-mono output mode of the music file.
+   * 
+   * @param mode dual mono mode.  See #agora::media::AUDIO_DUAL_MONO_MODE
+   */
+  virtual int setAudioDualMonoMode(agora::media::base::AUDIO_DUAL_MONO_MODE mode) = 0;
 
   virtual const char* getPlayerSdkVersion() = 0;
 

@@ -35,6 +35,29 @@ std::string GetAppId() {
     return appid;
 }
 
+std::string ansi2utf8(const std::string& ansi) {
+  if (ansi.empty()) return std::string();
+  int len = MultiByteToWideChar(CP_ACP, 0, ansi.c_str(), ansi.size(), nullptr, 0);
+  wchar_t* widestr = new wchar_t[len + 1];
+  if (!widestr) return std::string();
+  ZeroMemory(widestr, sizeof(wchar_t) * (len + 1));
+  MultiByteToWideChar(CP_ACP, 0, ansi.c_str(), ansi.size(), widestr, len + 1);
+
+  int utf8len = WideCharToMultiByte(CP_UTF8, 0, widestr, len + 1, nullptr, 0, nullptr, nullptr);
+
+  char* utf8str = new char[utf8len + 1];
+  if (!utf8str) {
+    delete[] widestr;
+    return std::string();
+  }
+  ZeroMemory(utf8str, utf8len + 1);
+  WideCharToMultiByte(CP_UTF8, 0, (LPWSTR)widestr, len + 1, utf8str, utf8len + 1, nullptr, nullptr);
+  std::string result = utf8str;
+  delete[] widestr;
+  delete[] utf8str;
+  return result;
+}
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -77,6 +100,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     char szFullPath[MAX_PATH];
     ::GetModuleFileNameA(NULL, szFullPath, MAX_PATH);
     std::string path{ szFullPath };
+    path = ansi2utf8(path);
     auto pos = path.find_last_of('\\');
     path = path.replace(pos, path.length() - pos, "");
     std::string dll_path = path + "\\extensions\\face_beauty.xhs\\XHSFaceBeautyExtension.dll";

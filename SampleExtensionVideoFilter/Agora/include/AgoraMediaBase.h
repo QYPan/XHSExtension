@@ -255,7 +255,7 @@ struct AudioPcmFrame {
     this->num_channels_ = src.num_channels_;
 
     size_t length = src.samples_per_channel_ * src.num_channels_;
-    if ( length > kMaxDataSizeSamples) {
+    if (length > kMaxDataSizeSamples) {
       length = kMaxDataSizeSamples;
     }
 
@@ -264,14 +264,41 @@ struct AudioPcmFrame {
     return *this;
   }
 
-  AudioPcmFrame() :
-    capture_timestamp(0),
-    samples_per_channel_(0),
-    sample_rate_hz_(0),
-    num_channels_(0),
-    bytes_per_sample(rtc::TWO_BYTES_PER_SAMPLE) {
+  AudioPcmFrame()
+      : capture_timestamp(0),
+        samples_per_channel_(0),
+        sample_rate_hz_(0),
+        num_channels_(0),
+        bytes_per_sample(rtc::TWO_BYTES_PER_SAMPLE) {
     memset(data_, 0, sizeof(data_));
   }
+
+  AudioPcmFrame(const AudioPcmFrame& src)
+      : capture_timestamp(src.capture_timestamp),
+        samples_per_channel_(src.samples_per_channel_),
+        sample_rate_hz_(src.sample_rate_hz_),
+        num_channels_(src.num_channels_),
+        bytes_per_sample(src.bytes_per_sample) {
+    size_t length = src.samples_per_channel_ * src.num_channels_;
+    if (length > kMaxDataSizeSamples) {
+      length = kMaxDataSizeSamples;
+    }
+
+    memcpy(this->data_, src.data_, length * sizeof(int16_t));
+  }
+};
+
+/** Audio dual-mono output mode
+ */
+enum AUDIO_DUAL_MONO_MODE {
+  /**< ChanLOut=ChanLin, ChanRout=ChanRin */
+  AUDIO_DUAL_MONO_STEREO = 0,
+  /**< ChanLOut=ChanRout=ChanLin */
+  AUDIO_DUAL_MONO_L = 1,
+  /**< ChanLOut=ChanRout=ChanRin */
+  AUDIO_DUAL_MONO_R = 2,
+  /**< ChanLout=ChanRout=(ChanLin+ChanRin)/2 */
+  AUDIO_DUAL_MONO_MIX = 3
 };
 
 class IAudioFrameObserver {
@@ -677,37 +704,42 @@ class IAudioFrameObserverBase {
 
   /**
    * Occurs when the recorded audio frame is received.
+   * @param channelId The channel name
    * @param audioFrame The reference to the audio frame: AudioFrame.
    * @return
    * - true: The recorded audio frame is valid and is encoded and sent.
    * - false: The recorded audio frame is invalid and is not encoded or sent.
    */
-  virtual bool onRecordAudioFrame(AudioFrame& audioFrame) = 0;
+  virtual bool onRecordAudioFrame(const char* channelId, AudioFrame& audioFrame) = 0;
   /**
    * Occurs when the playback audio frame is received.
+   * @param channelId The channel name
    * @param audioFrame The reference to the audio frame: AudioFrame.
    * @return
    * - true: The playback audio frame is valid and is encoded and sent.
    * - false: The playback audio frame is invalid and is not encoded or sent.
    */
-  virtual bool onPlaybackAudioFrame(AudioFrame& audioFrame) = 0;
+  virtual bool onPlaybackAudioFrame(const char* channelId, AudioFrame& audioFrame) = 0;
   /**
    * Occurs when the mixed audio data is received.
+   * @param channelId The channel name
    * @param audioFrame The reference to the audio frame: AudioFrame.
    * @return
    * - true: The mixed audio data is valid and is encoded and sent.
    * - false: The mixed audio data is invalid and is not encoded or sent.
    */
-  virtual bool onMixedAudioFrame(AudioFrame& audioFrame) = 0;
+  virtual bool onMixedAudioFrame(const char* channelId, AudioFrame& audioFrame) = 0;
   /**
    * Occurs when the before-mixing playback audio frame is received.
+   * @param channelId The channel name
    * @param userId ID of the remote user.
    * @param audioFrame The reference to the audio frame: AudioFrame.
    * @return
    * - true: The before-mixing playback audio frame is valid and is encoded and sent.
    * - false: The before-mixing playback audio frame is invalid and is not encoded or sent.
    */
-  virtual bool onPlaybackAudioFrameBeforeMixing(base::user_id_t userId, AudioFrame& audioFrame) {
+  virtual bool onPlaybackAudioFrameBeforeMixing(const char* channelId, base::user_id_t userId, AudioFrame& audioFrame) {
+    (void) channelId;
     (void) userId;
     (void) audioFrame;
     return true;
@@ -722,13 +754,14 @@ class IAudioFrameObserver : public IAudioFrameObserverBase {
   using IAudioFrameObserverBase::onPlaybackAudioFrameBeforeMixing;
   /**
    * Occurs when the before-mixing playback audio frame is received.
+   * @param channelId The channel name
    * @param uid ID of the remote user.
    * @param audioFrame The reference to the audio frame: AudioFrame.
    * @return
    * - true: The before-mixing playback audio frame is valid and is encoded and sent.
    * - false: The before-mixing playback audio frame is invalid and is not encoded or sent.
    */
-  virtual bool onPlaybackAudioFrameBeforeMixing(rtc::uid_t uid, AudioFrame& audioFrame) = 0;
+  virtual bool onPlaybackAudioFrameBeforeMixing(const char* channelId, rtc::uid_t uid, AudioFrame& audioFrame) = 0;
 };
 
 struct AudioSpectrumData {

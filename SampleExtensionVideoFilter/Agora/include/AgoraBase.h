@@ -1120,6 +1120,34 @@ enum ERROR_CODE_TYPE {
   ERR_VCM_ENCODER_SET_ERROR = 1603,
 };
 
+/**
+ * The operational permission of the SDK on the audio session.
+ */
+enum AUDIO_SESSION_OPERATION_RESTRICTION {
+  /**
+   * 0: No restriction; the SDK can change the audio session.
+   */
+  AUDIO_SESSION_OPERATION_RESTRICTION_NONE = 0,
+  /**
+   * 1: The SDK cannot change the audio session category.
+   */
+  AUDIO_SESSION_OPERATION_RESTRICTION_SET_CATEGORY = 1,
+  /**
+   * 2: The SDK cannot change the audio session category, mode, or categoryOptions.
+   */
+  AUDIO_SESSION_OPERATION_RESTRICTION_CONFIGURE_SESSION = 1 << 1,
+  /**
+   * 4: The SDK keeps the audio session active when the user leaves the
+   * channel, for example, to play an audio file in the background.
+   */
+  AUDIO_SESSION_OPERATION_RESTRICTION_DEACTIVATE_SESSION = 1 << 2,
+  /**
+   * 128: Completely restricts the operational permission of the SDK on the
+   * audio session; the SDK cannot change the audio session.
+   */
+  AUDIO_SESSION_OPERATION_RESTRICTION_ALL = 1 << 7,
+};
+
 typedef const char* user_id_t;
 typedef void* view_t;
 
@@ -1640,10 +1668,11 @@ struct EncodedAudioFrameInfo {
  * The definition of the AudioPcmDataInfo struct.
  */
 struct AudioPcmDataInfo {
-  AudioPcmDataInfo() : sampleCount(0), samplesOut(0), elapsedTimeMs(0), ntpTimeMs(0) {}
+  AudioPcmDataInfo() : samplesPerChannel(0), channelNum(0), samplesOut(0), elapsedTimeMs(0), ntpTimeMs(0) {}
 
   AudioPcmDataInfo(const AudioPcmDataInfo& rhs)
-      : sampleCount(rhs.sampleCount),
+      : samplesPerChannel(rhs.samplesPerChannel),
+        channelNum(rhs.channelNum),
         samplesOut(rhs.samplesOut),
         elapsedTimeMs(rhs.elapsedTimeMs),
         ntpTimeMs(rhs.ntpTimeMs) {}
@@ -1651,7 +1680,9 @@ struct AudioPcmDataInfo {
   /**
    * The sample count of the PCM data that you expect.
    */
-  size_t sampleCount;
+  size_t samplesPerChannel;
+
+  int16_t channelNum;
 
   // Output
   /**
@@ -1724,6 +1755,22 @@ struct EncodedVideoFrameInfo {
         internalSendTs(rhs.internalSendTs),
         uid(rhs.uid),
         streamType(rhs.streamType) {}
+
+  EncodedVideoFrameInfo& operator=(const EncodedVideoFrameInfo& rhs) {
+    if (this == &rhs) return *this;
+    codecType = rhs.codecType;
+    width = rhs.width;
+    height = rhs.height;
+    framesPerSecond = rhs.framesPerSecond;
+    frameType = rhs.frameType;
+    rotation = rhs.rotation;
+    trackId = rhs.trackId;
+    renderTimeMs = rhs.renderTimeMs;
+    internalSendTs = rhs.internalSendTs;
+    uid = rhs.uid;
+    streamType = rhs.streamType;
+    return *this;
+  }
   /**
    * The video codec: #VIDEO_CODEC_TYPE.
    */
@@ -1756,12 +1803,22 @@ struct EncodedVideoFrameInfo {
    */
   int trackId;  // This can be reserved for multiple video tracks, we need to create different ssrc
                 // and additional payload for later implementation.
+
   /**
    * The timestamp for rendering the video.
+   * 
+   * Attention that this parameter is just used in receiver side not sender side,
+   * thus it belongs to output.
+   * 
    */
   int64_t renderTimeMs;
   /**
-   * Use this timestamp for audio and video sync. You can get this timestamp from the `OnEncodedVideoImageReceived` callback when `encodedFrameOnly` is `true`.
+   * Use this timestamp for audio and video sync. You can get this timestamp from
+   * the `OnEncodedVideoImageReceived` callback when `encodedFrameOnly` is `true`.
+   * 
+   * Attention that this parameter is just used in receiver side not sender side,
+   * thus it belongs to output.
+   * 
    */
   uint64_t internalSendTs;
   /**
@@ -1931,6 +1988,19 @@ struct VideoEncoderConfiguration {
         orientationMode(ORIENTATION_MODE_ADAPTIVE),
         degradationPreference(MAINTAIN_QUALITY),
         mirrorMode(VIDEO_MIRROR_MODE_DISABLED) {}
+
+  VideoEncoderConfiguration& operator=(const VideoEncoderConfiguration& rhs) {
+    if (this == &rhs) return *this;
+    codecType = rhs.codecType;
+    dimensions = rhs.dimensions;
+    frameRate = rhs.frameRate;
+    bitrate = rhs.bitrate;
+    minBitrate = rhs.minBitrate;
+    orientationMode = rhs.orientationMode;
+    degradationPreference = rhs.degradationPreference;
+    mirrorMode = rhs.mirrorMode;
+    return *this;
+  }
 };
 
 /** Data stream config
@@ -2116,6 +2186,10 @@ struct RtcStats {
    * The system CPU usage (%).
    */
   double cpuTotalUsage;
+  /** 
+   * gateway Rtt
+  */
+  int gatewayRtt;
   /**
    * The memory usage ratio of the app (%).
    */
@@ -2204,6 +2278,7 @@ struct RtcStats {
       userCount(0),
       cpuAppUsage(0.0),
       cpuTotalUsage(0.0),
+      gatewayRtt(0),
       memoryAppUsageRatio(0.0),
       memoryTotalUsageRatio(0.0),
       memoryAppUsageInKbytes(0),
@@ -2276,6 +2351,17 @@ enum CLIENT_ROLE_TYPE {
    * 2: Audience. An audience can only receive streams.
    */
   CLIENT_ROLE_AUDIENCE = 2,
+};
+
+/** Quality change of the local video in terms of target frame rate and target bit rate since last count.
+ */
+enum QUALITY_ADAPT_INDICATION {
+  /** The quality of the local video stays the same. */
+  ADAPT_NONE = 0,
+  /** The quality improves because the network bandwidth increases. */
+  ADAPT_UP_BANDWIDTH = 1,
+  /** The quality worsens because the network bandwidth decreases. */
+  ADAPT_DOWN_BANDWIDTH = 2,
 };
 
 /** Client role levels in a live broadcast. */
@@ -2367,6 +2453,16 @@ struct RemoteAudioStats
    * | Less than 2     | Very bad. The audio has persistent noise. Consecutive audio dropouts are frequent, resulting in severe information loss. Communication is nearly impossible. |
    */
   int mosValue;
+  /**
+   * The total time (ms) when the remote user neither stops sending the audio
+   * stream nor disables the audio module after joining the channel.
+   */
+  int totalActiveTime;
+  /**
+   * The total publish duration (ms) of the remote audio stream.
+   */
+  int publishDuration;
+
   RemoteAudioStats() :
     uid(0),
     quality(0),
@@ -2378,7 +2474,9 @@ struct RemoteAudioStats
     receivedBitrate(0),
     totalFrozenTime(0),
     frozenRate(0),
-    mosValue(0) {}
+    mosValue(0),
+    totalActiveTime(0),
+    publishDuration(0){}
 };
 
 /**
@@ -2480,8 +2578,12 @@ struct VideoFormat {
    * The video frame rate (fps).
    */
   int fps;
-  VideoFormat() : width(FRAME_WIDTH_640), height(FRAME_HEIGHT_360), fps(FRAME_RATE_FPS_15) {}
-  VideoFormat(int w, int h, int f) : width(w), height(h), fps(f) {}
+  
+  /** Pixel format (for iOS only). */
+  uint32_t pixelFormat;
+  
+  VideoFormat() : width(FRAME_WIDTH_640), height(FRAME_HEIGHT_360), fps(FRAME_RATE_FPS_15), pixelFormat(0) {}
+  VideoFormat(int w, int h, int f, uint32_t fmt = 0) : width(w), height(h), fps(f), pixelFormat(fmt) {}
 };
 
 /**
@@ -2780,9 +2882,10 @@ enum REMOTE_VIDEO_STATE_REASON {
  */
 struct VideoTrackInfo {
   VideoTrackInfo()
-  : isLocal(false), ownerUid(0), trackId(0), channelId(OPTIONAL_NULLPTR)
+  : isLocal(false), ownerUserId(NULL), trackId(0), channelId(OPTIONAL_NULLPTR)
   , streamType(VIDEO_STREAM_HIGH), codecType(VIDEO_CODEC_H264)
   , encodedFrameOnly(false), sourceType(VIDEO_SOURCE_CAMERA_PRIMARY) {}
+
   /**
    * Whether the video track is local or remote.
    * - true: The video track is local.
@@ -2792,8 +2895,7 @@ struct VideoTrackInfo {
   /**
    * ID of the user who publishes the video track.
    */
-  uid_t ownerUid;
-
+  user_id_t ownerUserId;
   /**
    * ID of the video track.
    */
@@ -2856,13 +2958,33 @@ struct AudioVolumeInfo {
    * User ID of the speaker.
    */
   uid_t uid;
-  user_id_t userId;
+
   /**
    * The volume of the speaker that ranges from 0 to 255.
    */
   unsigned int volume;  // [0,255]
+  /**
+   * The activity status of remote users
+   */
+  unsigned int vad;
 
-  AudioVolumeInfo() : uid(0), userId(0), volume(0) {}
+  /**
+   * Voice pitch frequency in Hz
+   */
+  double voicePitch;
+  AudioVolumeInfo() : uid(0), volume(0), vad(0), voicePitch(0.0) {}
+};
+
+/**
+ * The definition of the DeviceInfo struct
+ */
+struct DeviceInfo {
+  /*
+   * Whether the device support low latency audio. Not support by default
+   */
+  bool isLowLatencyAudioSupported;
+
+  DeviceInfo() : isLowLatencyAudioSupported(false) {}
 };
 
 /**
@@ -4845,6 +4967,49 @@ enum EAR_MONITORING_FILTER_TYPE {
   EAR_MONITORING_FILTER_NOISE_SUPPRESSION = (1<<2)
 };
 
+/** 
+ * Thread priority type.
+ */
+enum THREAD_PRIORITY_TYPE {
+  /**
+   * 0: Lowest priority.
+   */
+  LOWEST = 0,
+  /**
+   * 1: Low priority.
+   */
+  LOW = 1,
+  /**
+   * 2: Normal priority.
+   */
+  NORMAL = 2,
+  /**
+   * 3: High priority.
+   */
+  HIGH = 3,
+  /**
+   * 4. Highest priority.
+   */
+  HIGHEST = 4,
+  /**
+   * 5. Critical priority.
+   */
+  CRITICAL = 5,
+};
+
+/**
+ * The CC (Congestion Control) mode options.
+ */
+enum TCcMode {
+  /**
+   * Enable CC mode.
+   */
+  CC_ENABLED,
+  /**
+   * Disable CC mode.
+   */
+  CC_DISABLED,
+};
 }  // namespace rtc
 
 namespace base {

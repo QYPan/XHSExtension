@@ -400,6 +400,9 @@ struct RemoteAudioTrackStats {
    * audio downlink average process time
    */
   uint32_t downlink_process_time_ms;
+
+  uint32_t target_level_base_ms;
+  uint32_t target_level_prefered_ms;
   /**
    *  The count of 80 ms frozen in 2 seconds
    */
@@ -424,6 +427,15 @@ struct RemoteAudioTrackStats {
    *  The MOS value
    */
   uint32_t mos_value;
+  /**
+   * The total time (ms) when the remote user neither stops sending the audio
+   * stream nor disables the audio module after joining the channel.
+   */
+  uint64_t total_active_time;
+  /**
+   * The total publish duration (ms) of the remote audio stream.
+   */
+  uint64_t publish_duration;
 
   RemoteAudioTrackStats() :
     uid(0),
@@ -450,7 +462,9 @@ struct RemoteAudioTrackStats {
     frozen_count_200_ms(0),
     frozen_time_200_ms(0),
     delay_estimate_ms(0),
-    mos_value(0) { }
+    mos_value(0),
+    total_active_time(0),
+    publish_duration(0){ }
 };
 
 /**

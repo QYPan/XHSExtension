@@ -63,6 +63,19 @@ struct AudioSubscriptionOptions {
       numberOfChannels(rhs.numberOfChannels),
       sampleRateHz(rhs.sampleRateHz) {
   }
+
+  AudioSubscriptionOptions& operator=(const AudioSubscriptionOptions& rhs)
+  {
+    if (this == &rhs) {
+      return *this;
+    }
+
+    packetOnly = rhs.packetOnly;
+    bytesPerSample = rhs.bytesPerSample;
+    numberOfChannels = rhs.numberOfChannels;
+    sampleRateHz = rhs.sampleRateHz;
+    return *this;
+  }
   /**
    * Whether to only subscribe to audio packets.
    * - `true`: Only subscribe to audio packets, which means that the SDK does not decode the remote audio stream. You can use this mode to receive audio packets and handle them in your app.

@@ -76,6 +76,7 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
   using IRtcEngineEventHandler::onFirstRemoteVideoFrame;
   using IRtcEngineEventHandler::onUserJoined;
   using IRtcEngineEventHandler::onUserOffline;
+  using IRtcEngineEventHandler::onUserMuteAudio;
   using IRtcEngineEventHandler::onUserMuteVideo;
   using IRtcEngineEventHandler::onUserEnableVideo;
   using IRtcEngineEventHandler::onUserEnableLocalVideo;
@@ -91,6 +92,8 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
   using IRtcEngineEventHandler::onRequestToken;
   using IRtcEngineEventHandler::onTokenPrivilegeWillExpire;
   using IRtcEngineEventHandler::onFirstLocalAudioFramePublished;
+  using IRtcEngineEventHandler::onFirstRemoteAudioFrame;
+  using IRtcEngineEventHandler::onFirstRemoteAudioDecoded;
   using IRtcEngineEventHandler::onLocalAudioStateChanged;
   using IRtcEngineEventHandler::onRemoteAudioStateChanged;
   using IRtcEngineEventHandler::onActiveSpeaker;
@@ -376,6 +379,19 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
   }
 
   /**
+   * when remote user muted the audio stream, the function will be called
+   * @param [in] uid
+   *        the uid of the remote user
+   * @param [in] muted
+   *        true: the remote user muted the audio stream, false: the remote user unmuted the audio stream
+   */
+ virtual void onUserMuteAudio(conn_id_t connId, uid_t uid, bool muted) {
+    (void)connId;
+    (void)uid;
+    (void)muted;
+  }
+
+  /**
    * when remote user muted the video stream, the function will be called
    * @deprecated Use onRemoteVideoStateChanged instead of.
    * @param [in] remoteUid
@@ -590,6 +606,33 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
     (void)elapsed;
   }
 
+  /** Occurs when the first remote audio frame is received.
+   *
+   * @param connection the RtcConnection of the local user.
+   * @param userId ID of the remote user.
+   * @param elapsed The time elapsed (ms) from the loca user calling
+   * \ref IRtcEngine::joinChannel "joinChannel()" until this callback is triggered.
+   **/
+  virtual void onFirstRemoteAudioFrame(const RtcConnection& connection, uid_t userId, int elapsed) {
+    (void)connection;
+    (void)userId;
+    (void)elapsed;
+  }
+
+  /**
+   * Occurs when the SDK decodes the first remote audio frame for playback.
+   *
+   * @param connection the RtcConnection of the local user.
+   * @param uid User ID of the remote user sending the audio stream.
+   * @param elapsed The time elapsed (ms) from the loca user calling
+   * \ref IRtcEngine::joinChannel "joinChannel()" until this callback is triggered.
+   */
+  virtual void onFirstRemoteAudioDecoded(const RtcConnection& connection, uid_t uid, int elapsed) {
+    (void)connection;
+    (void)uid;
+    (void)elapsed;
+  }
+
   /** Occurs when the local audio state changes.
    *
    * This callback indicates the state change of the local audio stream,
@@ -796,15 +839,15 @@ public:
 
     virtual int setupRemoteVideoEx(const VideoCanvas& canvas, const RtcConnection& connection) = 0;
 
-    virtual int muteRemoteAudioStreamEx(uid_t remoteUid, bool mute, const RtcConnection& connection) = 0;
+    virtual int muteRemoteAudioStreamEx(uid_t uid, bool mute, const RtcConnection& connection) = 0;
 
-    virtual int muteRemoteVideoStreamEx(uid_t remoteUid, bool mute, const RtcConnection& connection) = 0;
+    virtual int muteRemoteVideoStreamEx(uid_t uid, bool mute, const RtcConnection& connection) = 0;
 
-    virtual int setRemoteVoicePositionEx(uid_t remoteUid, double pan, double gain, const RtcConnection& connection) = 0;
+    virtual int setRemoteVoicePositionEx(uid_t uid, double pan, double gain, const RtcConnection& connection) = 0;
   
-    virtual int setRemoteVoice3DPositionEx(uid_t remoteUid, double azimuth, double elevation, double distance, const RtcConnection& connection) = 0;
+    virtual int setRemoteVoice3DPositionEx(uid_t uid, double azimuth, double elevation, double distance, const RtcConnection& connection) = 0;
 
-    virtual int setRemoteRenderModeEx(uid_t remoteUid, media::base::RENDER_MODE_TYPE renderMode,
+    virtual int setRemoteRenderModeEx(uid_t uid, media::base::RENDER_MODE_TYPE renderMode,
                                       VIDEO_MIRROR_MODE_TYPE mirrorMode, const RtcConnection& connection) = 0;
 
     virtual int enableLoopbackRecordingEx(bool enabled, const RtcConnection& connection) = 0;
@@ -825,6 +868,8 @@ public:
 
     virtual int sendCustomReportMessageEx(const char* id, const char* category, const char* event, const char* label,
                                           int value, const RtcConnection& connection) = 0;
+
+    virtual int addPublishStreamUrlEx(const char* url, bool transcodingEnabled, const RtcConnection& connection) = 0;
 };
 
 }  // namespace rtc

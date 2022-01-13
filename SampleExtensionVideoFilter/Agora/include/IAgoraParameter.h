@@ -69,6 +69,11 @@
 */
 #define KEY_RTC_AUDIO_ENABLE_AGORA_AEC               "rtc.audio.aec.enable"
 
+/**
+* update aec aggressiveness level
+*/
+#define KEY_RTC_AUDIO_AEC_AGGRESSIVENESS             "rtc.audio.aec.aggressiveness"
+
 #define KEY_RTC_AUDIO_MAX_TARGET_DELAY               "rtc.audio.max_target_delay"
 
 /**
@@ -103,6 +108,20 @@
   * force use communication volume   : "{\"rtc.audio.force_use_media_volume\": false}"
 */
 #define KEY_RTC_AUDIO_FORCE_USE_MEDIA_VOLUME         "rtc.audio.force_use_media_volume"
+
+
+/**
+  * enable/disable oboe, disabled by default
+  * @example
+  * enable oboe    : "{\"rtc.audio.oboe.enable\": true}"
+  * disable oboe   : "{\"rtc.audio.oboe.enable\": false}"
+*/
+#define KEY_RTC_AUDIO_OBOE_ENABLE                    "rtc.audio.oboe.enable"
+
+/**
+  * set the adm keep audiosession
+*/
+#define KEY_RTC_AUDIO_KEEP_AUDIOSESSION              "rtc.audio.keep.audiosession"
 
 /**
   * set the bitrate ratio for video

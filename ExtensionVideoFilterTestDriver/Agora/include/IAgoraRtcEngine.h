@@ -243,9 +243,36 @@ struct LocalVideoStats
      * the frame rate of the retransmission video after packet loss.
      */
     int sentFrameRate;
+    /** The capture frame rate (fps) of the local video.
+     */
+    int captureFrameRate;
+    /** The width of the capture frame (px).
+     */
+    int captureFrameWidth;
+    /** The height of the capture frame (px).
+     */
+    int captureFrameHeight;
+    /**
+     * The regulated frame rate of capture frame rate according to video encoder configuration.
+     */
+    int regulatedCaptureFrameRate;
+    /**
+     * The regulated frame width (pixel) of capture frame width according to video encoder configuration.
+     */
+    int regulatedCaptureFrameWidth;
+    /**
+     * The regulated frame height (pixel) of capture frame height according to video encoder configuration.
+     */
+    int regulatedCaptureFrameHeight;
     /** The encoder output frame rate (fps) of the local video.
      */
     int encoderOutputFrameRate;
+    /** The width of the encoding frame (px).
+     */
+    int encodedFrameWidth;
+    /** The height of the encoding frame (px).
+     */
+    int encodedFrameHeight;
     /** The render output frame rate (fps) of the local video.
      */
     int rendererOutputFrameRate;
@@ -259,13 +286,11 @@ struct LocalVideoStats
     /** The encoding bitrate (Kbps), which does not include the bitrate of the
      * re-transmission video after packet loss.
      */
+      /** Quality change of the local video in terms of target frame rate and
+   * target bit rate in this reported interval. See #QUALITY_ADAPT_INDICATION.
+   */
+    QUALITY_ADAPT_INDICATION qualityAdaptIndication;
     int encodedBitrate;
-    /** The width of the encoding frame (px).
-     */
-    int encodedFrameWidth;
-    /** The height of the encoding frame (px).
-     */
-    int encodedFrameHeight;
     /** The value of the sent frames, represented by an aggregate value.
      */
     int encodedFrameCount;
@@ -283,62 +308,71 @@ struct LocalVideoStats
 /**
  * The statistics of the remote video stream.
  */
-struct RemoteVideoStats{
-    /**
-     * ID of the remote user sending the video stream.
+struct RemoteVideoStats {
+  /**
+   * ID of the remote user sending the video stream.
+   */
+  uid_t uid;
+  /**
+   * @deprecated Time delay (ms).
+   *
+   * In scenarios where audio and video is synchronized, you can use the
+   * value of `networkTransportDelay` and `jitterBufferDelay` in `RemoteAudioStats`
+   * to know the delay statistics of the remote video.
+   */
+  int delay;
+  /**
+   * The width (pixels) of the video stream.
+   */
+  int width;
+  /**
+   * The height (pixels) of the video stream.
+   */
+  int height;
+  /**
+   * Bitrate (Kbps) received since the last count.
+   */
+  int receivedBitrate;
+  /** The decoder output frame rate (fps) of the remote video.
+   */
+  int decoderOutputFrameRate;
+  /** The render output frame rate (fps) of the remote video.
+   */
+  int rendererOutputFrameRate;
+  /** The video frame loss rate (%) of the remote video stream in the reported interval.
+   */
+  int frameLossRate;
+  /** Packet loss rate (%) of the remote video stream after using the anti-packet-loss method.
+   */
+  int packetLossRate;
+  /**
+   * The type of the remote video stream: #VIDEO_STREAM_TYPE.
+   */
+  VIDEO_STREAM_TYPE rxStreamType;
+  /**
+     The total freeze time (ms) of the remote video stream after the remote user joins the channel.
+     In a video session where the frame rate is set to no less than 5 fps, video freeze occurs when
+     the time interval between two adjacent renderable video frames is more than 500 ms.
      */
-    uid_t uid;
-    /**
-     * @deprecated Time delay (ms).
-     *
-     * In scenarios where audio and video is synchronized, you can use the
-     * value of `networkTransportDelay` and `jitterBufferDelay` in `RemoteAudioStats`
-     * to know the delay statistics of the remote video.
-     */
-    int delay;
-    /**
-     * The width (pixels) of the video stream.
-     */
-    int width;
-    /**
-     * The height (pixels) of the video stream.
-     */
-    int height;
-    /**
-     * Bitrate (Kbps) received since the last count.
-     */
-    int receivedBitrate;
-	  /** The decoder output frame rate (fps) of the remote video.
-	   */
-	  int decoderOutputFrameRate;
-	  /** The render output frame rate (fps) of the remote video.
-	   */
-	  int rendererOutputFrameRate;
-    /** The video frame loss rate (%) of the remote video stream in the reported interval.
-     */
-    int frameLossRate;
-	   /** Packet loss rate (%) of the remote video stream after using the anti-packet-loss method.
-	    */
-	  int packetLossRate;
-     /**
-      * The type of the remote video stream: #VIDEO_STREAM_TYPE.
-      */
-    VIDEO_STREAM_TYPE rxStreamType;
-    /**
-	   The total freeze time (ms) of the remote video stream after the remote user joins the channel.
-	   In a video session where the frame rate is set to no less than 5 fps, video freeze occurs when
-	   the time interval between two adjacent renderable video frames is more than 500 ms.
-	   */
-	  int totalFrozenTime;
-	  /**
-	   The total video freeze time as a percentage (%) of the total time when the video is available.
-	   */
-	  int frozenRate;
-	  /**
-	   The offset (ms) between audio and video stream. A positive value indicates the audio leads the
-	   video, and a negative value indicates the audio lags the video.
-	   */
-	  int avSyncTimeMs;
+  int totalFrozenTime;
+  /**
+   The total video freeze time as a percentage (%) of the total time when the video is available.
+   */
+  int frozenRate;
+  /**
+   The offset (ms) between audio and video stream. A positive value indicates the audio leads the
+   video, and a negative value indicates the audio lags the video.
+   */
+  int avSyncTimeMs;
+  /**
+   * The total time (ms) when the remote user neither stops sending the audio
+   * stream nor disables the audio module after joining the channel.
+   */
+  int totalActiveTime;
+  /**
+   * The total publish duration (ms) of the remote audio stream.
+   */
+  int publishDuration;
 };
 
 struct VideoCompositingLayout {
@@ -563,9 +597,12 @@ enum CAMERA_DIRECTION {
 /** Camera capturer configuration.*/
 struct CameraCapturerConfiguration {
   /** Camera direction settings (for Android/iOS only). See: #CAMERA_DIRECTION. */
+#if defined(__ANDROID__) || (defined(__APPLE__) && TARGET_OS_IOS)
   CAMERA_DIRECTION cameraDirection;
+#else
   /** For windows */
   char deviceId[MAX_DEVICE_ID_LENGTH];
+#endif
   VideoFormat format;
 };
 
@@ -579,6 +616,44 @@ struct ScreenCaptureConfiguration {
 
   ScreenCaptureConfiguration() : isCaptureWindow(false), displayId(0) {}
 };
+
+/**
+ * The encoded video track options.
+ */
+struct EncodedVideoTrackOptions {
+  /**
+   * Whether to enable CC mode. See #TCcMode.
+   */
+  Optional<TCcMode> ccMode;
+  /**
+   * The codec type used for the encoded images:
+   * \ref agora::rtc::VIDEO_CODEC_TYPE "VIDEO_CODEC_TYPE".
+   */
+  Optional<VIDEO_CODEC_TYPE> codecType;
+  /**
+   * Target bitrate (Kbps) for sending encoded video frame.
+   */
+  Optional<int> targetBitrate;
+
+  EncodedVideoTrackOptions() {}
+
+  void SetFrom(const EncodedVideoTrackOptions& o) {
+    if (o.ccMode) {
+      ccMode = o.ccMode;
+    }
+    if (o.codecType) {
+      codecType = o.codecType;
+    }
+    if (o.targetBitrate) {
+      targetBitrate = o.targetBitrate;
+    }
+  }
+
+  bool operator==(const EncodedVideoTrackOptions& o) const {
+    return ccMode == o.ccMode && codecType == o.codecType && targetBitrate == o.targetBitrate;
+  }
+};
+
 
 /**
  * The channel media options.
@@ -621,11 +696,21 @@ struct ChannelMediaOptions {
    */
   Optional<bool> publishCustomAudioTrack;
   /**
+   * Determines the source id of the custom audio, default is 0.
+   */
+  Optional<int> publishCustomAudioSourceId;
+  /**
    * Determines whether to enable AEC when publish custom audio track.
    * - true: Enable AEC.
    * - false: (Default) Do not enable AEC.
    */
   Optional<bool> publishCustomAudioTrackEnableAec;
+  /**
+   * Determines whether to publish direct custom audio track.
+   * - true: publish.
+   * - false: (Default) Do not publish.
+   */
+  Optional<bool> publishDirectCustomAudioTrack;
   /**
    * Determines whether to publish the video of the custom video track.
    * - true: Publish the video of the custom video track.
@@ -698,14 +783,18 @@ struct ChannelMediaOptions {
    */
   Optional<CHANNEL_PROFILE_TYPE> channelProfile;
   /**
- * The delay in ms for sending audio frames. This is used for explicit control of A/V sync.
- * To switch off the delay, set the value to zero.
- */
+   * The delay in ms for sending audio frames. This is used for explicit control of A/V sync.
+   * To switch off the delay, set the value to zero.
+   */
   Optional<int> audioDelayMs;
   /**
    * The token
    */
   Optional<char*> token;
+  /**
+   * The sender option for video encoded track.
+   */
+  EncodedVideoTrackOptions encodedVideoTrackOption;
 
   ChannelMediaOptions() {}
   ~ChannelMediaOptions() {}
@@ -720,7 +809,9 @@ struct ChannelMediaOptions {
       SET_FROM(publishSecondaryScreenTrack);
       SET_FROM(publishTrancodedVideoTrack);
       SET_FROM(publishCustomAudioTrack);
+      SET_FROM(publishCustomAudioSourceId);
       SET_FROM(publishCustomAudioTrackEnableAec);
+      SET_FROM(publishDirectCustomAudioTrack);
       SET_FROM(publishCustomVideoTrack);
       SET_FROM(publishEncodedVideoTrack);
       SET_FROM(publishMediaPlayerAudioTrack);
@@ -735,6 +826,7 @@ struct ChannelMediaOptions {
       SET_FROM(channelProfile);
       SET_FROM(audioDelayMs);
       SET_FROM(token);
+      SET_FROM(encodedVideoTrackOption);
 #undef SET_FROM
   }
 
@@ -751,7 +843,9 @@ struct ChannelMediaOptions {
       ADD_COMPARE(publishSecondaryScreenTrack);
       ADD_COMPARE(publishTrancodedVideoTrack);
       ADD_COMPARE(publishCustomAudioTrack);
+      ADD_COMPARE(publishCustomAudioSourceId);
       ADD_COMPARE(publishCustomAudioTrackEnableAec);
+      ADD_COMPARE(publishDirectCustomAudioTrack);
       ADD_COMPARE(publishCustomVideoTrack);
       ADD_COMPARE(publishEncodedVideoTrack);
       ADD_COMPARE(publishMediaPlayerAudioTrack);
@@ -766,6 +860,7 @@ struct ChannelMediaOptions {
       ADD_COMPARE(channelProfile);
       ADD_COMPARE(audioDelayMs);
       ADD_COMPARE(token);
+      ADD_COMPARE(encodedVideoTrackOption);
       END_COMPARE();
 
 #undef BEGIN_COMPARE
@@ -785,7 +880,9 @@ struct ChannelMediaOptions {
         REPLACE_BY(publishSecondaryScreenTrack);
         REPLACE_BY(publishTrancodedVideoTrack);
         REPLACE_BY(publishCustomAudioTrack);
+        REPLACE_BY(publishCustomAudioSourceId);
         REPLACE_BY(publishCustomAudioTrackEnableAec);
+        REPLACE_BY(publishDirectCustomAudioTrack);
         REPLACE_BY(publishCustomVideoTrack);
         REPLACE_BY(publishEncodedVideoTrack);
         REPLACE_BY(publishMediaPlayerAudioTrack);
@@ -800,6 +897,7 @@ struct ChannelMediaOptions {
         REPLACE_BY(channelProfile);
         REPLACE_BY(audioDelayMs);
         REPLACE_BY(token);
+        REPLACE_BY(encodedVideoTrackOption);
 #undef REPLACE_BY
     }
     return *this;
@@ -812,8 +910,12 @@ struct ChannelMediaOptions {
     }
   }
 
+  static void SetFrom(EncodedVideoTrackOptions* s, const EncodedVideoTrackOptions& o) {
+    s->SetFrom(o);
+  }
+
   template <typename T>
-  static void ReplaceBy(Optional<T>* s, const Optional<T>& o) {
+  static void ReplaceBy(T* s, const T& o) {
     *s = o;
   }
 };
@@ -1287,6 +1389,22 @@ class IRtcEngineEventHandler {
     (void)reason;
   }
 
+    /** Occurs when a remote user's audio stream playback pauses/resumes.
+
+     The SDK triggers this callback when the remote user stops or resumes sending the audio stream by calling the \ref agora::rtc::IRtcEngine::muteLocalAudioStream "muteLocalAudioStream" method.
+
+     @note This callback does not work properly when the number of users (in the `COMMUNICATION` profile) or hosts (in the `LIVE_BROADCASTING` profile) in the channel exceeds 17.
+
+     @param uid User ID of the remote user.
+     @param muted Whether the remote user's audio stream is muted/unmuted:
+     - true: Muted.
+     - false: Unmuted.
+     */
+  virtual void onUserMuteAudio(uid_t uid, bool muted) {
+    (void)uid;
+    (void)muted;
+  }
+  
   /** Occurs when a remote user pauses or resumes sending the video stream.
 
    @deprecated This callback is deprecated since v3.1.200. Use
@@ -1569,6 +1687,29 @@ class IRtcEngineEventHandler {
     (void)elapsed;
   }
 
+  /** Occurs when the first remote audio frame is received.
+   *
+   * @param uid ID of the remote user.
+   * @param elapsed The time elapsed (ms) from the loca user calling
+   * \ref IRtcEngine::joinChannel "joinChannel()" until this callback is triggered.
+   **/
+  virtual void onFirstRemoteAudioFrame(uid_t uid, int elapsed) {
+    (void)uid;
+    (void)elapsed;
+  }
+
+  /**
+   * Occurs when the SDK decodes the first remote audio frame for playback.
+   *
+   * @param uid User ID of the remote user sending the audio stream.
+   * @param elapsed The time elapsed (ms) from the loca user calling
+   * \ref IRtcEngine::joinChannel "joinChannel()" until this callback is triggered.
+   */
+  virtual void onFirstRemoteAudioDecoded(uid_t uid, int elapsed) {
+    (void)uid;
+    (void)elapsed;
+  }
+
   /** Occurs when the local audio state changes.
    *
    * This callback indicates the state change of the local audio stream,
@@ -1755,6 +1896,14 @@ class IRtcEngineEventHandler {
    */
   virtual void onAudioRoutingChanged(int routing) { (void)routing; }
 
+  /** Occurs when AudioSessionEndInterruption / AudioSessionMediaServicesWereReset (foriOS only).
+
+   The SDK triggers this callback when AVAudioSession Exception Resume, For example,
+   - AudioSessionEndInterruption.
+   - AudioSessionMediaServicesWereReset.
+   You should resume your AVAudioSession in the callback when you setAudioSessionOperationRestriction
+   */
+  virtual void onAudioSessionRestrictionResume() {}
 
   /**
    * Occurs when the state of the media stream relay changes.
@@ -1995,26 +2144,26 @@ class IRtcEngineEventHandler {
     (void)elapseSinceLastState;
   }
 
-  virtual void onExtensionEvent(const char* provider_name, const char* ext_name, const char* key, const char* json_value) {
-    (void)provider_name;
-    (void)ext_name;
+  virtual void onExtensionEvent(const char* provider, const char* extension, const char* key, const char* value) {
+    (void)provider;
+    (void)extension;
     (void)key;
-    (void)json_value;
+    (void)value;
   }
 
-  virtual void onExtensionStarted(const char* provider_name, const char* ext_name) {
-    (void)provider_name;
-    (void)ext_name;
+  virtual void onExtensionStarted(const char* provider, const char* extension) {
+    (void)provider;
+    (void)extension;
   }
 
-  virtual void onExtensionStopped(const char* provider_name, const char* ext_name) {
-    (void)provider_name;
-    (void)ext_name;
+  virtual void onExtensionStopped(const char* provider, const char* extension) {
+    (void)provider;
+    (void)extension;
   }
 
-  virtual void onExtensionErrored(const char* provider_name, const char* ext_name, int error, const char* msg) {
-    (void)provider_name;
-    (void)ext_name;
+  virtual void onExtensionErrored(const char* provider, const char* extension, int error, const char* msg) {
+    (void)provider;
+    (void)extension;
     (void)error;
     (void)msg;
   }
@@ -2203,6 +2352,11 @@ struct RtcEngineContext {
    * The config for custumer set log path, log size and log level
    */
   commons::LogConfig logConfig;
+
+  /**
+   * Thread priority for SDK common threads
+   */
+  Optional<THREAD_PRIORITY_TYPE> threadPriority;
 
   RtcEngineContext()
       : eventHandler(NULL), appId(NULL), context(NULL),
@@ -2490,6 +2644,16 @@ class IRtcEngine : public agora::base::IEngineBase {
    */
   virtual const char* getErrorDescription(int code) = 0;
 
+   /**
+   * Gets the the certificate verification result.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure..
+   */
+  virtual int getCertificateVerifyResult(const char* credential_buf,
+                                      int credential_len,
+                                      const char* certificate_buf,
+                                      int certificate_len) = 0;
   /**
    * Joins a channel.
    *
@@ -3308,7 +3472,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int enableAudioVolumeIndication(int interval, int smooth) = 0;
+  virtual int enableAudioVolumeIndication(int interval, int smooth, bool reportVad) = 0;
 
   /** Starts an audio recording.
 
@@ -3582,7 +3746,23 @@ class IRtcEngine : public agora::base::IEngineBase {
    - < 0: Failure.
    */
   virtual int setAudioMixingPosition(int pos /*in ms*/) = 0;
-
+  /** Sets the pitch of the local music file.
+   *
+   * When a local music file is mixed with a local human voice, call this method to set the pitch of the local music file only.
+   *
+   * @note Call this method after calling \ref IRtcEngine::startAudioMixing "startAudioMixing" and
+   * receiving the \ref IRtcEngineEventHandler::onAudioMixingStateChanged "onAudioMixingStateChanged" (AUDIO_MIXING_STATE_PLAYING) callback.
+   *
+   * @param pitch Sets the pitch of the local music file by chromatic scale. The default value is 0,
+   * which means keeping the original pitch. The value ranges from -12 to 12, and the pitch value between
+   * consecutive values is a chromatic value. The greater the absolute value of this parameter, the
+   * higher or lower the pitch of the local music file.
+   *
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int setAudioMixingPitch(int pitch) = 0;
   /**
    * Gets the volume of audio effects.
    *
@@ -3624,7 +3804,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int preloadEffect(int soundId, const char* filePath) = 0;
+  virtual int preloadEffect(int soundId, const char* filePath, int startPos = 0) = 0;
   /** Plays a specified audio effect.
    *
    * After calling \ref IRtcEngine::preloadEffect "preloadEffect", you can call
@@ -3666,7 +3846,7 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int playEffect(int soundId, const char* filePath, int loopCount, double pitch, double pan, int gain, bool publish = false) = 0;
+  virtual int playEffect(int soundId, const char* filePath, int loopCount, double pitch, double pan, int gain, bool publish = false, int startPos = 0) = 0;
   /** Plays all audio effects.
    *
    * After calling \ref IRtcEngine::preloadEffect "preloadEffect" multiple times
@@ -4139,20 +4319,20 @@ class IRtcEngine : public agora::base::IEngineBase {
     */
   virtual int setLocalVoiceReverbPreset(AUDIO_REVERB_PRESET reverbPreset) = 0;
 
-    /** Sets the local voice changer option.
-
-     @note Do not use this method together with the
-     \ref IRtcEngine::setLocalVoiceReverbPreset "setLocalVoiceReverbPreset"
-     method, because the method called later overrides the one called earlier.
-
-     @param voiceChanger Sets the local voice changer option. See
-     #VOICE_CHANGER_PRESET.
-
-     @return
-     - 0: Success.
-     - < 0: Failure.
-     */
-    virtual int setLocalVoiceChanger(VOICE_CHANGER_PRESET voiceChanger) = 0;
+  /** Sets the local voice changer option.
+   
+   @note Do not use this method together with the
+   \ref IRtcEngine::setLocalVoiceReverbPreset "setLocalVoiceReverbPreset"
+   method, because the method called later overrides the one called earlier.
+   
+   @param voiceChanger Sets the local voice changer option. See
+   #VOICE_CHANGER_PRESET.
+   
+   @return
+   - 0: Success.
+   - < 0: Failure.
+   */
+  virtual int setLocalVoiceChanger(VOICE_CHANGER_PRESET voiceChanger) = 0;
 
   /** **DEPRECATED** Specifies an SDK output log file.
    *
@@ -4380,6 +4560,24 @@ class IRtcEngine : public agora::base::IEngineBase {
    */
   virtual int setExternalAudioSource(bool enabled, int sampleRate, int channels,
                                      int sourceNumber = 1, bool localPlayback = false, bool publish = true) = 0;
+
+  virtual int enableDirectExternalAudioSource(bool enabled) = 0;
+
+  /**
+   * Sets the external audio source.
+   *
+   * @note
+   * Ensure that you call this method before joining the channel.
+   *
+   * @param sourceId custom audio source id.
+   * @param enabled Determines whether to local playback the external audio source:
+   * - true: Local playback the external audio source.
+   * - false: Local don`t playback the external audio source.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int enableCustomAudioLocalPlayback(int sourceId, bool enabled) = 0;
 
   /**
    * Sets the external audio sink.
@@ -4741,22 +4939,22 @@ class IRtcEngine : public agora::base::IEngineBase {
   /**
    * Set extension provider specific property.
    *
-   * @param provider_name name for provider, e.g. agora.io.
+   * @param provider name for provider, e.g. agora.io.
    * @param key key for the property.
-   * @param json_value property value.
+   * @param value property value of json format.
    *
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
   virtual int setExtensionProviderProperty(
-      const char* provider_name, const char* key, const char* json_value) = 0;
+      const char* provider, const char* key, const char* value) = 0;
 
   /**
    * Enable/Disable extension.
    *
-   * @param provider_name name for provider, e.g. agora.io.
-   * @param extension_name name for extension, e.g. agora.beauty.
+   * @param provider name for provider, e.g. agora.io.
+   * @param extension name for extension, e.g. agora.beauty.
    * @param enable enable or disable.
    * - true: enable.
    * - false: disable.
@@ -4766,31 +4964,31 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - < 0: Failure.
    */
   virtual int enableExtension(
-      const char* provider_name, const char* extension_name, bool enable=true, agora::media::MEDIA_SOURCE_TYPE type = agora::media::UNKNOWN_MEDIA_SOURCE) = 0;
+      const char* provider, const char* extension, bool enable=true, agora::media::MEDIA_SOURCE_TYPE type = agora::media::UNKNOWN_MEDIA_SOURCE) = 0;
 
   /**
    * Set extension specific property.
    *
-   * @param provider_name name for provider, e.g. agora.io.
-   * @param extension_name name for extension, e.g. agora.beauty.
+   * @param provider name for provider, e.g. agora.io.
+   * @param extension name for extension, e.g. agora.beauty.
    * @param key key for the property.
-   * @param json_value property value.
+   * @param value property value of json format.
    *
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
   virtual int setExtensionProperty(
-      const char* provider_name, const char* extension_name,
-      const char* key, const char* json_value, agora::media::MEDIA_SOURCE_TYPE type = agora::media::UNKNOWN_MEDIA_SOURCE) = 0;
+      const char* provider, const char* extension,
+      const char* key, const char* value, agora::media::MEDIA_SOURCE_TYPE type = agora::media::UNKNOWN_MEDIA_SOURCE) = 0;
 
   /**
    * Get extension specific property.
    *
-   * @param provider_name name for provider, e.g. agora.io.
-   * @param extension_name name for extension, e.g. agora.beauty.
+   * @param provider name for provider, e.g. agora.io.
+   * @param extension name for extension, e.g. agora.beauty.
    * @param key key for the property.
-   * @param json_value property value.
+   * @param value property value of json format.
    * @param buf_len max length of the json value buffer
    *
    * @return
@@ -4798,8 +4996,8 @@ class IRtcEngine : public agora::base::IEngineBase {
    * - < 0: Failure.
    */
   virtual int getExtensionProperty(
-      const char* provider_name, const char* extension_name,
-      const char* key, char* json_value, int buf_len, agora::media::MEDIA_SOURCE_TYPE type = agora::media::UNKNOWN_MEDIA_SOURCE) = 0;
+      const char* provider, const char* extension,
+      const char* key, char* value, int buf_len, agora::media::MEDIA_SOURCE_TYPE type = agora::media::UNKNOWN_MEDIA_SOURCE) = 0;
 
   /** Sets the camera capture configuration.
    * @note Call this method before enabling the local camera.
@@ -5053,6 +5251,34 @@ class IRtcEngine : public agora::base::IEngineBase {
 
 #endif  // __ANDROID__ || (__APPLE__ && TARGET_OS_IOS)
 
+#if (defined(__APPLE__) && TARGET_OS_IOS)
+  /** Sets the operational permission of the SDK on the audio session.
+   *
+   * The SDK and the app can both configure the audio session by default. If
+   * you need to only use the app to configure the audio session, this method
+   * restricts the operational permission of the SDK on the audio session.
+   *
+   * You can call this method either before or after joining a channel. Once
+   * you call this method to restrict the operational permission of the SDK
+   * on the audio session, the restriction takes effect when the SDK needs to
+   * change the audio session.
+   *
+   * @note
+   * - This method is for iOS only.
+   * - This method does not restrict the operational permission of the app on
+   * the audio session.
+   *
+   * @param restriction The operational permission of the SDK on the audio session.
+   * See #AUDIO_SESSION_OPERATION_RESTRICTION. This parameter is in bit mask
+   * format, and each bit corresponds to a permission.
+   *
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int setAudioSessionOperationRestriction(AUDIO_SESSION_OPERATION_RESTRICTION restriction) = 0;
+#endif // __APPLE__ && TARGET_OS_IOS
+
 #if (defined(__APPLE__) && TARGET_OS_MAC && !TARGET_OS_IPHONE)
 
   /** Shares the whole or part of a screen by specifying the display ID.
@@ -5132,6 +5358,13 @@ class IRtcEngine : public agora::base::IEngineBase {
   virtual int startScreenCapture(void* mediaProjectionPermissionResultData,
                                  const ScreenCaptureParameters& captureParams) = 0;
 
+  /**
+   * Gets the the Audio device Info
+   * @return
+   * - 0: Success.
+   * - < 0: Failure..
+   */
+  virtual int getAudioDeviceInfo(DeviceInfo& deviceInfo) = 0;
 #endif  // __ANDROID__
 
 #if defined(_WIN32) || (defined(__APPLE__) && TARGET_OS_MAC && !TARGET_OS_IPHONE)
@@ -6015,6 +6248,28 @@ class IRtcEngine : public agora::base::IEngineBase {
   virtual int updateDirectCdnStreamingMediaOptions(const DirectCdnStreamingMediaOptions& options) = 0;
 
   virtual int pushDirectCdnStreamingCustomVideoFrame(media::base::ExternalVideoFrame* frame) = 0;
+
+  /*
+   * Adjust the custom audio publish volume by source id.
+   * @param sourceId custom audio source id.
+   * @param volume The volume, range is [0,100]:
+   * 0: mute, 100: The original volume
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int adjustCustomAudioPublishVolume(int32_t sourceId, int volume) = 0;
+
+  /*
+   * Adjust the custom audio playout volume by source id.
+   * @param sourceId custom audio source id.
+   * @param volume The volume, range is [0,100]:
+   * 0: mute, 100: The original volume
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int adjustCustomAudioPlayoutVolume(int32_t sourceId, int volume) = 0;
 };
 
 class IRtcEngineParameter {

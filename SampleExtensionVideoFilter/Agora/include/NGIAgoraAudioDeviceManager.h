@@ -77,6 +77,18 @@ public:
    */
   virtual void onDeviceStateChanged() = 0;
 
+  /**
+   * Occurs when the device state changes, for example, when a device is added or removed or default device change.
+   * 
+   * @note
+   * This method applies to Windows only now.
+   *
+   * @param deviceId Pointer to the device ID.
+   * @param deviceType Device type: #MEDIA_DEVICE_TYPE.
+   * @param deviceState Device state: #MEDIA_DEVICE_STATE_TYPE..
+   */
+  virtual void onAudioDeviceStateChanged(const char *deviceId, int deviceType, int deviceState) = 0;
+
   /** Indicates incoming volume. This can be used to test microphone.
    *
    * @param volume volume between 0 (lowest volume) to 255 (highest volume).

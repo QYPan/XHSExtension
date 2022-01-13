@@ -113,7 +113,7 @@ struct AgoraServiceConfiguration {
    * The App ID of your project.
    */
   const char* appId;
-  
+
   /**
    * The supported area code, default is AREA_CODE_GLOB
    */
@@ -126,7 +126,7 @@ struct AgoraServiceConfiguration {
    * The audio scenario. See \ref agora::rtc::AUDIO_SCENARIO_TYPE "AUDIO_SCENARIO_TYPE". The default value is `AUDIO_SCENARIO_DEFAULT`.
    */
   rtc::AUDIO_SCENARIO_TYPE audioScenario;
-  /** 
+  /**
    * The config for custumer set log path, log size and log level.
    */
   commons::LogConfig logConfig;
@@ -138,6 +138,11 @@ struct AgoraServiceConfiguration {
    * The service observer.
    */
   IServiceObserver* serviceObserver;
+
+  /**
+   * Thread priority for SDK common threads
+   */
+  Optional<rtc::THREAD_PRIORITY_TYPE> threadPriority;
 
   AgoraServiceConfiguration() : enableAudioProcessor(true),
                                 enableAudioDevice(true),
@@ -297,19 +302,6 @@ enum TMixMode {
    */
   MIX_DISABLED,
 };
-/**
- * The CC (Congestion Control) mode options.
- */
-enum TCcMode {
-  /**
-   * Enable CC mode.
-   */
-  CC_ENABLED,
-  /**
-   * Disable CC mode.
-   */
-  CC_DISABLED,
-};
 
 /**
  * The configuration for creating a local video track with an encoded image sender.
@@ -318,7 +310,7 @@ struct SenderOptions {
   /**
    * Whether to enable CC mode. See #TCcMode.
    */
-  TCcMode ccMode;
+  rtc::TCcMode ccMode;
   /**
    * The codec type used for the encoded images: \ref agora::rtc::VIDEO_CODEC_TYPE "VIDEO_CODEC_TYPE".
    */
@@ -348,7 +340,7 @@ struct SenderOptions {
    | Resolution             | Frame Rate (fps) | Base Bitrate (Kbps, for Communication) | Live Bitrate (Kbps, for Live Broadcast)|
    |------------------------|------------------|----------------------------------------|----------------------------------------|
    | 160 &times; 120        | 15               | 65                                     | 130 |
-   |120 &times; 120        | 15               | 50                                     | 100 |
+   | 120 &times; 120        | 15               | 50                                     | 100 |
    | 320 &times; 180        | 15               | 140                                    | 280 |
    | 180 &times; 180        | 15               | 100                                    | 200 |
    | 240 &times; 180        | 15               | 120                                    | 240 |
@@ -383,7 +375,7 @@ struct SenderOptions {
   int targetBitrate;
 
   SenderOptions()
-  : ccMode(CC_ENABLED),
+  : ccMode(rtc::CC_ENABLED),
     codecType(rtc::VIDEO_CODEC_H264),
     targetBitrate(6500) {}
 };
@@ -543,6 +535,20 @@ class IAgoraService {
    * - `INVALID_STATE`, if `enableAudioProcessor` in \ref agora::base::AgoraServiceConfiguration "AgoraServiceConfiguration" is set as `false`.
    */
   virtual agora_refptr<rtc::ILocalAudioTrack> createLocalAudioTrack() = 0;
+
+  /**
+   * Creates a direct local audio track object with a PCM data sender and returns the pointer.
+   *
+   * Once created, this track can be used to send PCM audio data.
+   *
+   * @param audioSource The pointer to the PCM audio data sender: \ref agora::rtc::IAudioPcmDataSender "IAudioPcmDataSender".
+   * @return
+   * - The pointer to \ref rtc::ILocalAudioTrack "ILocalAudioTrack": Success.
+   * - A null pointer: Failure.
+   * - `INVALID_STATE`, if `enableAudioProcessor` in \ref agora::base::AgoraServiceConfiguration "AgoraServiceConfiguration" is set as `false`.
+   */
+  virtual agora_refptr<rtc::ILocalAudioTrack> createDirectCustomAudioTrack(
+      agora_refptr<rtc::IAudioPcmDataSender> audioSource) = 0;
 
   /**
    * Creates a local audio track object with a PCM data sender and returns the pointer.
