@@ -53,7 +53,7 @@ public:
 	/// </summary>
 	/// <param name="path">模型路径</param>
 	/// <returns>返回0为成功，其他为失败</returns>
-	int loadAIModel(const std::string& path);
+	int loadAIModel(const char *path);
 	
 	/// <summary>
 	/// 获取美颜、滤镜等处理后的数据(RGB格式)用于上屏
@@ -93,14 +93,14 @@ public:
 	/// </summary>
 	/// <param name="path">资源路径</param>
 	/// <returns>0为成功，其他为失败</returns>
-	int setBeautyResourcePath(const std::string& path);
+	int setBeautyResourcePath(const char * path);
 
 	/// <summary>
 	/// 设置滤镜资源路径
 	/// </summary>
 	/// <param name="path">资源路径</param>
 	/// <returns>0为成功，其他为失败</returns>
-	int setFilterResourcePath(const std::string& path);
+	int setFilterResourcePath(const char * path);
 
 	/// <summary>
 	/// 是否开启一级美颜（包含磨皮，美白，瘦脸等）
@@ -172,7 +172,6 @@ private:
 	GLuint* m_outputFboId = nullptr;
 	int m_inputWidth = 0;
 	int m_inputHeight = 0;
-	int m_oldInputSize = 0;
 	int m_frameIndex = 0;
 	bool m_ready = false;
 	bool m_beautyEnable = true;
