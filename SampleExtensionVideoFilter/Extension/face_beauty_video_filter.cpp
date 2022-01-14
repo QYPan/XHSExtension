@@ -4,6 +4,7 @@
 #include <map>
 #include <windows.h>
 #include <stdio.h>
+#include <chrono>
 #include "face_beauty_video_filter.h"
 
 namespace agora {
@@ -13,6 +14,34 @@ namespace extension {
 
 static std::map<std::string, xhs_Command_type> m_xhs_command_dict;
 static void initCommandDict();
+
+static std::wstring utf82wide(const std::string& utf8) {
+  if (utf8.empty()) return std::wstring();
+  int len = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.size(), nullptr, 0);
+  wchar_t* buf = new wchar_t[len + 1];
+  if (!buf) return std::wstring();
+  ZeroMemory(buf, sizeof(wchar_t) * (len + 1));
+  MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.size(), buf, sizeof(wchar_t) * (len + 1));
+  std::wstring result(buf);
+  delete[] buf;
+  return result;
+}
+
+static std::string wide2ansi(const std::wstring& wide) {
+  if (wide.empty()) return std::string();
+  int len = WideCharToMultiByte(CP_ACP, 0, wide.c_str(), wide.size(), nullptr, 0, nullptr, nullptr);
+  char* buf = new char[len + 1];
+  if (!buf) return std::string();
+  ZeroMemory(buf, len + 1);
+  WideCharToMultiByte(CP_ACP, 0, wide.c_str(), wide.size(), buf, len + 1, nullptr, nullptr);
+  std::string result(buf);
+  delete[] buf;
+  return result;
+}
+
+static std::string utf82ansi(const std::string& utf8) {
+  return wide2ansi(utf82wide(utf8));
+}
 
 class SimpleLogger {
 public:
@@ -112,7 +141,7 @@ int CFaceBeautyVideoFilter::start(agora::agora_refptr<Control> control) {
         initCommandDict();
 
         m_pBeautyEngine = new CG::XYCGWindowsEngine();
-        int result = m_pBeautyEngine->initWindowsEngine(config_._license.c_str(), config_._userId.c_str());
+        int result = m_pBeautyEngine->initWindowsEngine(utf82ansi(config_._license).c_str(), config_._userId.c_str());
         nlohmann::json result_json = result;
         if (core_) {
             core_->log(agora::commons::LOG_LEVEL::LOG_LEVEL_INFO, "init xhs_filter_engine");
@@ -129,13 +158,13 @@ int CFaceBeautyVideoFilter::start(agora::agora_refptr<Control> control) {
         }
 
         // temp load ai here
-        result = m_pBeautyEngine->loadAIModel(config_._aiModelPath.c_str());
+        result = m_pBeautyEngine->loadAIModel(utf82ansi(config_._aiModelPath).c_str());
         if (result) {
             PRINT_LOG(SimpleLogger::LOG_TYPE::L_WARN, "this: %p, load ai model failed. result: %d.", this, result);
         }
 
         // temp load beauty image here
-        result = m_pBeautyEngine->setBeautyResourcePath(config_._beautyResPath.c_str());
+        result = m_pBeautyEngine->setBeautyResourcePath(utf82ansi(config_._beautyResPath).c_str());
         if (result) {
             PRINT_LOG(SimpleLogger::LOG_TYPE::L_WARN, "this: %p, set beauty resource path failed. result: %d.", this, result);
         }
