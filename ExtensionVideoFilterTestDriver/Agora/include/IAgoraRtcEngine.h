@@ -243,36 +243,9 @@ struct LocalVideoStats
      * the frame rate of the retransmission video after packet loss.
      */
     int sentFrameRate;
-    /** The capture frame rate (fps) of the local video.
-     */
-    int captureFrameRate;
-    /** The width of the capture frame (px).
-     */
-    int captureFrameWidth;
-    /** The height of the capture frame (px).
-     */
-    int captureFrameHeight;
-    /**
-     * The regulated frame rate of capture frame rate according to video encoder configuration.
-     */
-    int regulatedCaptureFrameRate;
-    /**
-     * The regulated frame width (pixel) of capture frame width according to video encoder configuration.
-     */
-    int regulatedCaptureFrameWidth;
-    /**
-     * The regulated frame height (pixel) of capture frame height according to video encoder configuration.
-     */
-    int regulatedCaptureFrameHeight;
     /** The encoder output frame rate (fps) of the local video.
      */
     int encoderOutputFrameRate;
-    /** The width of the encoding frame (px).
-     */
-    int encodedFrameWidth;
-    /** The height of the encoding frame (px).
-     */
-    int encodedFrameHeight;
     /** The render output frame rate (fps) of the local video.
      */
     int rendererOutputFrameRate;
@@ -291,6 +264,12 @@ struct LocalVideoStats
    */
     QUALITY_ADAPT_INDICATION qualityAdaptIndication;
     int encodedBitrate;
+    /** The width of the encoding frame (px).
+     */
+    int encodedFrameWidth;
+    /** The height of the encoding frame (px).
+     */
+    int encodedFrameHeight;
     /** The value of the sent frames, represented by an aggregate value.
      */
     int encodedFrameCount;

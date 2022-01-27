@@ -1668,11 +1668,10 @@ struct EncodedAudioFrameInfo {
  * The definition of the AudioPcmDataInfo struct.
  */
 struct AudioPcmDataInfo {
-  AudioPcmDataInfo() : samplesPerChannel(0), channelNum(0), samplesOut(0), elapsedTimeMs(0), ntpTimeMs(0) {}
+  AudioPcmDataInfo() : sampleCount(0), samplesOut(0), elapsedTimeMs(0), ntpTimeMs(0) {}
 
   AudioPcmDataInfo(const AudioPcmDataInfo& rhs)
-      : samplesPerChannel(rhs.samplesPerChannel),
-        channelNum(rhs.channelNum),
+      : sampleCount(rhs.sampleCount),
         samplesOut(rhs.samplesOut),
         elapsedTimeMs(rhs.elapsedTimeMs),
         ntpTimeMs(rhs.ntpTimeMs) {}
@@ -1680,9 +1679,7 @@ struct AudioPcmDataInfo {
   /**
    * The sample count of the PCM data that you expect.
    */
-  size_t samplesPerChannel;
-
-  int16_t channelNum;
+  size_t sampleCount;
 
   // Output
   /**

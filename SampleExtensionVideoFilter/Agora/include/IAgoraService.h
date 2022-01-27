@@ -113,7 +113,7 @@ struct AgoraServiceConfiguration {
    * The App ID of your project.
    */
   const char* appId;
-
+  
   /**
    * The supported area code, default is AREA_CODE_GLOB
    */
@@ -126,7 +126,7 @@ struct AgoraServiceConfiguration {
    * The audio scenario. See \ref agora::rtc::AUDIO_SCENARIO_TYPE "AUDIO_SCENARIO_TYPE". The default value is `AUDIO_SCENARIO_DEFAULT`.
    */
   rtc::AUDIO_SCENARIO_TYPE audioScenario;
-  /**
+  /** 
    * The config for custumer set log path, log size and log level.
    */
   commons::LogConfig logConfig;
@@ -340,7 +340,7 @@ struct SenderOptions {
    | Resolution             | Frame Rate (fps) | Base Bitrate (Kbps, for Communication) | Live Bitrate (Kbps, for Live Broadcast)|
    |------------------------|------------------|----------------------------------------|----------------------------------------|
    | 160 &times; 120        | 15               | 65                                     | 130 |
-   | 120 &times; 120        | 15               | 50                                     | 100 |
+   |120 &times; 120        | 15               | 50                                     | 100 |
    | 320 &times; 180        | 15               | 140                                    | 280 |
    | 180 &times; 180        | 15               | 100                                    | 200 |
    | 240 &times; 180        | 15               | 120                                    | 240 |

@@ -43,16 +43,6 @@ class IAudioFilterBase : public RefCountInterface {
    */
   virtual int getPreferredSampleRate() = 0;
 
-  /**
-   * Get the channel number supported by the audio filter, the framework will resample
-   * the audio data and then pass it to the audio filter. If the user does not
-   * overwrite, resampling will not be done by default.
-   * @return
-   * - 0: Audio data will not be resampled.
-   * - > 0: Audio data will be resampled to this sample rate.
-   */
-  virtual int getPreferredChannelNumbers() = 0;
-
  protected:
   ~IAudioFilterBase() {}
 };
@@ -119,16 +109,6 @@ class IAudioFilter : public IAudioFilterBase {
    * - > 0: Audio data will be resampled to this sample rate.
    */
   int getPreferredSampleRate() override { return 0; };
-
-  /**
-   * Get the channel number supported by the audio filter, the framework will resample
-   * the audio data and then pass it to the audio filter. If the user does not
-   * overwrite, resampling will not be done by default.
-   * @return
-   * - 0: Audio data will not be resampled.
-   * - > 0: Audio data will be resampled to this sample rate.
-   */
-  int getPreferredChannelNumbers() override { return 0; };
 
  protected:
   ~IAudioFilter() {}

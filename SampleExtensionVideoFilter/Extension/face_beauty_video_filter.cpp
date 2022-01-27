@@ -313,7 +313,7 @@ int CFaceBeautyVideoFilter::setProperty(const char* key, const void* buf, size_t
             return -1;
         }
         std::replace(aid._subPath.begin(), aid._subPath.end(), '/', '\\');
-        m_pBeautyEngine->setFilterResourcePath(aid._subPath.c_str());
+        m_pBeautyEngine->setFilterResourcePath(utf82ansi(aid._subPath).c_str());
         m_pBeautyEngine->setFilterIntensity(aid._lut_intensity);
     }
     break;

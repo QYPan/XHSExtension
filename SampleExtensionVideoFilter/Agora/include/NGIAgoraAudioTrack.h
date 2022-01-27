@@ -400,9 +400,6 @@ struct RemoteAudioTrackStats {
    * audio downlink average process time
    */
   uint32_t downlink_process_time_ms;
-
-  uint32_t target_level_base_ms;
-  uint32_t target_level_prefered_ms;
   /**
    *  The count of 80 ms frozen in 2 seconds
    */

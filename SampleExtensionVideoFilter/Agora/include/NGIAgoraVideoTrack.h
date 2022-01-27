@@ -176,14 +176,6 @@ struct LocalVideoTrackStats {
    */
   uint32_t ssrc_minor_stream;
   /**
-   * The capture frame rate of the video.
-   */
-  int capture_frame_rate;
-  /**
-   * The regulated frame rate of capture frame rate according to video encoder configuration.
-   */
-  int regulated_capture_frame_rate;
-  /**
    * The input frame rate of the encoder.
    */
   int input_frame_rate;
@@ -207,22 +199,6 @@ struct LocalVideoTrackStats {
    * The total frame rate including FEC.
    */
   int total_bitrate_bps;  // Include FEC
-  /**
-   * The capture frame width (pixel).
-   */
-  int capture_width;
-  /**
-   * The capture frame height (pixel).
-   */
-  int capture_height;
-  /**
-   * The regulated frame width (pixel) of capture frame width according to video encoder configuration.
-   */
-  int regulated_capture_width;
-  /**
-   * The regulated frame height (pixel) of capture frame height according to video encoder configuration.
-   */
-  int regulated_capture_height;
   /**
    * The frame width (pixel).
    */
@@ -253,18 +229,12 @@ struct LocalVideoTrackStats {
                            frames_encoded(0),
                            ssrc_major_stream(0),
                            ssrc_minor_stream(0),
-                           capture_frame_rate(0),
-                           regulated_capture_frame_rate(0),
                            input_frame_rate(0),
                            encode_frame_rate(0),
                            render_frame_rate(0),
                            target_media_bitrate_bps(0),
                            media_bitrate_bps(0),
                            total_bitrate_bps(0),
-                           capture_width(0),
-                           capture_height(0),
-                           regulated_capture_width(0),
-                           regulated_capture_height(0),
                            width(0),
                            height(0),
                            encoder_type(0),

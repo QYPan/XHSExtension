@@ -1204,36 +1204,6 @@ class ILocalUserObserver {
    */
   virtual void onStreamMessage(user_id_t userId, int streamId, const char* data,
                                size_t length) {}
-
-   /**
-   * The remote user state information.
-   */
-  enum REMOTE_USER_STATE {
-    /**
-     * The remote user has muted the audio.
-     */
-    PEER_STATE_MUTE_AUDIO = (1 << 0),
-    /**
-     * The remote user has muted the video.
-     */
-    PEER_STATE_MUTE_VIDEO = (1 << 1),
-    /**
-     * The remote user has enabled the video, which includes video capturing and encoding.
-     */
-    PEER_STATE_ENABLE_VIDEO = (1 << 4),
-    /**
-     * The remote user has enabled the local video capturing.
-     */
-    PEER_STATE_ENABLE_LOCAL_VIDEO = (1 << 8),
-
-  };
-
-  /**
-   * Occurs when the remote user state is updated.
-   * @param uid The uid of the remote user. 
-   * @param state The remote user state.Just & #REMOTE_USER_STATE
-   */
-  virtual void onUserStateChanged(user_id_t userId, uint32_t state){}
 };
 
 class IVideoFrameObserver2 {
