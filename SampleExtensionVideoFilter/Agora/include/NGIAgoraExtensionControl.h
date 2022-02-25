@@ -77,13 +77,13 @@ class IExtensionControl {
    *
    * @param provider name of the provider
    * @param extension name of the extension
-   * @param key key of the extension event
-   * @param json_value string of the extension event
+   * @param event_key key of the extension event
+   * @param event_json_str string of the extension event
    * @return
    * - 0: The method call succeeds.
    * - <0: The method call fails.
    */
-  virtual int fireEvent(const char* provider, const char* extension, const char* key, const char* value) = 0;
+  virtual int fireEvent(const char* provider, const char* extension, const char* event_key, const char* value) = 0;
 
   /**
    * Register provider to the SDK

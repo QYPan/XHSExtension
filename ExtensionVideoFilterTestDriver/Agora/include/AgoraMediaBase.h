@@ -113,15 +113,15 @@ enum RAW_AUDIO_FRAME_OP_MODE_TYPE {
 }  // namespace rtc
 
 namespace media {
-  /** 
+  /**
  * The type of media device.
  */
 enum MEDIA_SOURCE_TYPE {
-  /** 
+  /**
    * 0: The audio playback device.
    */
   AUDIO_PLAYOUT_SOURCE = 0,
-  /** 
+  /**
    * 1: Microphone.
    */
   AUDIO_RECORDING_SOURCE = 1,
@@ -170,7 +170,7 @@ enum MEDIA_SOURCE_TYPE {
    */
   TRANSCODED_VIDEO_SOURCE = 12,
   /**
-   * 100: unknown media source.
+   * 100: Internal Usage only.
    */
   UNKNOWN_MEDIA_SOURCE = 100
 };
@@ -343,7 +343,7 @@ enum VIDEO_PIXEL_FORMAT {
    * 8: NV12.
    */
   VIDEO_PIXEL_NV12 = 8,
-  /** 
+  /**
    * 10: GL_TEXTURE_2D
    */
   VIDEO_TEXTURE_2D = 10,
@@ -484,17 +484,17 @@ struct ExternalVideoFrame {
    * unsynchronized audio and video.
    */
   long long timestamp;
-  /** 
+  /**
    * [Texture-related parameter]
    * When using the OpenGL interface (javax.microedition.khronos.egl.*) defined by Khronos, set EGLContext to this field.
    * When using the OpenGL interface (android.opengl.*) defined by Android, set EGLContext to this field.
    */
   void *eglContext;
-  /** 
+  /**
    * [Texture related parameter] Texture ID used by the video frame.
    */
   EGL_CONTEXT_TYPE eglType;
-  /** 
+  /**
    * [Texture related parameter] Incoming 4 &times; 4 transformational matrix. The typical value is a unit matrix.
    */
   int textureId;
@@ -528,7 +528,9 @@ struct VideoFrame {
   renderTimeMs(0),
   avsync_type(0),
   metadata_buffer(NULL),
-  metadata_size(0){}
+  metadata_size(0),
+  sharedContext(0),
+  textureId(0){}
 
   /**
    * The video pixel format: #VIDEO_PIXEL_FORMAT.
@@ -591,6 +593,18 @@ struct VideoFrame {
    *  The default value is 0
    */
   int metadata_size;
+  /**
+   * [Texture related parameter], egl context.
+   */
+  void* sharedContext;
+  /**
+   * [Texture related parameter], Texture ID used by the video frame.
+   */
+  int textureId;
+  /**
+   * [Texture related parameter], Incoming 4 &times; 4 transformational matrix.
+   */
+  float matrix[16];
 };
 
 class IVideoFrameObserver {
@@ -605,7 +619,6 @@ class IVideoFrameObserver {
   virtual void onFrame(const VideoFrame* frame) = 0;
   virtual ~IVideoFrameObserver() {}
   virtual bool isExternal() { return true; }
-  virtual VIDEO_PIXEL_FORMAT getVideoPixelFormatPreference() { return VIDEO_PIXEL_UNKNOWN; }
 };
 
 enum MEDIA_PLAYER_SOURCE_TYPE {
@@ -965,9 +978,11 @@ class IVideoFrameObserver {
   /**
    * Occurs each time needs to get rotation angle.
    *
-   * @return rotation angle.
+   * @return Determines whether to rotate.
+   * - true: need to rotate.
+   * - false: no rotate.
    */
-  virtual int getRotationApplied() { return 0; }
+  virtual bool getRotationApplied() { return false; }
 
   /**
    * Occurs each time needs to get whether mirror is applied or not.
@@ -987,6 +1002,89 @@ class IVideoFrameObserver {
    */
   virtual bool isExternal() { return true; }
 };
+/** Definition of contentinspect
+ */
+#define MAX_CONTENT_INSPECT_MODULE_COUNT 32
+enum CONTENT_INSPECT_RESULT {
+  CONTENT_INSPECT_NEUTRAL = 1,
+  CONTENT_INSPECT_SEXY = 2,
+  CONTENT_INSPECT_PORN = 3,
+};
+enum CONTENT_INSPECT_DEVICE_TYPE{
+    CONTENT_INSPECT_DEVICE_INVALID = 0,
+    CONTENT_INSPECT_DEVICE_AGORA = 1,
+    CONTENT_INSPECT_DEVICE_HIVE = 2,
+    CONTENT_INSPECT_DEVICE_TUPU = 3
+};
+enum CONTENT_INSPECT_TYPE {
+/**
+ * (Default) content inspect type invalid
+ */
+CONTENT_INSPECT_INVALIDE = 0,
+/**
+ * Content inspect type moderation
+ */
+CONTENT_INSPECT_MODERATION = 1,
+/**
+ * Content inspect type supervise
+ */
+CONTENT_INSPECT_SUPERVISE = 2
+};
+struct ContentInspectModule {
+  /**
+   * The content inspect module type.
+   */
+  CONTENT_INSPECT_TYPE type;
+  /**The content inspect frequency, default is 0 second.
+   * the frequency <= 0 is invalid.
+   */
+  unsigned int frequency;
+};
+/** Definition of ContentInspectConfig.
+ */
+struct ContentInspectConfig {
+  /** jh on device.*/
+  bool DeviceWork;
 
+/** jh on cloud.*/
+  bool CloudWork;
+
+  /**the type of jh on device.*/
+  CONTENT_INSPECT_DEVICE_TYPE DeviceworkType;
+  const char* extraInfo;
+
+  /**The content inspect modules, max length of modules is 32.
+   * the content(snapshot of send video stream, image) can be used to max of 32 types functions.
+   */
+  ContentInspectModule modules[MAX_CONTENT_INSPECT_MODULE_COUNT];
+  /**The content inspect module count.
+   */
+  int moduleCount;
+  ContentInspectConfig& operator=(ContentInspectConfig& rth)
+  {
+    DeviceWork = rth.DeviceWork;
+    CloudWork = rth.CloudWork;
+    DeviceworkType = rth.DeviceworkType;
+    extraInfo = rth.extraInfo;
+    moduleCount = rth.moduleCount;
+    memcpy(&modules, &rth.modules,  MAX_CONTENT_INSPECT_MODULE_COUNT * sizeof(ContentInspectModule));
+    return *this;
+  }
+  ContentInspectConfig() :DeviceWork(false),CloudWork(true),DeviceworkType(CONTENT_INSPECT_DEVICE_INVALID),extraInfo(NULL), moduleCount(0){}
+};
+
+/**
+ * The external video source type.
+ */
+enum EXTERNAL_VIDEO_SOURCE_TYPE {
+  /**
+   * 0: non-encoded video frame.
+   */
+  VIDEO_FRAME = 0,
+  /**
+   * 1: encoded video frame.
+   */
+  ENCODED_VIDEO_FRAME,
+};
 }  // namespace media
 }  // namespace agora

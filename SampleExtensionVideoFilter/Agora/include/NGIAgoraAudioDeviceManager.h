@@ -25,7 +25,7 @@ static const int kAdmMaxGuidSize = 128;
 static const int kIntervalInMillseconds = 200;
 
 
-#if defined(_WIN32) || (TARGET_OS_MAC && !TARGET_OS_IPHONE)
+#if defined(_WIN32) || (defined(__APPLE__) && TARGET_OS_MAC && !TARGET_OS_IPHONE) 
 /**
  * The struct of AudioDeviceInfo.
  *
@@ -101,6 +101,17 @@ public:
    * @param route The current audio route. See #AudioRoute.
    */
   virtual void onRoutingChanged(AudioRoute route) = 0;
+
+  /**
+   * Occurs when the audio device volume changes.
+   *
+   * @param deviceType The device type, see #MEDIA_DEVICE_TYPE.
+   * @param volume The volume of the audio device.
+   * @param muted Whether the audio device is muted:
+   * - true: The audio device is muted.
+   * - false: The audio device is not muted.
+   */
+  virtual void onAudioDeviceVolumeChanged(int deviceType, int volume, bool muted) = 0;
 };
 
 class IRecordingDeviceSource : public RefCountInterface {
@@ -300,7 +311,7 @@ public:
   virtual int getCurrentRouting(AudioRoute& route) = 0;
 #endif  // __ANDROID__ || TARGET_OS_IPHONE
 
-#if defined(_WIN32) || (TARGET_OS_MAC && !TARGET_OS_IPHONE)
+#if defined(_WIN32) || (defined(__APPLE__) && TARGET_OS_MAC && !TARGET_OS_IPHONE) 
   /**
    * Gets the index numbers of all audio playout devices.
    *

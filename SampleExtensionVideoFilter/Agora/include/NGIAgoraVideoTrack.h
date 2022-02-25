@@ -213,11 +213,6 @@ struct LocalVideoTrackStats {
    */
   uint32_t uplink_cost_time_ms;
 
-  /**
-   * The packet loss rate of uplink.
-   */
-  int tx_packet_loss_rate;
-
   /** Quality change of the local video in terms of target frame rate and
    * target bit rate in this reported interval. See #QUALITY_ADAPT_INDICATION.
    */
@@ -239,48 +234,7 @@ struct LocalVideoTrackStats {
                            height(0),
                            encoder_type(0),
                            uplink_cost_time_ms(0),
-                           tx_packet_loss_rate(0),
                            quality_adapt_indication(ADAPT_NONE) {}
-};
-
-/**
- * The observer of the video track.
- */
-class IVideoTrackObserver {
- public:
-
-  /**
-   * Indicate if the observer is for internal use.
-   * Note: Never override this function
-   * @return
-   * - true: the observer is for external use
-   * - false: the observer is for internal use
-   */
-  virtual bool isExternal() { return true; }
-
-  /** Occurs when the local video stream state changes.
-   *
-   * @param track_id The id of the local video track.
-   * @param state State type #LOCAL_VIDEO_STREAM_STATE. When the state is LOCAL_VIDEO_STREAM_STATE_FAILED (3), see the `error_code` parameter for details.
-   * @param error_code The detailed error information: #LOCAL_VIDEO_STREAM_ERROR.
-   * @param timestamp_ms The timestamp when the event is triggered.
-   */
-  virtual void onLocalVideoStateChanged(int track_id,
-                                        LOCAL_VIDEO_STREAM_STATE state,
-                                        LOCAL_VIDEO_STREAM_ERROR error_code,
-                                        int timestamp_ms) = 0;
-
-  /**
-   * Occurs when the first video frame is rendered.
-   * @param user_id the user id of the video track, If it's local video track, uid is "".
-   * @param width the width of the video frame.
-   * @param height the height of the video frame.
-   * @param timestamp_ms The timestamp when the event is triggered.
-   **/
-  virtual void onFirstVideoFrameRendered(user_id_t user_id, int width, int height, int timestamp_ms) = 0;
-
- protected:
-  ~IVideoTrackObserver() {}
 };
 
 /**
@@ -340,7 +294,7 @@ class ILocalVideoTrack : public IVideoTrack {
 
   /**
    * Update simulcast stream config.
-   * 
+   *
    * @param config The reference to the configurations for the simulcast stream mode. See \ref agora::rtc::SimulcastStreamConfig "SimulcastStreamConfig".
    * @return
    * - 0: Success.
@@ -366,10 +320,6 @@ class ILocalVideoTrack : public IVideoTrack {
    */
   virtual bool getStatistics(LocalVideoTrackStats& stats) = 0;
 
-  virtual bool registerTrackObserver(IVideoTrackObserver* observer, void (*safeDeleter)(IVideoTrackObserver*)) = 0;
-
-  virtual bool unregisterTrackObserver(IVideoTrackObserver* observer) = 0;
-
   virtual VideoTrackType getType() OPTIONAL_OVERRIDE { return LOCAL_VIDEO_TRACK; }
 
  protected:
@@ -379,61 +329,61 @@ class ILocalVideoTrack : public IVideoTrack {
  * The struct of RemoteVideoTrackStats.
  */
 struct RemoteVideoTrackStats {
-	/**
-	 The ID of the remote user.
-	 */
-	uid_t uid;
-	/**
+  /**
+   The ID of the remote user.
+   */
+  uid_t uid;
+  /**
     * The overall delay (ms) of the video frames.
     */
-	int delay;
-	/**
-	 * The width (pixel) of the remote video track.
-	 */
-	int width;
-	/**
+  int delay;
+  /**
+   * The width (pixel) of the remote video track.
+   */
+  int width;
+  /**
     * The height (pixel) of the remote video track.
     */
-	int height;
-	/**
+  int height;
+  /**
     * The bitrate (Kbps) received in the reported interval.
     */
-	int receivedBitrate;
-	/** The decoder output frame rate (fps) of the remote video track.
-	 */
-	int decoderOutputFrameRate;
-	/** The render output frame rate (fps) of the remote video track.
-	 */
-	int rendererOutputFrameRate;
-	/** The video frame loss rate (%) of the remote video stream in the reported interval.
-	 */
-	int frameLossRate;
-	/** The packet loss rate (%) of the remote video track after using the anti-packet-loss method.
-	 */
-	int packetLossRate;
+  int receivedBitrate;
+  /** The decoder output frame rate (fps) of the remote video track.
+   */
+  int decoderOutputFrameRate;
+  /** The render output frame rate (fps) of the remote video track.
+   */
+  int rendererOutputFrameRate;
+  /** The video frame loss rate (%) of the remote video stream in the reported interval.
+   */
+  int frameLossRate;
+  /** The packet loss rate (%) of the remote video track after using the anti-packet-loss method.
+   */
+  int packetLossRate;
    /**
     * The remote video stream type: #VIDEO_STREAM_TYPE.
     */
-	VIDEO_STREAM_TYPE rxStreamType;
-	/**
-	 The total freeze time (ms) of the remote video track after the remote user joins the channel.
-	 In a video session where the frame rate is set to no less than 5 fps, video freeze occurs when
-	 the time interval between two adjacent renderable video frames is more than 500 ms.
-	 */
-	int totalFrozenTime;
-	/**
-	 The total video freeze time as a percentage (%) of the total time when the video is available.
-	 */
-	int frozenRate;
-	/**
-	 The total number of decoded video frames.
-	 */
-	uint32_t totalDecodedFrames;
-	/**
-	 The offset (ms) between audio and video stream. A positive value indicates the audio leads the
-	 video, and a negative value indicates the audio lags the video.
-	 */
-	int avSyncTimeMs;
+  VIDEO_STREAM_TYPE rxStreamType;
+  /**
+   The total freeze time (ms) of the remote video track after the remote user joins the channel.
+   In a video session where the frame rate is set to no less than 5 fps, video freeze occurs when
+   the time interval between two adjacent renderable video frames is more than 500 ms.
+   */
+  int totalFrozenTime;
+  /**
+   The total video freeze time as a percentage (%) of the total time when the video is available.
+   */
+  int frozenRate;
+  /**
+   The total number of decoded video frames.
+   */
+  uint32_t totalDecodedFrames;
+  /**
+   The offset (ms) between audio and video stream. A positive value indicates the audio leads the
+   video, and a negative value indicates the audio lags the video.
+   */
+  int avSyncTimeMs;
   /**
    The average offset(ms) between receive first packet which composite the frame and  the frame
    ready to render.

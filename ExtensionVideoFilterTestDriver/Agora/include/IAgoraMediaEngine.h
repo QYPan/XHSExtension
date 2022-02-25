@@ -75,7 +75,38 @@ class IMediaEngine {
   virtual int pushAudioFrame(MEDIA_SOURCE_TYPE type, IAudioFrameObserver::AudioFrame* frame,
                              bool wrap = false, int sourceId = 0) = 0;
 
-  virtual int pushDirectSendAudioFrame(IAudioFrameObserver::AudioFrame* frame) = 0;
+//  /**
+//   * Push the external audio data to the primary audio source.
+//   *
+//   * @param frame The audio buffer data.
+//   * @return
+//   * - 0: Success.
+//   * - < 0: Failure.
+//   */
+//  virtual int pushPrimaryAudioFrame(IAudioFrameObserver::AudioFrame* frame) = 0;
+//
+//  /**
+//   * Push the external audio data to the secondary audio source.
+//   *
+//   * @param frame The audio buffer data.
+//   * @return
+//   * - 0: Success.
+//   * - < 0: Failure.
+//   */
+//  virtual int pushSecondaryAudioFrame(IAudioFrameObserver::AudioFrame* frame) = 0;
+
+  virtual int pushCaptureAudioFrame(IAudioFrameObserver::AudioFrame* frame) = 0;
+
+  virtual int pushReverseAudioFrame(IAudioFrameObserver::AudioFrame* frame) = 0;
+  /**
+   * @brief Directly push audio frame to the rtc channel without mixing with other sources
+   * 
+   * @param frame The audio data buffer
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int pushDirectAudioFrame(IAudioFrameObserver::AudioFrame* frame) = 0;
 
   /**
    * Pulls the remote audio data.
@@ -107,16 +138,18 @@ class IMediaEngine {
    * @param useTexture Determines whether to use textured video data.
    * - true: Use texture, which is not supported now.
    * - False: Do not use texture.
-   * @param encodedFrame Determines whether the external video source is encoded.
-   * - true: The external video source is encoded.
-   * - false: The external video source is not encoded.
+   * @param sourceType Determines the type of external video source frame.
+   * - ENCODED_VIDEO_FRAME: The external video source is encoded.
+   * - VIDEO_FRAME: The external video source is not encoded.
+   * @param encodedVideoOption Video encoded track option, which is only used for ENCODED_VIDEO_FRAME.
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int setExternalVideoSource(bool enabled, bool useTexture,
-                                     bool encodedFrame = false,
-                                     rtc::EncodedVideoTrackOptions encodedVideoOption = rtc::EncodedVideoTrackOptions()) = 0;
+  virtual int setExternalVideoSource(
+      bool enabled, bool useTexture, EXTERNAL_VIDEO_SOURCE_TYPE sourceType = VIDEO_FRAME,
+      rtc::EncodedVideoTrackOptions encodedVideoOption = rtc::EncodedVideoTrackOptions()) = 0;
+
   /** 
    * Sets the external audio source.
    *
@@ -153,6 +186,17 @@ class IMediaEngine {
    * - < 0: Failure.
    */
   virtual int enableCustomAudioLocalPlayback(int sourceId, bool enabled) = 0;
+
+  /**
+   * @brief Enable/Disable the direct external audio source
+   *
+   * @param enable Determines whether to enable the direct external audio source
+   * @param localPlayback Determines whether to enable the local playback of the direct external audio source
+   * @return int
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int setDirectExternalAudioSource(bool enable, bool localPlayback = false) = 0;
 
   /** 
    * Pushes the external video frame to the app.

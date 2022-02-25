@@ -28,8 +28,8 @@ namespace rtc {
  */
 struct TextureInfo {
   OPTIONAL_ENUM_CLASS TextureType {
-    kGlTexture2D,
     kGlTextureOes,
+    kGlTexture2D,
   };
   OPTIONAL_ENUM_CLASS EglContextType {
     kEglContext10,
@@ -61,6 +61,15 @@ struct RawPixelBuffer {
   Format format;
   uint8_t* data;
   int size;
+};
+
+struct PaddedRawPixelBuffer {
+  RawPixelBuffer::Format format;
+  uint8_t* data;
+  int size;
+  int stride;
+  PaddedRawPixelBuffer()
+    : data(NULL), size(0), stride(0) {}
 };
 
 struct ColorSpace {
@@ -150,6 +159,7 @@ struct VideoFrameData {
     kRawPixels, // Raw pixels in memory
     kTexture, // Android: GL_TEXTURE_2D/GL_TEXTURE_OES
     kCVPixelBuffer, // iOS: CVPixelBufferRef
+    kPaddedRawPixels, // Raw pixels with paddings
   };
   Type type;
   union {
@@ -162,6 +172,10 @@ struct VideoFrameData {
   int rotation;
   ColorSpace color_space;
   int64_t timestamp_ms; // Capture time in milli-seconds
+};
+
+struct VideoFrameDataV2 : public VideoFrameData {
+  PaddedRawPixelBuffer padded_pixels; // All platform
 };
 
 OPTIONAL_ENUM_CLASS VideoFrameMetaDataType {

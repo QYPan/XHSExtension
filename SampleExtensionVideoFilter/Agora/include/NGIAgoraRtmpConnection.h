@@ -93,13 +93,19 @@ struct RtmpStreamingVideoConfiguration {
   int minBitrate;
 
   /**
+   *  The interval between two keyframes.
+   *  The default value is 2000ms.
+   */
+  unsigned int gopInMs;
+
+  /**
    * The orientation mode.
    * See {@link ORIENTATION_MODE ORIENTATION_MODE}.
    */
   ORIENTATION_MODE orientationMode;
 
   RtmpStreamingVideoConfiguration(): width(640), height(360), framerate(15),
-      bitrate(800), maxBitrate(960), minBitrate(600),
+      bitrate(800), maxBitrate(960), minBitrate(600), gopInMs(2000),
       orientationMode(ORIENTATION_MODE_ADAPTIVE) {}
 };
 
@@ -122,6 +128,11 @@ enum RTMP_CONNECTION_ERROR {
    * 2: The rtmp url is invalid.
    */
   RTMP_CONNECTION_ERR_INVALID_URL = 2,
+
+  /**
+   * 3: Already exist stream name.
+   */
+  RTMP_CONNECTION_ERR_BAD_NAME = 3,
 };
 
 /**
@@ -183,7 +194,17 @@ enum RTMP_CONNECTION_STATE {
    * - \ref IRtmpConnection::disconnect "disconnect" method to leave this state and the
    * - \ref IRtmpConnection::connect "connect" method to reconnect.
    */
-  STATE_FAILED = 5
+  STATE_FAILED = 5,
+
+  /**
+   * 6: The SDK is reconnected to the RTMP server.
+   *
+   * This state indicates that the connection is interrupted by
+   * some network issue. The SDK keeps trying connecting to the
+   * server. If the SDK reconnected to server, the SDK goes to
+   * STATE_RECONNECTED(6).
+   */
+  STATE_RECONNECTED = 6
 };
 
 /**
@@ -236,6 +257,13 @@ class IRtmpConnectionObserver {
   virtual void onReconnecting(const RtmpConnectionInfo& connectionInfo) = 0;
 
   /**
+   * Occurs when the connection state between the SDK and RTMP server changes to STATE_RECONNECTED(6).
+   *
+   * @param connectionInfo The information of the current connection: RtmpConnectionInfo.
+   */
+  virtual void onReconnected(const RtmpConnectionInfo& connectionInfo) = 0;
+
+  /**
    * Occurs when the connection state between the SDK and the RTMP server changes to STATE_FAILED(5).
    *
    * @param connectionInfo The connection information: RtmpConnectionInfo.
@@ -251,7 +279,7 @@ class IRtmpConnectionObserver {
    * @param audio_bitrate audio_bitrate.
    * @param video_frame_rate video_frame_rate.
    */
-  virtual void onTransferStatistics(uint64_t video_bitrate, uint64_t audio_bitrate, uint64_t video_frame_rate) = 0;
+  virtual void onTransferStatistics(uint64_t video_bitrate, uint64_t audio_bitrate, uint64_t video_frame_rate, uint64_t push_video_frame_cnt, uint64_t pop_video_frame_cnt) = 0;
 
   virtual ~IRtmpConnectionObserver() {}
 };
@@ -281,7 +309,7 @@ class IRtmpConnection : public RefCountInterface {
    * STATE_CONNECTED(3) or STATE_FAILED(5). You will also be notified with the either
    * onConnected() or onDisconnected().
    *
-   * @param url The CDN streaming URL in the RTMP format. The maximum length of this parameter is 1024 
+   * @param url The CDN streaming URL in the RTMP format. The maximum length of this parameter is 1024
    * bytes. The URL address must not contain special characters, such as Chinese language characters.
    * @return
    * - 0: Success.

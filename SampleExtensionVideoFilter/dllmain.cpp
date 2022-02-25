@@ -4,4 +4,4 @@
 #include "AgoraExtensionProviderEntry.h"
 #include "Extension/face_beauty_extension_provider.h"
 
-REGISTER_AGORA_EXTENSION_PROVIDER(xiaohongshu, agora::extension::CFaceBeautyVideoFilterProvider);
+REGISTER_AGORA_EXTENSION_PROVIDER(xiaohongshu, agora::extension::CFaceBeautyVideoFilterProvider, agora::rtc::IExtensionProvider);

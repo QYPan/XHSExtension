@@ -51,10 +51,6 @@ public:
      */
     RecordingLocalPlayback,
     /**
-     * Work on the post audio recording device.
-     */
-    PostAudioRecordingDevice,
-    /**
      * Work on the post audio processing.
      */
     PostAudioProcessing,
@@ -227,7 +223,12 @@ class ILocalAudioTrack : public IAudioTrack {
      * Whether the local audio track is enabled.
      */
     bool enabled;
-
+    
+    /**
+     * The volume that ranges from 0 to 255.
+     */
+    uint32_t audio_volume; // [0,255]
+    
     LocalAudioTrackStats() : source_id(0),
                              buffered_pcm_data_list_size(0),
                              missed_audio_frames(0),
@@ -237,7 +238,8 @@ class ILocalAudioTrack : public IAudioTrack {
                              playout_audio_frames(0),
                              effect_type(0),
                              hw_ear_monitor(0),
-                             enabled(false) {}
+                             enabled(false),
+                             audio_volume(0) {}
   };
 
  public:
@@ -400,6 +402,9 @@ struct RemoteAudioTrackStats {
    * audio downlink average process time
    */
   uint32_t downlink_process_time_ms;
+
+  uint32_t target_level_base_ms;
+  uint32_t target_level_prefered_ms;
   /**
    *  The count of 80 ms frozen in 2 seconds
    */
@@ -434,6 +439,8 @@ struct RemoteAudioTrackStats {
    */
   uint64_t publish_duration;
 
+  int32_t e2e_delay_ms;
+
   RemoteAudioTrackStats() :
     uid(0),
     quality(0),
@@ -461,7 +468,8 @@ struct RemoteAudioTrackStats {
     delay_estimate_ms(0),
     mos_value(0),
     total_active_time(0),
-    publish_duration(0){ }
+    publish_duration(0),
+    e2e_delay_ms(0){ }
 };
 
 /**
@@ -520,8 +528,6 @@ class IRemoteAudioTrack : public IAudioTrack {
    - < 0: Failure.
    */
   virtual int setRemoteVoicePosition(float pan, float gain) = 0;
-  
-  virtual int setRemoteVoice3DPosition(float azimuth, float elevation, float distance) = 0;
 };
 
 }  // namespace rtc

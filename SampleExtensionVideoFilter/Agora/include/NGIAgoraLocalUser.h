@@ -421,7 +421,10 @@ class ILocalUser {
 
   /**
    * Adjusts the playback signal volume.
-   * @param volume The playback volume. The value ranges between 0 and 100 (default).
+   * @param volume The playback volume. The value ranges between 0 and 400, including the following:
+   * 0: Mute.
+   * 100: (Default) Original volume.
+   * 400: Four times the original volume with signal-clipping protection.
    * @return
    * - 0: Success.
    * - < 0: Failure.
@@ -449,8 +452,10 @@ class ILocalUser {
    * This method adjust the playback volume of specified user.
    *
    * @param userId The ID of the Remote user.
-   * @param volume The playback volume, range is [0,100]:
-   * 0: mute, 100: The original volume
+   * @param volume The playback volume of the specified remote user. The value ranges between 0 and 400, including the following:
+   * 0: Mute.
+   * 100: (Default) Original volume.
+   * 400: Four times the original volume with signal-clipping protection.
    * @return
    * - 0: Success.
    * - < 0: Failure.
@@ -502,8 +507,6 @@ class ILocalUser {
    - < 0: Failure.
    */
   virtual int setRemoteVoicePosition(uid_t uid, double pan, double gain) = 0;
-  
-  virtual int setRemoteVoice3DPosition(uid_t uid, double azimuth, double elevation, double distance) = 0;
 
   /**
    * Pulls the mixed PCM audio data from the channel.
@@ -520,7 +523,6 @@ class ILocalUser {
    * - `false`: Failure.
    */
   virtual bool pullMixedAudioPcmData(void* payload_data, AudioPcmDataInfo &audioFrameInfo) = 0;
-
   /**
    * Sets the audio frame parameters for the \ref agora::media::IAudioFrameObserver::onPlaybackAudioFrame
    * "onPlaybackAudioFrame" callback.
@@ -531,7 +533,7 @@ class ILocalUser {
    * @param sampleRateHz The sample rate (Hz) of the audio frame in the `onPlaybackAudioFrame` callback. You can
    * set it as 8000, 16000, 32000, 44100, or 48000.
    * @param mode Use mode of the audio frame. See #RAW_AUDIO_FRAME_OP_MODE_TYPE.
-   * @param samplesPerCall The number of samples of the audio frame.
+   * @param samplesPerCall The number of samples of the audio frame.   * 
    *
    * @return
    * - 0: Success.
@@ -541,7 +543,6 @@ class ILocalUser {
                                               uint32_t sampleRateHz,
                                               RAW_AUDIO_FRAME_OP_MODE_TYPE mode = RAW_AUDIO_FRAME_OP_MODE_READ_ONLY,
                                               int samplesPerCall = 0) = 0;
-
   /**
    * Sets the audio frame parameters for the \ref agora::media::IAudioFrameObserver::onRecordAudioFrame
    * "onRecordAudioFrame" callback.
@@ -1076,6 +1077,20 @@ class ILocalUserObserver {
    */
   virtual void onAudioVolumeIndication(const AudioVolumeInformation* speakers, unsigned int speakerNumber,
                                        int totalVolume) = 0;
+  
+  /**
+   * Occurs when an active speaker is detected.
+   *
+   * You can add relative functions on your app, for example, the active speaker, once detected,
+   * will have the portrait zoomed in.
+   *
+   * @note
+   * - The active speaker means the user ID of the speaker who speaks at the highest volume during a
+   * certain period of time.
+   *
+   * @param userId The ID of the active speaker. A `userId` of `0` means the local user.
+   */
+  virtual void onActiveSpeaker(user_id_t userId) = 0;
 
   /**
    * Occurs when the audio subscribe state changed.
@@ -1086,7 +1101,7 @@ class ILocalUserObserver {
    * @param newState The new state of the audio stream subscribe : #STREAM_SUBSCRIBE_STATE.
    * @param elapseSinceLastState The time elapsed (ms) from the old state to the new state.
    */
-  virtual void onAudioSubscribeStateChanged(const char* channel,  user_id_t userId, STREAM_SUBSCRIBE_STATE oldState, STREAM_SUBSCRIBE_STATE newState, int elapseSinceLastState) = 0;
+  virtual void onAudioSubscribeStateChanged(const char* channel, user_id_t userId, STREAM_SUBSCRIBE_STATE oldState, STREAM_SUBSCRIBE_STATE newState, int elapseSinceLastState) = 0;
 
   /**
    * Occurs when the video subscribe state changed.
@@ -1202,8 +1217,36 @@ class ILocalUserObserver {
   /**
    * datastream from this connection.
    */
-  virtual void onStreamMessage(user_id_t userId, int streamId, const char* data,
-                               size_t length) {}
+  virtual void onStreamMessage(user_id_t userId, int streamId, const char* data, size_t length) {}
+  /**
+   * The remote user state information.
+   */
+  enum REMOTE_USER_STATE {
+    /**
+     * The remote user has muted the audio.
+     */
+    PEER_STATE_MUTE_AUDIO = (1 << 0),
+    /**
+     * The remote user has muted the video.
+     */
+    PEER_STATE_MUTE_VIDEO = (1 << 1),
+    /**
+     * The remote user has enabled the video, which includes video capturing and encoding.
+     */
+    PEER_STATE_ENABLE_VIDEO = (1 << 4),
+    /**
+     * The remote user has enabled the local video capturing.
+     */
+    PEER_STATE_ENABLE_LOCAL_VIDEO = (1 << 8),
+
+  };
+
+  /**
+   * Occurs when the remote user state is updated.
+   * @param uid The uid of the remote user. 
+   * @param state The remote user state.Just & #REMOTE_USER_STATE
+   */
+  virtual void onUserStateChanged(user_id_t userId, uint32_t state){}
 };
 
 class IVideoFrameObserver2 {

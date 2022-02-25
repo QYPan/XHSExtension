@@ -14,7 +14,7 @@ namespace agora {
 namespace rtc {
 
 class IMediaPlayerSourceObserver;
-class IMediaPlayerCustomDataProvider;
+class IPreRenderFrameObserver;
 
 /**
  * The custom data source provides a data stream input callback, and the player will continue to call back this interface, requesting the user to fill in the data that needs to be played.
@@ -60,7 +60,7 @@ public:
   /**
    * Gets the unique source ID of the media player source.
    * @return
-   * - ≧ 0: The source ID of this media player source.
+   * - >=0: The source ID of this media player source.
    * - < 0: Failure.
    */
   virtual int getSourceId() const = 0;
@@ -77,8 +77,8 @@ public:
     
   /**
    * @brief Open media file or stream with custom soucrce.
-   * @param startPos Set the starting position for playback, in seconds (ms)
-   * @param provider dataProvider object
+   * @param startPos The starting position (ms) for playback. Default value is 0.
+   * @param observer dataProvider object
    * @return
    * - 0: Success.
    * - < 0: Failure.
@@ -209,12 +209,12 @@ public:
 
   /**
    * Changes the playback speed.
-   * @param speed The playback speed. See \ref media::base::MEDIA_PLAYER_PLAYBACK_SPEED "MEDIA_PLAYER_PLAYBACK_SPEED" for details.
+   * @param speed The playback speed ref [50-400].
    * @return
    * - 0: Success.
    * - < 0: Failure. See {@link media::base::MEDIA_PLAYER_ERROR MEDIA_PLAYER_ERROR}.
    */
-  virtual int changePlaybackSpeed(media::base::MEDIA_PLAYER_PLAYBACK_SPEED speed) = 0;
+  virtual int setPlaybackSpeed(int speed) = 0;
 
   /**
    * Selects an audio track of the media file for playback.
@@ -316,6 +316,110 @@ public:
    * - < 0: Failure. See {@link media::base::MEDIA_PLAYER_ERROR MEDIA_PLAYER_ERROR}.
    */
   virtual int unregisterAudioFrameObserver(media::base::IAudioFrameObserver* observer) = 0;
+
+  /**
+   * Open the Agora CDN media source.
+   * @param src The src of the media file that you want to play.
+   * @param startPos The  playback position (ms).
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int openWithAgoraCDNSrc(const char* src, int64_t startPos) = 0;
+
+  /**
+   * Gets the number of  Agora CDN lines.
+   * @return
+   * - > 0: number of CDN.
+   * - <= 0: Failure.
+   */
+  virtual int getAgoraCDNLineCount() = 0;
+  
+
+  /**
+   * Switch Agora CDN lines.
+   * @param index Specific CDN line index.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int switchAgoraCDNLineByIndex(int index) = 0;
+
+  /**
+   * Gets the line of the current CDN.
+   * @return
+   * - >= 0: Specific line.
+   * - < 0: Failure.
+   */
+  virtual int getCurrentAgoraCDNIndex() = 0;
+
+  /**
+   * Enable automatic CDN line switching.
+   * @param enable Whether enable.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int enableAutoSwitchAgoraCDN(bool enable) = 0;
+
+  /**
+   * Update the CDN source token and timestamp.
+   * @param token token.
+   * @param ts ts.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int renewAgoraCDNSrcToken(const char* token, int64_t ts) = 0;
+
+  /**
+   * Switch the CDN source when open a media through "openWithAgoraCDNSrc" API
+   * @param src Specific src.
+   * @param syncPts Live streaming must be set to false.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int switchAgoraCDNSrc(const char* src, bool syncPts = false) = 0;
+
+  /**
+   * Switch the media source when open a media through "open" API
+   * @param src Specific src.
+   * @param syncPts Live streaming must be set to false.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int switchSrc(const char* src, bool syncPts) = 0;
+
+  /**
+   * Preload a media source
+   * @param src Specific src.
+   * @param startPos The starting position (ms) for playback. Default value is 0.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int preloadSrc(const char* src, int64_t startPos) = 0;
+
+  /**
+   * Unload a preloaded media source
+   * @param src Specific src.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int unloadSrc(const char* src) = 0;
+  
+  /**
+   * Play a pre-loaded media source
+   * @param src Specific src.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int playPreloadedSrc(const char* src) = 0;
+
 };
 
 /**
@@ -349,9 +453,11 @@ class IMediaPlayerSourceObserver {
    * - After calling the `seek` method, the SDK triggers the callback to report the results of the seek operation.
    * - After calling the `selectAudioTrack` method, the SDK triggers the callback to report that the audio track changes.
    *
-   * @param event The playback event. See {@link media::base::MEDIA_PLAYER_EVENT MEDIA_PLAYER_EVENT}.
+   * @param eventCode The playback event. See {@link media::base::MEDIA_PLAYER_EVENT MEDIA_PLAYER_EVENT}.
+   * @param elapsedTime The playback elapsed time.
+   * @param message The playback message.
    */
-  virtual void onPlayerEvent(media::base::MEDIA_PLAYER_EVENT event) = 0;
+  virtual void onPlayerEvent(media::base::MEDIA_PLAYER_EVENT eventCode, int64_t elapsedTime, const char* message) = 0;
 
   /**
    * @brief Occurs when the metadata is received.
@@ -370,10 +476,46 @@ class IMediaPlayerSourceObserver {
    */
   virtual void onPlayBufferUpdated(int64_t playCachedBuffer) = 0;
 
+
+  /**
+   * @brief Triggered when the player preloadSrc
+   *
+   * @param event
+   */
+  virtual void onPreloadEvent(const char* src, media::base::PLAYER_PRELOAD_EVENT event) = 0;
+
   /**
    * @brief Occurs when one playback of the media file is completed.
    */
   virtual void onCompleted() = 0;
+
+  /**
+   * @brief AgoraCDN Token has expired and needs to be set up with renewAgoraCDNSrcToken(const char* src).
+   */
+  virtual void onAgoraCDNTokenWillExpire() = 0;
+
+  /**
+   * @brief Reports current playback source bitrate changed.
+   * @brief Reports current playback source info changed.
+   *
+   * @param from Streaming media information before the change.
+   * @param to Streaming media information after the change.
+   */
+  virtual void onPlayerSrcInfoChanged(const media::base::SrcInfo& from, const media::base::SrcInfo& to) = 0;
+
+   /**
+   * @brief Triggered when  media player information updated.
+   *
+   * @param info Include information of media player.
+   */
+  virtual void onPlayerInfoUpdated(const media::base::PlayerUpdatedInfo& info) = 0;
+  
+  /**
+   * @brief Triggered  every 200 millisecond ,update player current volume range [0,255]
+   *
+   * @param volume volume of current player.
+   */
+  virtual void onAudioVolumeIndication(int volume) = 0;
 };
 
 } //namespace rtc

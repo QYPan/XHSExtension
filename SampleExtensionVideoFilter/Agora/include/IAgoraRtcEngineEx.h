@@ -50,7 +50,7 @@ struct RtcConnection {
    */
   uid_t localUid;
 
-  RtcConnection() : RtcConnection(NULL, 0) {}
+  RtcConnection() : channelId(NULL), localUid(0) {}
   RtcConnection(const char* channel_id, uid_t local_uid)
       : channelId(channel_id), localUid(local_uid) {}
 };
@@ -72,6 +72,8 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
   using IRtcEngineEventHandler::onFirstRemoteVideoDecoded;
   using IRtcEngineEventHandler::onVideoSizeChanged;
   using IRtcEngineEventHandler::onLocalVideoStateChanged;
+  using IRtcEngineEventHandler::onContentInspectResult;
+  using IRtcEngineEventHandler::onSnapshotTaken;
   using IRtcEngineEventHandler::onRemoteVideoStateChanged;
   using IRtcEngineEventHandler::onFirstRemoteVideoFrame;
   using IRtcEngineEventHandler::onUserJoined;
@@ -103,6 +105,7 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
   using IRtcEngineEventHandler::onConnectionStateChanged;
   using IRtcEngineEventHandler::onNetworkTypeChanged;
   using IRtcEngineEventHandler::onEncryptionError;
+  using IRtcEngineEventHandler::onUploadLogResult;
   using IRtcEngineEventHandler::onUserAccountUpdated;
   using IRtcEngineEventHandler::onAudioSubscribeStateChanged;
   using IRtcEngineEventHandler::onVideoSubscribeStateChanged;
@@ -216,7 +219,7 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
 
   /**
    * Occurs when intra request from remote user is received.
-   * 
+   *
    * This callback is triggered once remote user needs one Key frame.
    * @param connection The connection of the local user.
    */
@@ -292,7 +295,27 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
     (void)height;
     (void)rotation;
   }
-
+      /** Reports result of Content Inspect*/
+  virtual void onContentInspectResult(media::CONTENT_INSPECT_RESULT result) { (void)result; }
+    /** Occurs when takeSnapshot API result is obtained
+   *
+   *
+   * @brief snapshot taken callback
+   *
+   * @param channel channel name
+   * @param uid user id
+   * @param filePath image is saveed file path
+   * @param width image width
+   * @param height image height
+   * @param errCode 0 is ok negative is error
+   */
+  virtual void onSnapshotTaken(const RtcConnection& connection, const char* filePath, int width, int height, int errCode) {
+    (void)connection;
+    (void)filePath;
+    (void)width;
+    (void)height;
+    (void)errCode;
+  }
   /** Occurs when the local video stream state changes
    *
    * This callback indicates the state of the local video stream, including camera capturing and video encoding,
@@ -380,14 +403,15 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
 
   /**
    * when remote user muted the audio stream, the function will be called
-   * @param [in] uid
+   * @deprecated Use onRemoteAudioStateChanged instead of.
+   * @param [in] remoteUid
    *        the uid of the remote user
    * @param [in] muted
    *        true: the remote user muted the audio stream, false: the remote user unmuted the audio stream
    */
- virtual void onUserMuteAudio(conn_id_t connId, uid_t uid, bool muted) {
-    (void)connId;
-    (void)uid;
+ virtual void onUserMuteAudio(const RtcConnection& connection, uid_t remoteUid, bool muted) {
+    (void)connection;
+    (void)remoteUid;
     (void)muted;
   }
 
@@ -770,6 +794,18 @@ class IRtcEngineEventHandlerEx : public IRtcEngineEventHandler {
     (void)connection;
     (void)errorType;
   }
+  /**
+   * Reports the user log upload result
+   * @param requestId RequestId of the upload
+   * @param success Is upload success
+   * @param reason Reason of the upload, 0: OK, 1 Network Error, 2 Server Error.
+   */
+  virtual void onUploadLogResult(const RtcConnection& connection, const char* requestId, bool success, UPLOAD_ERROR_REASON reason) {
+    (void)connection;
+    (void)requestId;
+    (void)success;
+    (void)reason;
+  }
 
   virtual void onUserAccountUpdated(const RtcConnection& connection, uid_t remoteUid, const char* userAccount){
     (void)connection;
@@ -843,9 +879,9 @@ public:
 
     virtual int muteRemoteVideoStreamEx(uid_t uid, bool mute, const RtcConnection& connection) = 0;
 
+    virtual int setRemoteVideoStreamTypeEx(uid_t uid, VIDEO_STREAM_TYPE streamType, const RtcConnection& connection) = 0;
+
     virtual int setRemoteVoicePositionEx(uid_t uid, double pan, double gain, const RtcConnection& connection) = 0;
-  
-    virtual int setRemoteVoice3DPositionEx(uid_t uid, double azimuth, double elevation, double distance, const RtcConnection& connection) = 0;
 
     virtual int setRemoteRenderModeEx(uid_t uid, media::base::RENDER_MODE_TYPE renderMode,
                                       VIDEO_MIRROR_MODE_TYPE mirrorMode, const RtcConnection& connection) = 0;
@@ -869,7 +905,21 @@ public:
     virtual int sendCustomReportMessageEx(const char* id, const char* category, const char* event, const char* label,
                                           int value, const RtcConnection& connection) = 0;
 
-    virtual int addPublishStreamUrlEx(const char* url, bool transcodingEnabled, const RtcConnection& connection) = 0;
+    virtual int enableAudioVolumeIndicationEx(int interval, int smooth, bool reportVad, const RtcConnection& connection) = 0;
+
+    /**
+     * Specify video stream parameters based on video profile
+     * @param [in] width
+     *        width of video resolution in pixel
+     * @param [in] height
+     *        height of video resolution in pixel
+     * @param [in] frameRate
+     *        frame rate in fps
+     * @param [in] bitrate
+     *        bit rate in kbps
+     * @return return 0 if success or an error code
+     */
+     virtual int setVideoProfileEx(int width, int height, int frameRate, int bitrate) = 0;
 };
 
 }  // namespace rtc

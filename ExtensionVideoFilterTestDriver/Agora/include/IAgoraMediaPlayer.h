@@ -21,7 +21,6 @@ class ILocalVideoTrack;
 class IMediaPlayerSourceObserver;
 class IMediaPlayerCustomDataProvider;
 
-
 /**
  * The IMediaPlayerEntity class provides access to a media player entity. If yout want to playout
  * multiple media sources simultaneously, create multiple media player source objects.
@@ -49,11 +48,11 @@ public:
    * - < 0: Failure.
    */
   virtual int open(const char* url, int64_t startPos) = 0;
-    
+
   /**
    * @brief Open media file or stream with custom soucrce.
-   * @param startPos Set the starting position for playback, in seconds (ms)
-   * @param provider dataProvider object
+   * @param startPos Set the starting position for playback, in seconds
+   * @param observer dataProvider object
    * @return
    * - 0: Success.
    * - < 0: Failure.
@@ -102,7 +101,7 @@ public:
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int setAudioMixingPitch(int pitch) = 0;
+  virtual int setAudioPitch(int pitch) = 0;
 
   /**
    * Gets the duration of the media file.
@@ -172,12 +171,12 @@ public:
 
   /**
    * Change playback speed
-   * @param speed the enum of playback speed
+   * @param speed the value of playback speed ref [50-400]
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int changePlaybackSpeed(media::base::MEDIA_PLAYER_PLAYBACK_SPEED speed) = 0;
+  virtual int setPlaybackSpeed(int speed) = 0;
 
   /**
    * Slect playback audio track of the media file
@@ -372,25 +371,6 @@ public:
    */
   virtual int unregisterVideoFrameObserver(agora::media::base::IVideoFrameObserver* observer) = 0;
 
-   /**
-   * Registers the audio frame spectrum observer.
-   *
-   * @param observer The pointer to the {@link media::base::IAudioSpectrumObserver  IAudioSpectrumObserver} object.
-   * @return
-   * - 0: Success.
-   * - < 0: Failure.
-   */
-  virtual  int registerMediaPlayerAudioSpectrumObserver(media::IAudioSpectrumObserver* observer,int intervalInMS)  = 0;
-
-  /**
-   * Releases the audio frame spectrum observer.
-   * @param observer The pointer to the {@link media::base::IAudioSpectrumObserver IAudioSpectrumObserver} object.
-   * @return
-   * - 0: Success.
-   * - < 0: Failure. 
-   */
-   virtual int unregisterMediaPlayerAudioSpectrumObserver(media::IAudioSpectrumObserver* observer)  = 0;
-
   /**
    * @brief Set dual-mono output mode of the music file.
    * 
@@ -398,6 +378,10 @@ public:
    */
   virtual int setAudioDualMonoMode(agora::media::base::AUDIO_DUAL_MONO_MODE mode) = 0;
 
+  /**
+    * get sdk version and build number of player SDK.
+    * @return String of the SDK version.
+   */
   virtual const char* getPlayerSdkVersion() = 0;
 
   /**
@@ -406,6 +390,110 @@ public:
    * - current play src of raw bytes.
    */
   virtual const char* getPlaySrc() = 0;
+
+
+    /**
+   * Open the Agora CDN media source.
+   * @param src The src of the media file that you want to play.
+   * @param startPos The  playback position (ms).
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int openWithAgoraCDNSrc(const char* src, int64_t startPos) = 0;
+
+  /**
+   * Gets the number of  Agora CDN lines.
+   * @return
+   * - > 0: number of CDN.
+   * - <= 0: Failure.
+   */
+  virtual int getAgoraCDNLineCount() = 0;
+
+  /**
+   * Switch Agora CDN lines.
+   * @param index Specific CDN line index.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int switchAgoraCDNLineByIndex(int index) = 0;
+
+  /**
+   * Gets the line of the current CDN.
+   * @return
+   * - >= 0: Specific line.
+   * - < 0: Failure.
+   */
+  virtual int getCurrentAgoraCDNIndex() = 0;
+
+  /**
+   * Enable automatic CDN line switching.
+   * @param enable Whether enable.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int enableAutoSwitchAgoraCDN(bool enable) = 0;
+
+  /**
+   * Update the CDN source token and timestamp.
+   * @param token token.
+   * @param ts ts.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int renewAgoraCDNSrcToken(const char* token, int64_t ts) = 0;
+
+  /**
+   * Switch the CDN source when open a media through "openWithAgoraCDNSrc" API
+   * @param src Specific src.
+   * @param syncPts Live streaming must be set to false.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int switchAgoraCDNSrc(const char* src, bool syncPts = false) = 0;
+
+  /**
+   * Switch the media source when open a media through "open" API
+   * @param src Specific src.
+   * @param syncPts Live streaming must be set to false.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int switchSrc(const char* src, bool syncPts = true) = 0;
+
+  /**
+   * Preload a media source
+   * @param src Specific src.
+   * @param startPos The starting position (ms) for playback. Default value is 0.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int preloadSrc(const char* src, int64_t startPos) = 0;
+
+  /**
+   * Play a pre-loaded media source
+   * @param src Specific src.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int playPreloadedSrc(const char* src) = 0;
+
+  /**
+   * Unload a preloaded media source
+   * @param src Specific src.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int unloadSrc(const char* src) = 0;
+
 };
 
 } //namespace rtc

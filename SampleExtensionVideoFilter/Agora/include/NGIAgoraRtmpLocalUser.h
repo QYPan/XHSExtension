@@ -140,6 +140,28 @@ class IRtmpLocalUser {
   virtual int unpublishAudio(agora_refptr<rtc::ILocalAudioTrack> audioTrack) = 0;
 
   /**
+   * Publishes a media player local audio track to the RTMP connection.
+   *
+   * @param audioTrack The local audio track to be published: ILocalAudioTrack.
+   * @param playerId  The player source ID.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int publishMediaPlayerAudio(agora_refptr<rtc::ILocalAudioTrack> audioTrack, int32_t playerId=0) = 0;
+
+  /**
+   * Stops publishing the media player local audio track to the RTMP connection.
+   *
+   * @param audioTrack The local audio track that you want to stop publishing: ILocalAudioTrack.
+   * @param playerId  The player source ID.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int unpublishMediaPlayerAudio(agora_refptr<rtc::ILocalAudioTrack> audioTrack, int32_t playerId=0) = 0;
+
+  /**
    * Publishes a local video track to the RTMP connection.
    *
    * @param videoTrack The local video track to be published: ILocalVideoTrack.
