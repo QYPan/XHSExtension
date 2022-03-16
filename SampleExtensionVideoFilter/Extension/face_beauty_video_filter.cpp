@@ -15,6 +15,10 @@ namespace extension {
 static std::map<std::string, xhs_Command_type> m_xhs_command_dict;
 static void initCommandDict();
 
+static bool isBoolean(std::string str) {
+  return (str == "true" || str == "false");
+}
+
 static std::wstring utf82wide(const std::string& utf8) {
   if (utf8.empty()) return std::wstring();
   int len = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.size(), nullptr, 0);
@@ -255,6 +259,10 @@ int CFaceBeautyVideoFilter::setProperty(const char* key, const void* buf, size_t
     {
     case XHS_PLUGIN_BEAUTY_FILTER_SWITCH:
     {
+        if (!isBoolean((char*)buf)) {
+          PRINT_LOG(SimpleLogger::LOG_TYPE::L_ERROR, "this: %p, bad parameter for enableBeauty.", this);
+          return -1;
+        }
         bool value = false;
         nlohmann::json j = nlohmann::json::parse((char*)buf);
         j.get_to(value);
@@ -276,6 +284,10 @@ int CFaceBeautyVideoFilter::setProperty(const char* key, const void* buf, size_t
 
     case XHS_PLUGIN_COLOR_FILTER_SWITCH:
     {
+        if (!isBoolean((char*)buf)) {
+          PRINT_LOG(SimpleLogger::LOG_TYPE::L_ERROR, "this: %p, bad parameter for enableColorfulAdjustment.", this);
+          return -1;
+        }
         bool value = false;
         nlohmann::json j = nlohmann::json::parse((char*)buf);
         j.get_to(value);
@@ -293,6 +305,10 @@ int CFaceBeautyVideoFilter::setProperty(const char* key, const void* buf, size_t
 
     case XHS_PLUGIN_LUT_FILTER_SWITCH:
     {
+        if (!isBoolean((char*)buf)) {
+          PRINT_LOG(SimpleLogger::LOG_TYPE::L_ERROR, "this: %p, bad parameter for enableFilter.", this);
+          return -1;
+        }
         bool value = false;
         nlohmann::json j = nlohmann::json::parse((char*)buf);
         j.get_to(value);
