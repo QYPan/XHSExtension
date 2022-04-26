@@ -8,7 +8,7 @@
 
 class SimpleWindow {
  public:
-  explicit SimpleWindow(std::string title);
+  explicit SimpleWindow(std::string title, int width = 1280, int height = 720);
   ~SimpleWindow();
 
   HWND GetView();

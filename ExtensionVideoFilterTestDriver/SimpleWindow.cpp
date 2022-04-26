@@ -2,7 +2,7 @@
 
 const char kSimpleWindowClass[] = "AEC858EC-E51C-4211-A464-CE538AA27AA6";
 
-SimpleWindow::SimpleWindow(std::string window_title) : hwnd_(nullptr), stop_(false) {
+SimpleWindow::SimpleWindow(std::string window_title, int width, int height) : hwnd_(nullptr), stop_(false) {
   static ATOM wc_atom = 0;
   if (wc_atom == 0) {
     WNDCLASSA wc = {};
@@ -19,9 +19,9 @@ SimpleWindow::SimpleWindow(std::string window_title) : hwnd_(nullptr), stop_(fal
 
   HANDLE created = CreateEvent(NULL, FALSE, FALSE, NULL);
 
-  looper_ = std::unique_ptr<std::thread>(new std::thread([this, window_title, &created] {
+  looper_ = std::unique_ptr<std::thread>(new std::thread([this, window_title, width, height, &created] {
     hwnd_ = CreateWindowA(kSimpleWindowClass, window_title.c_str(), WS_OVERLAPPEDWINDOW, 0, 0,
-                          static_cast<int>(1280), static_cast<int>(720), NULL, NULL, NULL, NULL);
+                          width, height, NULL, NULL, NULL, NULL);
     SetEvent(created);
 
     if (!hwnd_) {
