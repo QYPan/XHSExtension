@@ -2331,6 +2331,31 @@ class IVideoDeviceManager {
    */
   virtual int getDevice(char deviceIdUTF8[MAX_DEVICE_ID_LENGTH]) = 0;
 
+#if defined(_WIN32) || (defined(__linux__) && !defined(__ANDROID__)) || \
+    (defined(__APPLE__) && TARGET_OS_MAC && !TARGET_OS_IPHONE)
+  /**
+   * Gets the capability number for a specified device.
+   *
+   * @param deviceUniqueIdUTF8 The pointer to the ID of the device in the UTF8 format.
+   *
+   * @return
+   * - The capability number of the device.
+   */
+  virtual int numberOfCapabilities(const char* deviceUniqueIdUTF8) = 0;
+
+  /**
+   * Gets the capability of capture device by index.
+   *
+   * @param deviceUniqueIdUTF8 ID of the video capture device.
+   * @param deviceCapabilityIndex index of available capabilities
+   * @param capability specific capability
+   *
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int getCapability(const char* deviceUniqueIdUTF8, const uint32_t deviceCapabilityNumber, VideoFormat& capability) = 0;
+#endif
   /**
    * Starts the video capture device test.
    *
