@@ -2596,6 +2596,17 @@ struct VideoFormat {
   
   VideoFormat() : width(FRAME_WIDTH_640), height(FRAME_HEIGHT_360), fps(FRAME_RATE_FPS_15), pixelFormat(0) {}
   VideoFormat(int w, int h, int f, uint32_t fmt = 0) : width(w), height(h), fps(f), pixelFormat(fmt) {}
+
+  bool operator <(const VideoFormat& fmt) const {
+    if (height != fmt.height) {
+      return height < fmt.height;
+    } else if (width != fmt.width) {
+      return width < fmt.width;
+    } else {
+      return fps < fmt.fps;
+    }
+  }
+ 
 };
 
 /**
