@@ -165,7 +165,7 @@ xcopy $(ProjectDir)XhsGraphics\dll\zlibd.dll $(ProjectDir)package\face_beauty.xh
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>Agora/include;XhsGraphics/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)../Agora/include;XhsGraphics/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -175,7 +175,7 @@ xcopy $(ProjectDir)XhsGraphics\dll\zlibd.dll $(ProjectDir)package\face_beauty.xh
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <AdditionalDependencies>xhsGraphicsWin.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;agora_rtc_sdk.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>xhsGraphicsWin.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;agora_rtc_sdk.dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>XhsGraphics/lib</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
@@ -192,6 +192,9 @@ xcopy $(ProjectDir)XhsGraphics\vsco2 $(OutDir)extensions\face_beauty.xhs\vsco2\ 
 xcopy $(ProjectDir)XhsGraphics\vsco3 $(OutDir)extensions\face_beauty.xhs\vsco3\ /S/Y
 xcopy $(ProjectDir)package\face_beauty.xhs $(OutDir)extensions\face_beauty.xhs\ /Y</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>xcopy $(ProjectDir)..\Agora\lib\x64\agora_rtc_sdk.dll.lib $(ProjectDir) /Y</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Extension\data_types.h" />
