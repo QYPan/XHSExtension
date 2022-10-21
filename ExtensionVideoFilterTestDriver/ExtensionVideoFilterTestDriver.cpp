@@ -236,47 +236,55 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     //Sleep(3000);
 
+    //int RtcEngine::setExtensionProperty(const char* provider, const char* extension,
+    //                                const ExtensionInfo& extensionInfo, const char* key,
+    //                                const char* value)
+
     //system("pause");
+
+    agora::rtc::ExtensionInfo primary_ext_info, secondary_ext_info;
+    primary_ext_info.mediaSourceType = agora::media::PRIMARY_CAMERA_SOURCE;
+    secondary_ext_info.mediaSourceType = agora::media::SECONDARY_CAMERA_SOURCE;
 
     // 开启第一第二路美颜开关
     //******************************************************************************************************************************************************************
     nlohmann::json j = true;
-    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_FILTER_SWITCH", j.dump().c_str(), agora::media::PRIMARY_CAMERA_SOURCE);
-    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_COLOR_FILTER_SWITCH", j.dump().c_str(), agora::media::PRIMARY_CAMERA_SOURCE);
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", primary_ext_info, "XHS_PLUGIN_BEAUTY_FILTER_SWITCH", j.dump().c_str());
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", primary_ext_info, "XHS_PLUGIN_COLOR_FILTER_SWITCH", j.dump().c_str());
 
-    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_FILTER_SWITCH", j.dump().c_str(), agora::media::SECONDARY_CAMERA_SOURCE);
-    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_COLOR_FILTER_SWITCH", j.dump().c_str(), agora::media::SECONDARY_CAMERA_SOURCE);
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", secondary_ext_info, "XHS_PLUGIN_BEAUTY_FILTER_SWITCH", j.dump().c_str());
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", secondary_ext_info, "XHS_PLUGIN_COLOR_FILTER_SWITCH", j.dump().c_str());
 
     //******************************************************************************************************************************************************************
 
     // 设置第一路美颜参数
     BeautyFilterAid aid1 = { FaceBeautyType::XHS_NARROW_FACE, true, 41.882 };
-    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid1.to_json().c_str(), agora::media::PRIMARY_CAMERA_SOURCE);
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", primary_ext_info, "XHS_PLUGIN_BEAUTY_TYPE", aid1.to_json().c_str());
     //system("pause");
 
     // 设置第二路美颜参数
     BeautyFilterAid aid2 = { FaceBeautyType::XHS_NARROW_FACE, true, 13.882 };
-    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid2.to_json().c_str(), agora::media::SECONDARY_CAMERA_SOURCE);
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", secondary_ext_info, "XHS_PLUGIN_BEAUTY_TYPE", aid2.to_json().c_str());
     system("pause");
 
     //******************************************************************************************************************************************************************
 
     BeautyFilterAid aid3 = { FaceBeautyType::XHS_NARROW_FACE, true, 454.882 };
-    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid3.to_json().c_str(), agora::media::PRIMARY_CAMERA_SOURCE);
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", primary_ext_info, "XHS_PLUGIN_BEAUTY_TYPE", aid3.to_json().c_str());
     //system("pause");
 
     BeautyFilterAid aid4 = { FaceBeautyType::XHS_NARROW_FACE, true, 5.882 };
-    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid4.to_json().c_str(), agora::media::SECONDARY_CAMERA_SOURCE);
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", secondary_ext_info, "XHS_PLUGIN_BEAUTY_TYPE", aid4.to_json().c_str());
     system("pause");
 
     //******************************************************************************************************************************************************************
 
     BeautyFilterAid aid5 = { FaceBeautyType::XHS_NARROW_FACE, true, 111 };
-    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid5.to_json().c_str(), agora::media::PRIMARY_CAMERA_SOURCE);
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", primary_ext_info, "XHS_PLUGIN_BEAUTY_TYPE", aid5.to_json().c_str());
     //system("pause");
 
     BeautyFilterAid aid6 = { FaceBeautyType::XHS_NARROW_FACE, true, 51.882 };
-    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", "XHS_PLUGIN_BEAUTY_TYPE", aid6.to_json().c_str(), agora::media::SECONDARY_CAMERA_SOURCE);
+    engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", secondary_ext_info, "XHS_PLUGIN_BEAUTY_TYPE", aid6.to_json().c_str());
     system("pause");
 
     std::this_thread::sleep_for(std::chrono::seconds(180));
