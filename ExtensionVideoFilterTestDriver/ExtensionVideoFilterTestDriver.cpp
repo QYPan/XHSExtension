@@ -175,6 +175,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
       camera_config[1].format.height = 720;
       camera_config[1].format.fps = 20;
 
+      fff
+
       // 开启第二路摄像头采集
       engine->startSecondaryCameraCapture(camera_config[1]);
     }
