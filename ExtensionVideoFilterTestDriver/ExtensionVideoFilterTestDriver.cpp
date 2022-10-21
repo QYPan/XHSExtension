@@ -14,19 +14,6 @@
 
 #include "SimpleWindow.h"
 
-#define MAX_LOADSTRING 100
-
-// Global Variables:
-HINSTANCE hInst;                                // current instance
-WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
-WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
-
-// Forward declarations of functions included in this code module:
-ATOM                MyRegisterClass(HINSTANCE hInstance);
-BOOL                InitInstance(HINSTANCE, int);
-LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
-
 std::string GetAppId() {
     std::ifstream in("C:/Users/qyou/space/appid.txt");
     std::string appid;
@@ -63,25 +50,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_ LPWSTR    lpCmdLine,
                      _In_ int       nCmdShow)
 {
-    UNREFERENCED_PARAMETER(hPrevInstance);
-    UNREFERENCED_PARAMETER(lpCmdLine);
 
     std::string provider_name("xiaohongshu");
-
-    // TODO: Place code here.
-
-    // Initialize global strings
-    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_EXTENSIONVIDEOFILTERTESTDRIVER, szWindowClass, MAX_LOADSTRING);
-    MyRegisterClass(hInstance);
-
-    // Perform application initialization:
-    if (!InitInstance (hInstance, nCmdShow))
-    {
-        return FALSE;
-    }
-
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EXTENSIONVIDEOFILTERTESTDRIVER));
 
     // initialize rtc engine
     auto engine = static_cast<agora::rtc::IRtcEngine*>(createAgoraRtcEngine());
@@ -118,6 +88,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     config._beautyResPath = path + "/extensions/face_beauty.xhs/Beauty_Res";
     std::string config_json = config.to_json();
 
+    // 存储用户美颜库初始所需信息到 provider，该信息会在 video filter start() 时用到
     ret = engine->setExtensionProviderProperty(provider_name.c_str(), "", config_json.c_str());
     sprintf(logret, "\nsetExtensionProperty config, ret: %d\n", ret);
     OutputDebugStringA(logret);
@@ -129,18 +100,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     ret = engine->enableExtension(provider_name.c_str(), "face_beauty.xhs", true, agora::media::SECONDARY_CAMERA_SOURCE);
     sprintf(logret, "\nenableExtension ret2: %d\n", ret);
     OutputDebugStringA(logret);
-
-    error = engine->setChannelProfile(agora::CHANNEL_PROFILE_LIVE_BROADCASTING);
-
-    // set canvas
-    agora::rtc::uid_t uid = 0;
-    /*agora::rtc::VideoCanvas vc;
-    vc.uid = uid;
-    //vc.view = m_videoViews[k].wndCamera.GetSafeHwnd();
-    vc.renderMode = agora::media::base::RENDER_MODE_TYPE::RENDER_MODE_FIT;
-    vc.mirrorMode = agora::rtc::VIDEO_MIRROR_MODE_TYPE::VIDEO_MIRROR_MODE_DISABLED;
-
-    engine->setupLocalVideo(vc);*/
 
     agora::rtc::VideoEncoderConfiguration cfg;
     cfg.codecType = agora::rtc::VIDEO_CODEC_H264;
@@ -156,12 +115,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     agora::rtc::CameraCapturerConfiguration camera_config[2];
     char dev_names[2][agora::rtc::MAX_DEVICE_ID_LENGTH] = {0};
     int dev_cnt = vdc->getCount();
-
-    // 获取摄像头设备
-    //for (int idx = 0; idx < dev_cnt && idx < 2; idx++) {
-    //  vdc->getDevice(idx, dev_names[idx], camera_config[idx].deviceId);
-    //  //AGO_LOG("Get video device, idx: %d, dev_name: %s, dev_id: %s.", idx, dev_names[idx], camera_config[idx].deviceId);
-    //}
 
     vdc->getDevice(0, dev_names[0], camera_config[0].deviceId);
     vdc->getDevice(4, dev_names[1], camera_config[1].deviceId);
@@ -223,6 +176,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     cv_transcoded.view = transcoded_win->GetView();
     engine->setupLocalVideo(cv_transcoded);
     engine->startPreview();
+
+    agora::rtc::uid_t uid = 0;
 
     // 加入频道
     agora::rtc::ChannelMediaOptions op;
@@ -287,142 +242,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     engine->setExtensionProperty(provider_name.c_str(), "face_beauty.xhs", secondary_ext_info, "XHS_PLUGIN_BEAUTY_TYPE", aid6.to_json().c_str());
     system("pause");
 
-    std::this_thread::sleep_for(std::chrono::seconds(180));
-
-    MSG msg;
-
-    // Main message loop:
-    while (GetMessage(&msg, nullptr, 0, 0))
-    {
-        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
+    engine->leaveChannel();
+    engine->stopLocalVideoTranscoder();
+    engine->stopPrimaryCameraCapture();
+    if (dev_cnt > 1) {
+      engine->stopSecondaryCameraCapture();
     }
 
     engine->release();
-    return (int) msg.wParam;
-}
-
-//
-//  FUNCTION: MyRegisterClass()
-//
-//  PURPOSE: Registers the window class.
-//
-ATOM MyRegisterClass(HINSTANCE hInstance)
-{
-    WNDCLASSEXW wcex;
-
-    wcex.cbSize = sizeof(WNDCLASSEX);
-
-    wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = WndProc;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_EXTENSIONVIDEOFILTERTESTDRIVER));
-    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_EXTENSIONVIDEOFILTERTESTDRIVER);
-    wcex.lpszClassName  = szWindowClass;
-    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
-
-    return RegisterClassExW(&wcex);
-}
-
-//
-//   FUNCTION: InitInstance(HINSTANCE, int)
-//
-//   PURPOSE: Saves instance handle and creates main window
-//
-//   COMMENTS:
-//
-//        In this function, we save the instance handle in a global variable and
-//        create and display the main program window.
-//
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
-{
-   hInst = hInstance; // Store instance handle in our global variable
-
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
-
-   if (!hWnd)
-   {
-      return FALSE;
-   }
-
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
-
-   return TRUE;
-}
-
-//
-//  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
-//  PURPOSE: Processes messages for the main window.
-//
-//  WM_COMMAND  - process the application menu
-//  WM_PAINT    - Paint the main window
-//  WM_DESTROY  - post a quit message and return
-//
-//
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    switch (message)
-    {
-    case WM_COMMAND:
-        {
-            int wmId = LOWORD(wParam);
-            // Parse the menu selections:
-            switch (wmId)
-            {
-            case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-                break;
-            case IDM_EXIT:
-                DestroyWindow(hWnd);
-                break;
-            default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
-            }
-        }
-        break;
-    case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: Add any drawing code that uses hdc here...
-            EndPaint(hWnd, &ps);
-        }
-        break;
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
-    }
     return 0;
-}
-
-// Message handler for about box.
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    UNREFERENCED_PARAMETER(lParam);
-    switch (message)
-    {
-    case WM_INITDIALOG:
-        return (INT_PTR)TRUE;
-
-    case WM_COMMAND:
-        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-        {
-            EndDialog(hDlg, LOWORD(wParam));
-            return (INT_PTR)TRUE;
-        }
-        break;
-    }
-    return (INT_PTR)FALSE;
 }
