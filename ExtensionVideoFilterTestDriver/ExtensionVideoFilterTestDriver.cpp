@@ -158,10 +158,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     int dev_cnt = vdc->getCount();
 
     // 获取摄像头设备
-    for (int idx = 0; idx < dev_cnt && idx < 2; idx++) {
-      vdc->getDevice(idx, dev_names[idx], camera_config[idx].deviceId);
-      //AGO_LOG("Get video device, idx: %d, dev_name: %s, dev_id: %s.", idx, dev_names[idx], camera_config[idx].deviceId);
-    }
+    //for (int idx = 0; idx < dev_cnt && idx < 2; idx++) {
+    //  vdc->getDevice(idx, dev_names[idx], camera_config[idx].deviceId);
+    //  //AGO_LOG("Get video device, idx: %d, dev_name: %s, dev_id: %s.", idx, dev_names[idx], camera_config[idx].deviceId);
+    //}
+
+    vdc->getDevice(0, dev_names[0], camera_config[0].deviceId);
+    vdc->getDevice(4, dev_names[1], camera_config[1].deviceId);
 
     camera_config[0].format.width = 1280;
     camera_config[0].format.height = 720;

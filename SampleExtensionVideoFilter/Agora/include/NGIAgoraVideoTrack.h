@@ -21,13 +21,14 @@
 namespace agora {
 namespace rtc {
 class IVideoFilter;
-class IVideoEncodedImageReceiver;
+class IVideoEncodedFrameObserver;
 class IMediaPacketReceiver;
 class IVideoSinkBase;
 
 enum VideoTrackType {
   LOCAL_VIDEO_TRACK,
   REMOTE_VIDEO_TRACK,
+  REMOTE_VIDEO_IMAGE_TRACK,
 };
 
 /**
@@ -176,6 +177,14 @@ struct LocalVideoTrackStats {
    */
   uint32_t ssrc_minor_stream;
   /**
+   * The capture frame rate of the video.
+   */
+  int capture_frame_rate;
+  /**
+   * The regulated frame rate of capture frame rate according to video encoder configuration.
+   */
+  int regulated_capture_frame_rate;
+  /**
    * The input frame rate of the encoder.
    */
   int input_frame_rate;
@@ -200,6 +209,22 @@ struct LocalVideoTrackStats {
    */
   int total_bitrate_bps;  // Include FEC
   /**
+   * The capture frame width (pixel).
+   */
+  int capture_width;
+  /**
+   * The capture frame height (pixel).
+   */
+  int capture_height;
+  /**
+   * The regulated frame width (pixel) of capture frame width according to video encoder configuration.
+   */
+  int regulated_capture_width;
+  /**
+   * The regulated frame height (pixel) of capture frame height according to video encoder configuration.
+   */
+  int regulated_capture_height;
+  /**
    * The frame width (pixel).
    */
   int width;
@@ -212,11 +237,18 @@ struct LocalVideoTrackStats {
    * The average time diff between frame captured and framed encoded.
    */
   uint32_t uplink_cost_time_ms;
-
   /** Quality change of the local video in terms of target frame rate and
    * target bit rate in this reported interval. See #QUALITY_ADAPT_INDICATION.
    */
   QUALITY_ADAPT_INDICATION quality_adapt_indication;
+  /**
+   * The video packet loss rate (%) from the local client to the Agora edge server before applying the anti-packet loss strategies.
+   */
+  unsigned short txPacketLossRate;
+
+  /** The brightness level of the video image captured by the local camera. See #CAPTURE_BRIGHTNESS_LEVEL_TYPE.
+   */
+  CAPTURE_BRIGHTNESS_LEVEL_TYPE capture_brightness_level;
 
   LocalVideoTrackStats() : number_of_streams(0),
                            bytes_major_stream(0),
@@ -224,17 +256,25 @@ struct LocalVideoTrackStats {
                            frames_encoded(0),
                            ssrc_major_stream(0),
                            ssrc_minor_stream(0),
+                           capture_frame_rate(0),
+                           regulated_capture_frame_rate(0),
                            input_frame_rate(0),
                            encode_frame_rate(0),
                            render_frame_rate(0),
                            target_media_bitrate_bps(0),
                            media_bitrate_bps(0),
                            total_bitrate_bps(0),
+                           capture_width(0),
+                           capture_height(0),
+                           regulated_capture_width(0),
+                           regulated_capture_height(0),
                            width(0),
                            height(0),
                            encoder_type(0),
                            uplink_cost_time_ms(0),
-                           quality_adapt_indication(ADAPT_NONE) {}
+                           quality_adapt_indication(ADAPT_NONE),
+                           txPacketLossRate(0),
+                           capture_brightness_level(CAPTURE_BRIGHTNESS_LEVEL_INVALID) {}
 };
 
 /**
@@ -280,28 +320,15 @@ class ILocalVideoTrack : public IVideoTrack {
   virtual int setVideoEncoderConfiguration(const VideoEncoderConfiguration& config) = 0;
 
   /**
-   * Enables or disables the simulcast stream mode.
+   * Set simulcast stream mode, enable, disable or auto enable
    *
-   * @param enabled Determines whether to enable or disable the simulcast stream mode.
-   * - `true`: Enable the simulcast stream mode.
-   * - `false`: Disable the simulcast stream mode.
+   * @param mode Determines simulcast stream mode. See \ref agora::rtc::SIMULCAST_STREAM_MODE "SIMULCAST_STREAM_MODE".
    * @param config The reference to the configurations for the simulcast stream mode. See \ref agora::rtc::SimulcastStreamConfig "SimulcastStreamConfig".
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int enableSimulcastStream(bool enabled, const SimulcastStreamConfig& config) = 0;
-
-  /**
-   * Update simulcast stream config.
-   *
-   * @param config The reference to the configurations for the simulcast stream mode. See \ref agora::rtc::SimulcastStreamConfig "SimulcastStreamConfig".
-   * @return
-   * - 0: Success.
-   * - < 0: Failure.
-   *   - This function can be called when both VideoTrack and SimulcastStream are enabled,otherwise returns -ERR_INVALID_STATE.
-   */
-  virtual int updateSimulcastStreamConfig(const SimulcastStreamConfig& config) = 0;
+  virtual int setSimulcastStreamMode(SIMULCAST_STREAM_MODE mode, const SimulcastStreamConfig& config) = 0;
 
   /**
    * Gets the state of the local video stream.
@@ -337,6 +364,10 @@ struct RemoteVideoTrackStats {
     * The overall delay (ms) of the video frames.
     */
   int delay;
+  /**
+   * End-to-end delay from video capturer to video renderer. Hardware capture or render delay is excluded.
+   */
+  int e2eDelay;
   /**
    * The width (pixel) of the remote video track.
    */
@@ -402,12 +433,13 @@ struct RemoteVideoTrackStats {
    The total publish duration (ms) of the remote video stream.
    */
   uint64_t publishDuration;
+  int superResolutionType;
 
-  RemoteVideoTrackStats() : uid(0), delay(0), width(0), height(0),
+  RemoteVideoTrackStats() : uid(0), delay(0), e2eDelay(0), width(0), height(0),
                             receivedBitrate(0), decoderOutputFrameRate(0), rendererOutputFrameRate(0),
                             frameLossRate(0), packetLossRate(0), rxStreamType(VIDEO_STREAM_HIGH),
                             totalFrozenTime(0), frozenRate(0), totalDecodedFrames(0), avSyncTimeMs(0),
-                            downlink_process_time_ms(0), frame_render_delay_ms(0), totalActiveTime(0), publishDuration(0) {}
+                            downlink_process_time_ms(0), frame_render_delay_ms(0), totalActiveTime(0), publishDuration(0), superResolutionType(0) {}
 };
 
 /**
@@ -415,7 +447,6 @@ struct RemoteVideoTrackStats {
  */
 class IRemoteVideoTrack : public IVideoTrack {
  public:
-
   /**
    * Gets the statistics of the remote video track.
    * @param[out] stats The reference to the statistics of the remote video track.
@@ -438,26 +469,26 @@ class IRemoteVideoTrack : public IVideoTrack {
    */
   virtual bool getTrackInfo(VideoTrackInfo& info) = 0;
   /**
-   * Registers an \ref agora::rtc::IVideoEncodedImageReceiver "IVideoEncodedImageReceiver" object.
+   * Registers an \ref agora::media::IVideoEncodedFrameObserver "IVideoEncodedFrameObserver" object.
    *
-   * You need to implement the `IVideoEncodedImageReceiver` class in this method. Once you successfully register
-   * the encoded image receiver, the SDK triggers the \ref agora::rtc::IVideoEncodedImageReceiver::OnEncodedVideoImageReceived "onEncodedVideoImageReceived" callback when it receives the
+   * You need to implement the `IVideoEncodedFrameObserver` class in this method. Once you successfully register
+   * the encoded image receiver, the SDK triggers the \ref agora::rtc::IVideoEncodedFrameObserver::onEncodedVideoFrameReceived "onEncodedVideoFrameReceived" callback when it receives the
    * encoded video image.
    *
-   * @param videoReceiver The pointer to the `IVideoEncodedImageReceiver` object.
+   * @param encodedObserver The pointer to the `IVideoEncodedFrameObserver` object.
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int registerVideoEncodedImageReceiver(IVideoEncodedImageReceiver* videoReceiver) = 0;
+  virtual int registerVideoEncodedFrameObserver(agora::media::IVideoEncodedFrameObserver* encodedObserver) = 0;
   /**
-   * Releases the \ref agora::rtc::IVideoEncodedImageReceiver "IVideoEncodedImageReceiver" object.
-   * @param videoReceiver The pointer to the `IVideoEncodedImageReceiver` object.
+   * Releases the \ref agora::media::IVideoEncodedFrameObserver "IVideoEncodedFrameObserver" object.
+   * @param encodedObserver The pointer to the `IVideoEncodedFrameObserver` object.
    * @return
    * - 0: Success.
    * - < 0: Failure.
    */
-  virtual int unregisterVideoEncodedImageReceiver(IVideoEncodedImageReceiver* videoReceiver) = 0;
+  virtual int unregisterVideoEncodedFrameObserver(agora::media::IVideoEncodedFrameObserver* encodedObserver) = 0;
 
   /**
    * Registers an \ref agora::rtc::IMediaPacketReceiver "IMediaPacketReceiver" object.

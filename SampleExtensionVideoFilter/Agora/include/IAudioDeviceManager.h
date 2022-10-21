@@ -60,6 +60,18 @@ public:
   virtual int setDevice(const char deviceId[MAX_DEVICE_ID_LENGTH]) = 0;
 
   /**
+   * Gets the default audio device of the system (for macOS and Windows only).
+   *
+   * @param deviceName The name of the system default audio device.
+   * @param deviceId The device ID of the the system default audio device.
+   *
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int getDefaultDevice(char deviceName[MAX_DEVICE_ID_LENGTH], char deviceId[MAX_DEVICE_ID_LENGTH]) = 0;
+
+  /**
    * Sets the volume of the app.
    *
    * @param volume The volume of the app. The value range is [0, 255].
@@ -262,6 +274,28 @@ public:
   virtual int getRecordingDeviceVolume(int *volume) = 0;
 
   /**
+   * Specifies an audio loopback recording device with the device ID.
+   *
+   * @param deviceId ID of the audio loopback recording device. It can be retrieved by
+   * the \ref enumeratePlaybackDevices "enumeratePlaybackDevices" method.
+   * Plugging or unplugging the audio device does not change the device ID.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int setLoopbackDevice(const char deviceId[MAX_DEVICE_ID_LENGTH]) = 0;
+
+  /**
+   * Gets the audio loopback recording device by the device ID.
+   *
+   * @param deviceId ID of the audio loopback recording device.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
+  virtual int getLoopbackDevice(char deviceId[MAX_DEVICE_ID_LENGTH]) = 0;
+
+  /**
    * Mutes or unmutes the audio playback device.
    *
    * @param mute Determines whether to mute the audio playback device.
@@ -398,6 +432,45 @@ public:
    * - < 0: Failure.
    */
   virtual int stopAudioDeviceLoopbackTest() = 0;
+
+  /** The status of following system default playback device.
+
+   @note The status of following system default playback device.
+
+   @param enable Variable to whether the current device follow system default playback device or not.
+   - true: The current device will change when the system default playback device changed.
+   - false: The current device will change only current device is removed.
+   @return
+   - 0: Success.
+   - < 0: Failure.
+   */
+  virtual int followSystemPlaybackDevice(bool enable) = 0;
+
+  /** The status of following system default recording device.
+
+   @note The status of following system default recording device.
+
+   @param enable Variable to whether the current device follow system default recording device or not.
+   - true: The current device will change when the system default recording device changed.
+   - false: The current device will change only current device is removed.
+   @return
+   - 0: Success.
+   - < 0: Failure.
+   */
+  virtual int followSystemRecordingDevice(bool enable) = 0;
+
+  /** The status of following system default loopback device.
+
+   @note The status of following system default loopback device.
+
+   @param enable Variable to whether the current device follow system default loopback device or not.
+   - true: The current device will change when the system default loopback device changed.
+   - false: The current device will change only current device is removed.
+   @return
+   - 0: Success.
+   - < 0: Failure.
+   */
+  virtual int followSystemLoopbackDevice(bool enable) = 0;
 
   /**
    * Releases all IAudioDeviceManager resources.
