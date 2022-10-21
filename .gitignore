@@ -32,7 +32,8 @@ bld/
 [Ll]og/
 [Ll]ogs/
 SampleExtensionVideoFilter/package/
-!ExtensionVideoFilterTestDriver/Agora/library/release
+ExtensionVideoFilterTestDriver/agora_rtc_sdk.dll.lib
+SampleExtensionVideoFilter/agora_rtc_sdk.dll.lib
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
