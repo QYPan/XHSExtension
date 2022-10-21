@@ -14,8 +14,8 @@
 
 ### 美颜库(x64)更新
 * 把新库 dll/include/lib 拷到 SampleExtensionVideoFilter\XhsGraphics 相应目录
-* 执行编译步骤
-* 调用美颜库相关逻辑所在文件：face_beauty_video_filter.cpp
+* 执行编译步骤，运行程序检查美颜是否正常
+* 提示：调用美颜库相关逻辑所在文件：face_beauty_video_filter.cpp
 
 ### 编译细节
 * 编译步骤里的 Build-> Rebuild Solution 过程(见两个项目各自的 Build Events 的 Pre-Build Event 和 Post-Build Event)
