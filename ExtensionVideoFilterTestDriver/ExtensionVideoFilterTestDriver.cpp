@@ -111,14 +111,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     sprintf(logret, "\nload ret: %d\n", ret);
     OutputDebugStringA(logret);
 
-    ret = engine->enableExtension(provider_name.c_str(), "face_beauty.xhs", true, agora::media::PRIMARY_CAMERA_SOURCE);
-    sprintf(logret, "\nenableExtension ret1: %d\n", ret);
-    OutputDebugStringA(logret);
-
-    ret = engine->enableExtension(provider_name.c_str(), "face_beauty.xhs", true, agora::media::SECONDARY_CAMERA_SOURCE);
-    sprintf(logret, "\nenableExtension ret2: %d\n", ret);
-    OutputDebugStringA(logret);
-
     EngineInitParamsAid config;
     config._license = path + "/extensions/face_beauty.xhs";
     config._userId = "test-driver";
@@ -128,6 +120,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     ret = engine->setExtensionProviderProperty(provider_name.c_str(), "", config_json.c_str());
     sprintf(logret, "\nsetExtensionProperty config, ret: %d\n", ret);
+    OutputDebugStringA(logret);
+
+    ret = engine->enableExtension(provider_name.c_str(), "face_beauty.xhs", true, agora::media::PRIMARY_CAMERA_SOURCE);
+    sprintf(logret, "\nenableExtension ret1: %d\n", ret);
+    OutputDebugStringA(logret);
+
+    ret = engine->enableExtension(provider_name.c_str(), "face_beauty.xhs", true, agora::media::SECONDARY_CAMERA_SOURCE);
+    sprintf(logret, "\nenableExtension ret2: %d\n", ret);
     OutputDebugStringA(logret);
 
     error = engine->setChannelProfile(agora::CHANNEL_PROFILE_LIVE_BROADCASTING);

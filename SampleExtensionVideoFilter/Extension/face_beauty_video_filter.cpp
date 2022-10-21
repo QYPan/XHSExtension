@@ -146,6 +146,7 @@ int CFaceBeautyVideoFilter::start(agora::agora_refptr<Control> control) {
 
         m_pBeautyEngine = new CG::XYCGWindowsEngine();
         int result = m_pBeautyEngine->initWindowsEngine(utf82ansi(config_._license).c_str(), config_._userId.c_str());
+        PRINT_LOG(SimpleLogger::LOG_TYPE::L_WARN, "this: %p, initWindowsEngine: %s. result: %d.", this, utf82ansi(config_._license).c_str(), result);
         nlohmann::json result_json = result;
         if (core_) {
             core_->log(agora::commons::LOG_LEVEL::LOG_LEVEL_INFO, "init xhs_filter_engine");
@@ -163,12 +164,14 @@ int CFaceBeautyVideoFilter::start(agora::agora_refptr<Control> control) {
 
         // temp load ai here
         result = m_pBeautyEngine->loadAIModel(utf82ansi(config_._aiModelPath).c_str());
+        PRINT_LOG(SimpleLogger::LOG_TYPE::L_WARN, "this: %p, loadAIModel: %s. result: %d.", this, utf82ansi(config_._aiModelPath).c_str(), result);
         if (result) {
             PRINT_LOG(SimpleLogger::LOG_TYPE::L_WARN, "this: %p, load ai model failed. result: %d.", this, result);
         }
 
         // temp load beauty image here
         result = m_pBeautyEngine->setBeautyResourcePath(utf82ansi(config_._beautyResPath).c_str());
+        PRINT_LOG(SimpleLogger::LOG_TYPE::L_WARN, "this: %p, setBeautyResourcePath: %s. result: %d.", this, utf82ansi(config_._beautyResPath).c_str(), result);
         if (result) {
             PRINT_LOG(SimpleLogger::LOG_TYPE::L_WARN, "this: %p, set beauty resource path failed. result: %d.", this, result);
         }
