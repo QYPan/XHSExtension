@@ -6,7 +6,7 @@
 * 请使用 vs 打开 ExtensionVideoFilterTestDriver/ExtensionVideoFilterTestDriver.sln，里面有两个项目，设置 ExtensionVideoFilterTestDriver 为当前项目
 * ExtensionVideoFilterTestDriver.cpp 里面的 GetAppId 方法，在对应的文件填入 appid
 * 通过 Build-> Rebuild Solution 生成项目
-* 运行程序，根据 ExtensionVideoFilterTestDriver.cpp 逻辑检查美颜效果
+* 运行程序，根据 ExtensionVideoFilterTestDriver.cpp 逻辑检查美颜效果（需要验证两路美颜成功）
 
 ### agora sdk 更新
 * 把新 sdk 的 highlevel + lowlevel 头文件拷贝到 Agora\include
